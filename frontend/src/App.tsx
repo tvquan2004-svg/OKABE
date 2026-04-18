@@ -4,6 +4,8 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import WorkspacePage from './pages/WorkspacePage';
+import BoardPage from './pages/BoardPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
+        <Route path="/board/:boardId" element={<BoardPage />} />
       </Route>
 
       {/* Fallback */}
