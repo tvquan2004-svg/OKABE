@@ -1,6 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import styles from './HomePage.module.css';
 
 function HomePage() {
+  const navigate = useNavigate();
+
   return (
     <div className={styles.container}>
       <nav className={styles.nav}>
@@ -9,8 +12,12 @@ function HomePage() {
           <span className={styles.logoText}>OKABE</span>
         </div>
         <div className={styles.navLinks}>
-          <button className="btn btn-outline">Sign In</button>
-          <button className="btn btn-primary">Get Started Free</button>
+          <button className="btn btn-outline" onClick={() => navigate('/login')}>
+            Sign In
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate('/register')}>
+            Get Started Free
+          </button>
         </div>
       </nav>
 
@@ -27,8 +34,12 @@ function HomePage() {
           Organize your work with boards, lists, and cards — powered by real-time collaboration.
         </p>
         <div className={styles.heroCta}>
-          <button className="btn btn-primary">Start Building →</button>
-          <button className="btn btn-outline">View Demo</button>
+          <button className="btn btn-primary" onClick={() => navigate('/register')}>
+            Start Building →
+          </button>
+          <button className="btn btn-outline" onClick={() => navigate('/login')}>
+            Sign In
+          </button>
         </div>
 
         <div className={styles.featureGrid}>
