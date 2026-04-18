@@ -1,2 +1,45 @@
+# OKABE — .gitignore
+
+# ─── Internal Docs (only README.md pushed) ──────────
 *.md
 !README.md
+
+# ─── Environment ────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Java / Maven ───────────────────────────────────
+backend/target/
+*.class
+*.jar
+*.war
+*.log
+*.iml
+.idea/
+.settings/
+.classpath
+.project
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# ─── Node.js / Frontend ─────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.cache/
+*.tsbuildinfo
+
+# ─── Docker ──────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── OS Files ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── IDE ─────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
