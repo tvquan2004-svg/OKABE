@@ -63,6 +63,63 @@ public class AuthServiceImpl implements AuthService {
         return buildAuthResponse(userPrincipal, user);
     }
 
+    @org.springframework.beans.factory.annotation.Value("${app.google.client-id:YOUR_GOOGLE_CLIENT_ID}")
+    private String googleClientId;
+
+    @Override
+    @Transactional
+    public AuthResponse googleLogin(com.okabe.dto.request.GoogleLoginRequest request) {
+        try {
+            com.google.api.client.http.HttpTransport transport = new com.google.api.client.http.javanet.NetHttpTransport();
+            com.google.api.client.json.JsonFactory jsonFactory = new com.google.api.client.json.gson.GsonFactory();
+
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier =
+                    new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+                            .setAudience(java.util.Collections.singletonList(googleClientId))
+                            .build();
+
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken idToken = verifier.verify(request.idToken());
+            if (idToken != null) {
+                com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = idToken.getPayload();
+
+                String email = payload.getEmail();
+                String name = (String) payload.get("name");
+                String pictureUrl = (String) payload.get("picture");
+
+                User user = userRepository.findByEmail(email).orElse(null);
+                
+                if (user == null) {
+                    // Create new user for Google Login
+                    user = User.builder()
+                            .email(email)
+                            .username(name != null ? name : email.split("@")[0])
+                            .password(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                            .avatarUrl(pictureUrl)
+                            .provider("GOOGLE")
+                            .isActive(true)
+                            .build();
+                    user = userRepository.save(user);
+                    log.info("New Google user registered: {}", email);
+                } else {
+                    // Update avatar if missing or changed, optional
+                    if (user.getAvatarUrl() == null && pictureUrl != null) {
+                        user.setAvatarUrl(pictureUrl);
+                        user = userRepository.save(user);
+                    }
+                    log.info("Google user logged in: {}", email);
+                }
+
+                UserPrincipal userPrincipal = UserPrincipal.from(user);
+                return buildAuthResponse(userPrincipal, user);
+            } else {
+                throw new IllegalArgumentException("Invalid Google ID token");
+            }
+        } catch (Exception e) {
+            log.error("Google login failed", e);
+            throw new IllegalArgumentException("Google login failed: " + e.getMessage());
+        }
+    }
+
     @Override
     public AuthResponse refreshToken(String refreshToken) {
         if (!jwtTokenProvider.validateToken(refreshToken)) {

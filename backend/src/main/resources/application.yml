@@ -46,6 +46,8 @@ app:
     refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  google:
+    client-id: 620325554164-7mp2l3l2jhcqk5gfh52nnr103523tlt3.apps.googleusercontent.com
 
 # Springdoc / Swagger
 springdoc:

@@ -25,6 +25,14 @@ public interface AuthService {
     AuthResponse login(LoginRequest request);
 
     /**
+     * Authenticate user with Google ID token.
+     *
+     * @param request containing Google ID token
+     * @return auth response with app tokens
+     */
+    AuthResponse googleLogin(com.okabe.dto.request.GoogleLoginRequest request);
+
+    /**
      * Generate new access token using a valid refresh token.
      *
      * @param refreshToken the refresh token string

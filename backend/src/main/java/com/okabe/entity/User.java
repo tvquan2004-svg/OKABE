@@ -31,4 +31,8 @@ public class User extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
+
+    @Column(nullable = false, length = 50)
+    @Builder.Default
+    private String provider = "LOCAL";
 }

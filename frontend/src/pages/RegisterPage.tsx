@@ -1,14 +1,16 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useRegisterMutation } from '../services/authApi';
+import { useRegisterMutation, useGoogleLoginMutation } from '../services/authApi';
 import { setCredentials } from '../features/auth/authSlice';
 import { useAppDispatch } from '../hooks/useRedux';
+import { GoogleLogin } from '@react-oauth/google';
 import styles from './AuthPage.module.css';
 
 function RegisterPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [register, { isLoading }] = useRegisterMutation();
+  const [googleLogin] = useGoogleLoginMutation();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -121,6 +123,35 @@ function RegisterPage() {
             {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
+
+        <div className={styles.divider}>
+          <span>OR</span>
+        </div>
+
+        <div className={styles.googleLoginWrapper}>
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              if (credentialResponse.credential) {
+                try {
+                  const result = await googleLogin({ idToken: credentialResponse.credential }).unwrap();
+                  dispatch(setCredentials({
+                    accessToken: result.data.accessToken,
+                    refreshToken: result.data.refreshToken,
+                    user: result.data.user,
+                  }));
+                  navigate('/dashboard');
+                } catch (err: unknown) {
+                  const error = err as { data?: { message?: string } };
+                  setError(error.data?.message ?? 'Google Login failed. Please try again.');
+                }
+              }
+            }}
+            onError={() => {
+              setError('Google Login Failed');
+            }}
+            useOneTap
+          />
+        </div>
 
         <p className={styles.footer}>
           Already have an account?{' '}

@@ -58,6 +58,13 @@ export const authApi = apiSlice.injectEndpoints({
         body,
       }),
     }),
+    googleLogin: builder.mutation<ApiResponseWrapper<AuthResponse>, { idToken: string }>({
+      query: (body) => ({
+        url: '/auth/google',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -66,4 +73,5 @@ export const {
   useRegisterMutation,
   useGetMeQuery,
   useRefreshTokenMutation,
+  useGoogleLoginMutation,
 } = authApi;
