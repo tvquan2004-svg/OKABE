@@ -1,0 +1,219 @@
+package com.okabe.service.impl;
+
+import com.okabe.dto.request.CreateBoardRequest;
+import com.okabe.dto.request.ReorderBoardRequest;
+import com.okabe.dto.request.UpdateBoardRequest;
+import com.okabe.dto.response.BoardResponse;
+import com.okabe.dto.response.CardResponse;
+import com.okabe.dto.response.ListResponse;
+import com.okabe.entity.Board;
+import com.okabe.entity.Card;
+import com.okabe.entity.TaskList;
+import com.okabe.entity.Workspace;
+import com.okabe.entity.enums.Role;
+import com.okabe.exception.ResourceNotFoundException;
+import com.okabe.exception.UnauthorizedException;
+import com.okabe.repository.*;
+import com.okabe.security.UserPrincipal;
+import com.okabe.service.BoardService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class BoardServiceImpl implements BoardService {
+
+    private final BoardRepository boardRepository;
+    private final WorkspaceRepository workspaceRepository;
+    private final WorkspaceMemberRepository memberRepository;
+    private final TaskListRepository taskListRepository;
+    private final CardRepository cardRepository;
+
+    @Override
+    public List<BoardResponse> getBoardsByWorkspace(Long workspaceId, UserPrincipal currentUser) {
+        validateWorkspaceMembership(workspaceId, currentUser.getId());
+        List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedFalseOrderByPositionAscCreatedAtAsc(workspaceId);
+        return boards.stream().map(b -> toBoardResponse(b, false)).toList();
+    }
+
+    @Override
+    public BoardResponse getBoard(Long boardId, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceMembership(board.getWorkspace().getId(), currentUser.getId());
+        return toBoardResponse(board, true);
+    }
+
+    @Override
+    @Transactional
+    public BoardResponse createBoard(Long workspaceId, CreateBoardRequest request, UserPrincipal currentUser) {
+        validateWorkspaceWriteAccess(workspaceId, currentUser.getId());
+
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace", workspaceId));
+
+        Board lastBoard = boardRepository.findTopByWorkspaceIdAndIsArchivedFalseOrderByPositionDesc(workspaceId);
+        int nextPosition = lastBoard == null ? 0 : lastBoard.getPosition() + 1;
+
+        Board board = Board.builder()
+                .workspace(workspace)
+                .name(request.name())
+                .description(request.description())
+                .position(nextPosition)
+                .background(request.background())
+                .build();
+
+        board = boardRepository.save(board);
+        log.info("Board created: {} in workspace {}", board.getName(), workspaceId);
+        return toBoardResponse(board, false);
+    }
+
+    @Override
+    @Transactional
+    public BoardResponse updateBoard(Long boardId, UpdateBoardRequest request, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceWriteAccess(board.getWorkspace().getId(), currentUser.getId());
+
+        if (request.name() != null) board.setName(request.name());
+        if (request.description() != null) board.setDescription(request.description());
+        if (request.background() != null) board.setBackground(request.background());
+        if (request.isStarred() != null) board.setIsStarred(request.isStarred());
+        if (request.isArchived() != null) board.setIsArchived(request.isArchived());
+
+        board = boardRepository.save(board);
+        return toBoardResponse(board, false);
+    }
+
+    @Override
+    @Transactional
+    public void reorderBoards(Long workspaceId, ReorderBoardRequest request, UserPrincipal currentUser) {
+        validateWorkspaceWriteAccess(workspaceId, currentUser.getId());
+
+        List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedFalseOrderByPositionAscCreatedAtAsc(workspaceId);
+        Map<Long, Board> boardById = boards.stream()
+                .collect(Collectors.toMap(Board::getId, Function.identity()));
+
+        List<Long> orderedIds = request.orderedIds();
+        if (boards.size() != orderedIds.size() || !boardById.keySet().containsAll(orderedIds)) {
+            throw new ResourceNotFoundException("Board", workspaceId);
+        }
+
+        for (int index = 0; index < orderedIds.size(); index++) {
+            Board board = boardById.get(orderedIds.get(index));
+            board.setPosition(index);
+        }
+
+        boardRepository.saveAll(boards);
+        log.info("Boards reordered in workspace {}", workspaceId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBoard(Long boardId, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceAdmin(board.getWorkspace().getId(), currentUser.getId());
+        boardRepository.delete(board);
+        log.info("Board deleted: {}", boardId);
+    }
+
+    // ─── Helpers ────────────────────────────────────────
+
+    private Board findBoardOrThrow(Long id) {
+        return boardRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Board", id));
+    }
+
+    private void validateWorkspaceMembership(Long workspaceId, Long userId) {
+        if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
+            throw new UnauthorizedException("You are not a member of this workspace");
+        }
+    }
+
+    private void validateWorkspaceWriteAccess(Long workspaceId, Long userId) {
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+                workspaceId, userId, List.of(Role.OWNER, Role.ADMIN, Role.MEMBER));
+        if (!hasAccess) {
+            throw new UnauthorizedException("VIEWERs cannot perform this action");
+        }
+    }
+
+    private void validateWorkspaceAdmin(Long workspaceId, Long userId) {
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+                workspaceId, userId, List.of(Role.OWNER, Role.ADMIN));
+        if (!hasAccess) {
+            throw new UnauthorizedException("Only OWNER or ADMIN can perform this action");
+        }
+    }
+
+    private BoardResponse toBoardResponse(Board board, boolean includeLists) {
+        List<TaskList> taskLists = taskListRepository
+                .findByBoardIdAndIsArchivedFalseOrderByPositionAsc(board.getId());
+
+        int listCount = taskLists.size();
+        int totalCards = 0;
+
+        List<ListResponse> lists = null;
+        if (includeLists) {
+            lists = taskLists.stream().map(this::toListResponse).toList();
+            totalCards = lists.stream()
+                    .mapToInt(l -> l.getCards() != null ? l.getCards().size() : 0)
+                    .sum();
+        } else {
+            for (TaskList tl : taskLists) {
+                totalCards += cardRepository.countByTaskListIdAndIsArchivedFalse(tl.getId());
+            }
+        }
+
+        return BoardResponse.builder()
+                .id(board.getId())
+                .workspaceId(board.getWorkspace().getId())
+                .name(board.getName())
+                .description(board.getDescription())
+                .position(board.getPosition())
+                .background(board.getBackground())
+                .isStarred(board.getIsStarred())
+                .isArchived(board.getIsArchived())
+                .listCount(listCount)
+                .totalCards(totalCards)
+                .createdAt(board.getCreatedAt())
+                .lists(lists)
+                .build();
+    }
+
+    private ListResponse toListResponse(TaskList taskList) {
+        List<Card> cards = cardRepository
+                .findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(taskList.getId());
+
+        return ListResponse.builder()
+                .id(taskList.getId())
+                .boardId(taskList.getBoard().getId())
+                .name(taskList.getName())
+                .position(taskList.getPosition())
+                .cards(cards.stream().map(this::toCardResponse).toList())
+                .build();
+    }
+
+    private CardResponse toCardResponse(Card card) {
+        return CardResponse.builder()
+                .id(card.getId())
+                .listId(card.getTaskList().getId())
+                .title(card.getTitle())
+                .description(card.getDescription())
+                .position(card.getPosition())
+                .dueDate(card.getDueDate())
+                .priority(card.getPriority().name())
+                .isArchived(card.getIsArchived())
+                .createdById(card.getCreatedBy().getId())
+                .createdByName(card.getCreatedBy().getUsername())
+                .createdAt(card.getCreatedAt())
+                .build();
+    }
+}
