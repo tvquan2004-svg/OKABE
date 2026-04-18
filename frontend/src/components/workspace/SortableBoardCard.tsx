@@ -45,6 +45,8 @@ function SortableBoardCard({
       style={cardStyle}
       className={`${styles.card} ${isDragging ? styles.dragging : ''}`}
       onClick={() => onOpen(board.id)}
+      {...attributes}
+      {...listeners}
     >
       <div className={styles.colorBar} />
       <div className={styles.content}>
@@ -68,18 +70,6 @@ function SortableBoardCard({
               >
                 Delete
               </button>
-              {canReorder ? (
-                <button
-                  type="button"
-                  className={`${styles.iconButton} ${styles.dragHandle}`}
-                  onClick={(event) => event.stopPropagation()}
-                  title="Drag to reorder"
-                  {...attributes}
-                  {...listeners}
-                >
-                  Drag
-                </button>
-              ) : null}
             </div>
           ) : null}
         </div>

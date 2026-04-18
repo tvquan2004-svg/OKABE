@@ -61,7 +61,19 @@ function WorkspacePage() {
   const canEditBoards = 
     canManageWorkspace || workspace?.currentUserRole === 'MEMBER';
 
-  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    })
+  );
 
   useEffect(() => {
     if (boards) {
