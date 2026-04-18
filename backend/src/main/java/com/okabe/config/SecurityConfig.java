@@ -1,6 +1,9 @@
 package com.okabe.config;
 
+<<<<<<< HEAD
 import com.okabe.security.JwtAuthenticationFilter;
+=======
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,7 +15,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+<<<<<<< HEAD
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+=======
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +30,10 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
+<<<<<<< HEAD
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+=======
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/v1/auth/**",
@@ -44,8 +53,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
+<<<<<<< HEAD
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+=======
+                );
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
 
         return http.build();
     }

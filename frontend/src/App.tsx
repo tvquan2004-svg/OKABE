@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector } from './hooks/useRedux';
 import HomePage from './pages/HomePage';
@@ -33,6 +34,15 @@ function App() {
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
+=======
+import { Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
     </Routes>
   );
 }

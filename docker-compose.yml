@@ -5,16 +5,27 @@ services:
     container_name: okabe-mysql
     restart: unless-stopped
     environment:
+<<<<<<< HEAD
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+=======
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: okabe_db
+      MYSQL_USER: okabe
+      MYSQL_PASSWORD: 123456
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
+<<<<<<< HEAD
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+=======
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,12 +60,21 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+<<<<<<< HEAD
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET}
+=======
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/okabe_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: okabe
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      JWT_SECRET: okabe-dev-secret-key-256-bits-minimum-change-in-prod
+>>>>>>> ff3a2ec6328dbe8306d27b4f0eb9a549f3c65124
     depends_on:
       mysql:
         condition: service_healthy
