@@ -5,6 +5,8 @@
 spring:
   application:
     name: okabe-backend
+  profiles:
+    default: dev
 
   # JPA / Hibernate
   jpa:

@@ -1,61 +1,55 @@
-# ⚡ OKABE — Task Manager
+# OKABE - Task Manager
 
-> Trello / Notion-style task management app built with **Spring Boot**, **React**, and **MySQL**.
+Trello / Notion-style task management app built with Spring Boot, React, MySQL, and Redis.
 
----
+## Tech Stack
 
-## 📦 Tech Stack
+| Layer | Technology |
+| --- | --- |
+| Backend | Java 21, Spring Boot 3.4, Spring Security, JWT |
+| Frontend | React, TypeScript, Vite, Redux Toolkit |
+| Database | MySQL 8, Redis 7 |
+| Infra | Docker, Docker Compose, Nginx |
 
-| Layer          | Technology                                           |
-| -------------- | ---------------------------------------------------- |
-| Backend        | Java 21 · Spring Boot 3.4 · Spring Security · JWT |
-| Frontend       | React 19 · TypeScript · Vite · Redux Toolkit      |
-| Database       | MySQL 8.0 · Redis 7                                 |
-| Infrastructure | Docker · Docker Compose · Nginx                    |
+## Prerequisites
 
----
+Make sure these tools are installed:
 
-## ⚙️ Prerequisites
+- Java JDK 21+
+- Maven 3.9+
+- Node.js 20+ and npm
+- Docker Desktop
 
-Đảm bảo máy đã cài đặt:
+## Run The Project
 
-- [Java JDK 21+](https://adoptium.net/)
-- [Maven 3.9+](https://maven.apache.org/)
-- [Node.js 20+](https://nodejs.org/) & npm
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+### Option 1: Run each part locally
 
----
-
-## 🚀 Khởi chạy dự án
-
-### Cách 1 — Chạy từng phần (Development — Recommended)
-
-#### Bước 1: Khởi động Database & Redis\
+1. Start MySQL and Redis:
 
 ```bash
 docker compose up mysql redis -d
-```
-
-Chờ ~10s để MySQL khởi động xong, kiểm tra:
-
-```bash
 docker compose ps
 ```
 
-#### Bước 2: Chạy Backend (Spring Boot)
+2. Run backend:
 
 ```bash
 cd backend
-mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
+mvn spring-boot:run
 ```
 
-> ⚠️ **PowerShell**: Phải đặt `-D...` trong dấu `""` để tránh lỗi parse.
+Backend URLs:
 
-> Backend chạy tại: **http://localhost:8080**
-> Swagger UI: **http://localhost:8080/swagger-ui.html**
-> Health check: **http://localhost:8080/api/v1/health**
+- API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Health check: `http://localhost:8080/api/v1/health`
 
-#### Bước 3: Cài dependencies & Chạy Frontend (React)
+Note:
+
+- The project now defaults to the `dev` profile, so `mvn spring-boot:run` is enough.
+- If MySQL or Redis is not running, backend startup will fail.
+
+3. Run frontend:
 
 ```bash
 cd frontend
@@ -63,49 +57,51 @@ npm install
 npm run dev
 ```
 
-> Frontend chạy tại: **http://localhost:5173**
+Frontend URL:
 
----
+- App: `http://localhost:5173`
 
-### Cách 2 — Chạy tất cả bằng Docker Compose
+### Option 2: Run everything with Docker Compose
 
 ```bash
-# Build và chạy toàn bộ services
 docker compose up --build -d
-
-# Xem logs
 docker compose logs -f
 ```
 
-> Frontend: **http://localhost:3000**
-> Backend API: **http://localhost:8080**
-> MySQL: **localhost:3306**
+Docker URLs:
 
----
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:8080`
+- MySQL: `localhost:3306`
+- Redis: `localhost:6379`
 
-## 🛑 Dừng dự án
+## Stop The Project
 
 ```bash
-# Dừng tất cả containers
 docker compose down
+```
 
-# Dừng và xóa volumes (reset database)
+Reset database volumes:
+
+```bash
 docker compose down -v
 ```
 
----
-
-## 🔧 Các lệnh hữu ích
+## Useful Commands
 
 ### Backend
 
 ```bash
-# Build JAR (skip tests)
 cd backend
-mvn package "-DskipTests"
 
-# Chạy tests
-mvn test "-Dspring.profiles.active=test"
+# Run app
+mvn spring-boot:run
+
+# Build jar without tests
+mvn package -DskipTests
+
+# Run tests
+mvn test -Dspring.profiles.active=test
 
 # Clean build
 mvn clean install
@@ -116,70 +112,53 @@ mvn clean install
 ```bash
 cd frontend
 
-# Cài dependencies
+# Install dependencies
 npm install
 
-# Dev server (hot reload)
+# Run dev server
 npm run dev
 
-# Build production
+# Build production bundle
 npm run build
 
-# Chạy tests
+# Run tests
 npm run test
 
-# Lint check
+# Run lint
 npm run lint
 ```
 
 ### Docker
 
 ```bash
-# Chỉ khởi động DB
+# Start only database services
 docker compose up mysql redis -d
 
-# Rebuild 1 service
+# Rebuild one service
 docker compose up --build backend -d
 
-# Xem logs của 1 service
+# View backend logs
 docker compose logs -f backend
 
-# Truy cập MySQL CLI
+# Open MySQL shell
 docker exec -it okabe-mysql mysql -u okabe -p123456 okabe_db
 
-# Truy cập Redis CLI
+# Open Redis shell
 docker exec -it okabe-redis redis-cli
 ```
 
----
+## Project Structure
 
-## 🌐 URLs khi chạy
-
-| Service           | URL                                   |
-| ----------------- | ------------------------------------- |
-| Frontend (dev)    | http://localhost:5173                 |
-| Frontend (docker) | http://localhost:3000                 |
-| Backend API       | http://localhost:8080                 |
-| Swagger UI        | http://localhost:8080/swagger-ui.html |
-| Health Check      | http://localhost:8080/api/v1/health   |
-| MySQL             | localhost:3306                        |
-| Redis             | localhost:6379                        |
-
----
-
-## 📁 Project Structure
-
-```
+```text
 okabe/
-├── backend/          # Spring Boot API
-├── frontend/         # React + Vite SPA
-├── docker-compose.yml
-├── .env.example
-└── .gitignore
+|-- backend/
+|-- frontend/
+|-- docker-compose.yml
+|-- .env
+|-- .env.example
+`-- README.md
 ```
 
----
+## License
 
-## 📄 License
-
-MIT © 2026 OKABE
+MIT Copyright 2026 OKABE
