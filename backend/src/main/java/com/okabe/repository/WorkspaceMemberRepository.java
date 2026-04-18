@@ -1,0 +1,22 @@
+package com.okabe.repository;
+
+import com.okabe.entity.WorkspaceMember;
+import com.okabe.entity.WorkspaceMemberId;
+import com.okabe.entity.enums.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, WorkspaceMemberId> {
+
+    List<WorkspaceMember> findByWorkspaceId(Long workspaceId);
+
+    Optional<WorkspaceMember> findByWorkspaceIdAndUserId(Long workspaceId, Long userId);
+
+    boolean existsByWorkspaceIdAndUserId(Long workspaceId, Long userId);
+
+    boolean existsByWorkspaceIdAndUserIdAndRoleIn(Long workspaceId, Long userId, List<Role> roles);
+}
