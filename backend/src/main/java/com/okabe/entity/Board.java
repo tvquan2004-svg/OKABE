@@ -26,6 +26,10 @@ public class Board extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer position = 0;
+
     @Column(length = 255)
     private String background;
 

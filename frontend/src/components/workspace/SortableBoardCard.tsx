@@ -1,0 +1,98 @@
+import type { CSSProperties, MouseEvent } from 'react';
+import { CSS } from '@dnd-kit/utilities';
+import { useSortable } from '@dnd-kit/sortable';
+import type { Board } from '../../services/boardApi';
+import styles from './SortableBoardCard.module.css';
+
+interface SortableBoardCardProps {
+  board: Board;
+  canManage: boolean;
+  canReorder: boolean;
+  onOpen: (boardId: number) => void;
+  onEdit: (board: Board, event: MouseEvent<HTMLButtonElement>) => void;
+  onDelete: (boardId: number, event: MouseEvent<HTMLButtonElement>) => void;
+}
+
+function SortableBoardCard({
+  board,
+  canManage,
+  canReorder,
+  onOpen,
+  onEdit,
+  onDelete,
+}: SortableBoardCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: board.id,
+    disabled: !canReorder,
+  });
+
+  const cardStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    '--board-accent': board.background ?? '#6366f1',
+  } as CSSProperties;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={cardStyle}
+      className={`${styles.card} ${isDragging ? styles.dragging : ''}`}
+      onClick={() => onOpen(board.id)}
+    >
+      <div className={styles.colorBar} />
+      <div className={styles.content}>
+        <div className={styles.headerRow}>
+          <h3 className={styles.title}>{board.name}</h3>
+          {canManage ? (
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={(event) => onEdit(board, event)}
+                title="Edit board"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={(event) => onDelete(board.id, event)}
+                title="Delete board"
+              >
+                Delete
+              </button>
+              {canReorder ? (
+                <button
+                  type="button"
+                  className={`${styles.iconButton} ${styles.dragHandle}`}
+                  onClick={(event) => event.stopPropagation()}
+                  title="Drag to reorder"
+                  {...attributes}
+                  {...listeners}
+                >
+                  Drag
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        {board.description ? <p className={styles.description}>{board.description}</p> : null}
+
+        <div className={styles.stats}>
+          <span>{board.listCount ?? 0} lists</span>
+          <span>{board.totalCards ?? 0} cards</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default SortableBoardCard;

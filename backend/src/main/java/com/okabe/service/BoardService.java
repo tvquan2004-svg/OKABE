@@ -1,6 +1,7 @@
 package com.okabe.service;
 
 import com.okabe.dto.request.CreateBoardRequest;
+import com.okabe.dto.request.ReorderBoardRequest;
 import com.okabe.dto.request.UpdateBoardRequest;
 import com.okabe.dto.response.BoardResponse;
 import com.okabe.security.UserPrincipal;
@@ -16,6 +17,8 @@ public interface BoardService {
     BoardResponse createBoard(Long workspaceId, CreateBoardRequest request, UserPrincipal currentUser);
 
     BoardResponse updateBoard(Long boardId, UpdateBoardRequest request, UserPrincipal currentUser);
+
+    void reorderBoards(Long workspaceId, ReorderBoardRequest request, UserPrincipal currentUser);
 
     void deleteBoard(Long boardId, UserPrincipal currentUser);
 }

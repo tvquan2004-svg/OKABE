@@ -13,6 +13,7 @@ public class BoardResponse {
     private Long workspaceId;
     private String name;
     private String description;
+    private Integer position;
     private String background;
     private Boolean isStarred;
     private Boolean isArchived;

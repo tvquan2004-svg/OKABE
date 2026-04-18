@@ -1,6 +1,7 @@
 package com.okabe.service.impl;
 
 import com.okabe.dto.request.CreateBoardRequest;
+import com.okabe.dto.request.ReorderBoardRequest;
 import com.okabe.dto.request.UpdateBoardRequest;
 import com.okabe.dto.response.BoardResponse;
 import com.okabe.dto.response.CardResponse;
@@ -21,6 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,7 +41,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<BoardResponse> getBoardsByWorkspace(Long workspaceId, UserPrincipal currentUser) {
         validateWorkspaceMembership(workspaceId, currentUser.getId());
-        List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedFalseOrderByCreatedAtDesc(workspaceId);
+        List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedFalseOrderByPositionAscCreatedAtAsc(workspaceId);
         return boards.stream().map(b -> toBoardResponse(b, false)).toList();
     }
 
@@ -56,10 +60,14 @@ public class BoardServiceImpl implements BoardService {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace", workspaceId));
 
+        Board lastBoard = boardRepository.findTopByWorkspaceIdAndIsArchivedFalseOrderByPositionDesc(workspaceId);
+        int nextPosition = lastBoard == null ? 0 : lastBoard.getPosition() + 1;
+
         Board board = Board.builder()
                 .workspace(workspace)
                 .name(request.name())
                 .description(request.description())
+                .position(nextPosition)
                 .background(request.background())
                 .build();
 
@@ -82,6 +90,29 @@ public class BoardServiceImpl implements BoardService {
 
         board = boardRepository.save(board);
         return toBoardResponse(board, false);
+    }
+
+    @Override
+    @Transactional
+    public void reorderBoards(Long workspaceId, ReorderBoardRequest request, UserPrincipal currentUser) {
+        validateWorkspaceAdmin(workspaceId, currentUser.getId());
+
+        List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedFalseOrderByPositionAscCreatedAtAsc(workspaceId);
+        Map<Long, Board> boardById = boards.stream()
+                .collect(Collectors.toMap(Board::getId, Function.identity()));
+
+        List<Long> orderedIds = request.orderedIds();
+        if (boards.size() != orderedIds.size() || !boardById.keySet().containsAll(orderedIds)) {
+            throw new ResourceNotFoundException("Board", workspaceId);
+        }
+
+        for (int index = 0; index < orderedIds.size(); index++) {
+            Board board = boardById.get(orderedIds.get(index));
+            board.setPosition(index);
+        }
+
+        boardRepository.saveAll(boards);
+        log.info("Boards reordered in workspace {}", workspaceId);
     }
 
     @Override
@@ -138,6 +169,7 @@ public class BoardServiceImpl implements BoardService {
                 .workspaceId(board.getWorkspace().getId())
                 .name(board.getName())
                 .description(board.getDescription())
+                .position(board.getPosition())
                 .background(board.getBackground())
                 .isStarred(board.getIsStarred())
                 .isArchived(board.getIsArchived())

@@ -27,6 +27,7 @@ export interface Board {
   workspaceId: number;
   name: string;
   description: string | null;
+  position: number;
   background: string | null;
   isStarred: boolean;
   isArchived: boolean;
@@ -55,6 +56,14 @@ export const boardApi = apiSlice.injectEndpoints({
     updateBoard: builder.mutation<ApiRes<Board>, { id: number; body: Partial<Board> }>({
       query: ({ id, body }) => ({ url: `/boards/${id}`, method: 'PUT', body }),
       invalidatesTags: (_r, _e, { id }) => [{ type: 'Board', id }, 'Board'],
+    }),
+    reorderBoards: builder.mutation<ApiRes<void>, { workspaceId: number; orderedIds: number[] }>({
+      query: ({ workspaceId, orderedIds }) => ({
+        url: `/workspaces/${workspaceId}/boards/reorder`,
+        method: 'PUT',
+        body: { orderedIds },
+      }),
+      invalidatesTags: ['Board'],
     }),
     deleteBoard: builder.mutation<ApiRes<void>, number>({
       query: (id) => ({ url: `/boards/${id}`, method: 'DELETE' }),
@@ -102,6 +111,7 @@ export const {
   useGetBoardQuery,
   useCreateBoardMutation,
   useUpdateBoardMutation,
+  useReorderBoardsMutation,
   useDeleteBoardMutation,
   useCreateListMutation,
   useUpdateListMutation,

@@ -1,6 +1,7 @@
 package com.okabe.controller;
 
 import com.okabe.dto.request.CreateBoardRequest;
+import com.okabe.dto.request.ReorderBoardRequest;
 import com.okabe.dto.request.UpdateBoardRequest;
 import com.okabe.dto.response.ApiResponse;
 import com.okabe.dto.response.BoardResponse;
@@ -60,6 +61,16 @@ public class BoardController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
                 boardService.updateBoard(id, request, currentUser), "Board updated"));
+    }
+
+    @PutMapping("/api/v1/workspaces/{workspaceId}/boards/reorder")
+    @Operation(summary = "Reorder boards in a workspace")
+    public ResponseEntity<ApiResponse<Void>> reorderBoards(
+            @PathVariable Long workspaceId,
+            @Valid @RequestBody ReorderBoardRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        boardService.reorderBoards(workspaceId, request, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Boards reordered"));
     }
 
     @DeleteMapping("/api/v1/boards/{id}")

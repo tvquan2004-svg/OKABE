@@ -1,11 +1,33 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useGetWorkspaceQuery } from '../services/workspaceApi';
+import { useEffect, useState, type MouseEvent } from 'react';
 import {
-  useGetBoardsQuery,
+  DndContext,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { useNavigate, useParams } from 'react-router-dom';
+import EntityModal from '../components/common/EntityModal';
+import SortableBoardCard from '../components/workspace/SortableBoardCard';
+import {
+  type Board,
   useCreateBoardMutation,
   useDeleteBoardMutation,
+  useGetBoardsQuery,
+  useReorderBoardsMutation,
+  useUpdateBoardMutation,
 } from '../services/boardApi';
+import {
+  useGetWorkspaceQuery,
+  useUpdateWorkspaceMutation,
+} from '../services/workspaceApi';
 import styles from './WorkspacePage.module.css';
 
 function WorkspacePage() {
@@ -13,120 +35,249 @@ function WorkspacePage() {
   const navigate = useNavigate();
   const id = Number(workspaceId);
 
-  const { data: wsData } = useGetWorkspaceQuery(id);
+  const { data: workspaceData } = useGetWorkspaceQuery(id);
   const { data: boardsData, isLoading } = useGetBoardsQuery(id);
-  const [createBoard, { isLoading: isCreating }] = useCreateBoardMutation();
+  const [createBoard, { isLoading: isCreatingBoard }] = useCreateBoardMutation();
+  const [updateBoard, { isLoading: isUpdatingBoard }] = useUpdateBoardMutation();
+  const [reorderBoards] = useReorderBoardsMutation();
   const [deleteBoard] = useDeleteBoardMutation();
+  const [updateWorkspace, { isLoading: isUpdatingWorkspace }] = useUpdateWorkspaceMutation();
 
-  const [showModal, setShowModal] = useState(false);
+  const [orderedBoards, setOrderedBoards] = useState<Board[]>([]);
+  const [isCreateBoardModalOpen, setIsCreateBoardModalOpen] = useState(false);
+  const [isEditWorkspaceModalOpen, setIsEditWorkspaceModalOpen] = useState(false);
+  const [editingBoard, setEditingBoard] = useState<Board | null>(null);
   const [boardName, setBoardName] = useState('');
-  const [boardDesc, setBoardDesc] = useState('');
+  const [boardDescription, setBoardDescription] = useState('');
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceDescription, setWorkspaceDescription] = useState('');
 
-  const workspace = wsData?.data;
+  const workspace = workspaceData?.data;
   const boards = boardsData?.data ?? [];
+  const canManageWorkspace =
+    workspace?.currentUserRole === 'OWNER' || workspace?.currentUserRole === 'ADMIN';
+
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
+
+  useEffect(() => {
+    setOrderedBoards(boards);
+  }, [boards]);
+
+  useEffect(() => {
+    if (!workspace) {
+      return;
+    }
+
+    setWorkspaceName(workspace.name);
+    setWorkspaceDescription(workspace.description ?? '');
+  }, [workspace]);
 
   const bgColors = ['#6366f1', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444', '#ec4899'];
 
-  const handleCreate = async () => {
-    if (!boardName.trim()) return;
-    const bg = bgColors[Math.floor(Math.random() * bgColors.length)];
-    await createBoard({ workspaceId: id, name: boardName, description: boardDesc || undefined, background: bg }).unwrap();
+  const openCreateBoardModal = () => {
     setBoardName('');
-    setBoardDesc('');
-    setShowModal(false);
+    setBoardDescription('');
+    setEditingBoard(null);
+    setIsCreateBoardModalOpen(true);
   };
 
-  const handleDelete = async (boardId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const openEditBoardModal = (board: Board) => {
+    setEditingBoard(board);
+    setBoardName(board.name);
+    setBoardDescription(board.description ?? '');
+  };
+
+  const handleSaveBoard = async () => {
+    if (!boardName.trim()) {
+      return;
+    }
+
+    if (editingBoard) {
+      await updateBoard({
+        id: editingBoard.id,
+        body: {
+          name: boardName.trim(),
+          description: boardDescription.trim() || null,
+        },
+      }).unwrap();
+      setEditingBoard(null);
+      return;
+    }
+
+    const background = bgColors[Math.floor(Math.random() * bgColors.length)];
+    await createBoard({
+      workspaceId: id,
+      name: boardName.trim(),
+      description: boardDescription.trim() || undefined,
+      background,
+    }).unwrap();
+    setIsCreateBoardModalOpen(false);
+  };
+
+  const handleSaveWorkspace = async () => {
+    if (!workspaceName.trim()) {
+      return;
+    }
+
+    await updateWorkspace({
+      id,
+      body: {
+        name: workspaceName.trim(),
+        description: workspaceDescription.trim() || undefined,
+      },
+    }).unwrap();
+    setIsEditWorkspaceModalOpen(false);
+  };
+
+  const handleDeleteBoard = async (boardId: number, event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     if (confirm('Delete this board?')) {
       await deleteBoard(boardId).unwrap();
+    }
+  };
+
+  const handleEditBoard = (board: Board, event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    openEditBoardModal(board);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    if (!canManageWorkspace || !event.over || event.active.id === event.over.id) {
+      return;
+    }
+
+    const oldIndex = orderedBoards.findIndex((board) => board.id === event.active.id);
+    const newIndex = orderedBoards.findIndex((board) => board.id === event.over?.id);
+
+    if (oldIndex < 0 || newIndex < 0) {
+      return;
+    }
+
+    const nextBoards = arrayMove(orderedBoards, oldIndex, newIndex);
+    setOrderedBoards(nextBoards);
+
+    try {
+      await reorderBoards({
+        workspaceId: id,
+        orderedIds: nextBoards.map((board) => board.id),
+      }).unwrap();
+    } catch {
+      setOrderedBoards(boards);
     }
   };
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate('/dashboard')}>← Dashboard</button>
+        <button className={styles.backBtn} onClick={() => navigate('/dashboard')}>
+          Back to dashboard
+        </button>
         <div className={styles.wsInfo}>
           <h1>{workspace?.name ?? 'Workspace'}</h1>
-          {workspace?.description && <p>{workspace.description}</p>}
+          {workspace?.description ? <p>{workspace.description}</p> : null}
         </div>
+        {canManageWorkspace ? (
+          <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
+            Edit workspace
+          </button>
+        ) : null}
       </header>
 
       <main className={styles.main}>
         <div className={styles.sectionHeader}>
-          <h2>Boards</h2>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Board</button>
+          <div>
+            <h2>Boards</h2>
+            {canManageWorkspace ? (
+              <p className={styles.muted}>Drag boards to reorder them.</p>
+            ) : null}
+          </div>
+          <button className="btn btn-primary" onClick={openCreateBoardModal}>
+            + New Board
+          </button>
         </div>
 
         {isLoading ? (
           <p className={styles.muted}>Loading boards...</p>
-        ) : boards.length === 0 ? (
+        ) : orderedBoards.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>📋</div>
+            <div className={styles.emptyIcon}>Boards</div>
             <h3>No boards yet</h3>
             <p>Create your first board to start organizing tasks.</p>
-            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Create Board</button>
+            <button className="btn btn-primary" onClick={openCreateBoardModal}>
+              + Create Board
+            </button>
           </div>
         ) : (
-          <div className={styles.boardGrid}>
-            {boards.map((b) => (
-              <div
-                key={b.id}
-                className={styles.boardCard}
-                style={{ borderTopColor: b.background ?? '#6366f1' }}
-                onClick={() => navigate(`/board/${b.id}`)}
-              >
-                <div className={styles.boardColorBar} style={{ background: b.background ?? '#6366f1' }} />
-                <div className={styles.boardContent}>
-                  <h3>{b.name}</h3>
-                  {b.description && <p>{b.description}</p>}
-                  <div className={styles.boardStats}>
-                    <span>📋 {b.listCount ?? 0} list{(b.listCount ?? 0) !== 1 ? 's' : ''}</span>
-                    <span>🗂️ {b.totalCards ?? 0} card{(b.totalCards ?? 0) !== 1 ? 's' : ''}</span>
-                  </div>
-                </div>
-                <button className={styles.deleteBoardBtn} onClick={(e) => handleDelete(b.id, e)}>🗑️</button>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext
+              items={orderedBoards.map((board) => board.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className={styles.boardGrid}>
+                {orderedBoards.map((board) => (
+                  <SortableBoardCard
+                    key={board.id}
+                    board={board}
+                    canManage={canManageWorkspace}
+                    canReorder={canManageWorkspace}
+                    onOpen={(boardId) => navigate(`/board/${boardId}`)}
+                    onEdit={handleEditBoard}
+                    onDelete={handleDeleteBoard}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Create Board Modal */}
-        {showModal && (
-          <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <h2>Create Board</h2>
-              <div className={styles.modalField}>
-                <label>Board Name *</label>
-                <input
-                  value={boardName}
-                  onChange={(e) => setBoardName(e.target.value)}
-                  placeholder="My Board"
-                  className={styles.modalInput}
-                  autoFocus
-                />
-              </div>
-              <div className={styles.modalField}>
-                <label>Description</label>
-                <textarea
-                  value={boardDesc}
-                  onChange={(e) => setBoardDesc(e.target.value)}
-                  placeholder="Optional..."
-                  className={styles.modalTextarea}
-                  rows={3}
-                />
-              </div>
-              <div className={styles.modalActions}>
-                <button className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
-                <button className="btn btn-primary" onClick={handleCreate} disabled={isCreating || !boardName.trim()}>
-                  {isCreating ? 'Creating...' : 'Create'}
-                </button>
-              </div>
-            </div>
-          </div>
+            </SortableContext>
+          </DndContext>
         )}
       </main>
+
+      {isCreateBoardModalOpen ? (
+        <EntityModal
+          title="Create board"
+          nameLabel="Board name"
+          nameValue={boardName}
+          namePlaceholder="My board"
+          descriptionValue={boardDescription}
+          onNameChange={setBoardName}
+          onDescriptionChange={setBoardDescription}
+          onClose={() => setIsCreateBoardModalOpen(false)}
+          onSubmit={() => void handleSaveBoard()}
+          submitLabel="Create"
+          isSubmitting={isCreatingBoard}
+        />
+      ) : null}
+
+      {editingBoard ? (
+        <EntityModal
+          title="Edit board"
+          nameLabel="Board name"
+          nameValue={boardName}
+          namePlaceholder="My board"
+          descriptionValue={boardDescription}
+          onNameChange={setBoardName}
+          onDescriptionChange={setBoardDescription}
+          onClose={() => setEditingBoard(null)}
+          onSubmit={() => void handleSaveBoard()}
+          submitLabel="Save changes"
+          isSubmitting={isUpdatingBoard}
+        />
+      ) : null}
+
+      {isEditWorkspaceModalOpen ? (
+        <EntityModal
+          title="Edit workspace"
+          nameLabel="Workspace name"
+          nameValue={workspaceName}
+          namePlaceholder="Workspace name"
+          descriptionValue={workspaceDescription}
+          onNameChange={setWorkspaceName}
+          onDescriptionChange={setWorkspaceDescription}
+          onClose={() => setIsEditWorkspaceModalOpen(false)}
+          onSubmit={() => void handleSaveWorkspace()}
+          submitLabel="Save changes"
+          isSubmitting={isUpdatingWorkspace}
+        />
+      ) : null}
     </div>
   );
 }

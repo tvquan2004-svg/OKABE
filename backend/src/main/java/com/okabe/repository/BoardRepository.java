@@ -9,7 +9,9 @@ import java.util.List;
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
-    List<Board> findByWorkspaceIdAndIsArchivedFalseOrderByCreatedAtDesc(Long workspaceId);
+    List<Board> findByWorkspaceIdAndIsArchivedFalseOrderByPositionAscCreatedAtAsc(Long workspaceId);
 
-    List<Board> findByWorkspaceIdOrderByCreatedAtDesc(Long workspaceId);
+    List<Board> findByWorkspaceIdOrderByPositionAscCreatedAtAsc(Long workspaceId);
+
+    Board findTopByWorkspaceIdAndIsArchivedFalseOrderByPositionDesc(Long workspaceId);
 }
