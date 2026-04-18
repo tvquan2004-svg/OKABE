@@ -44,7 +44,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public ListResponse createList(Long boardId, CreateListRequest request, UserPrincipal currentUser) {
         Board board = findBoardOrThrow(boardId);
-        validateMembership(board, currentUser.getId());
+        validateWriteAccess(board, currentUser.getId());
 
         int nextPosition = taskListRepository.countByBoardIdAndIsArchivedFalse(boardId);
 
@@ -63,7 +63,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public ListResponse updateList(Long listId, UpdateListRequest request, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateMembership(taskList.getBoard(), currentUser.getId());
+        validateWriteAccess(taskList.getBoard(), currentUser.getId());
 
         if (request.name() != null) taskList.setName(request.name());
         if (request.isArchived() != null) taskList.setIsArchived(request.isArchived());
@@ -76,7 +76,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public void reorderLists(Long boardId, ReorderListRequest request, UserPrincipal currentUser) {
         Board board = findBoardOrThrow(boardId);
-        validateMembership(board, currentUser.getId());
+        validateWriteAccess(board, currentUser.getId());
 
         List<Long> orderedIds = request.orderedIds();
         for (int i = 0; i < orderedIds.size(); i++) {
@@ -91,7 +91,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public void deleteList(Long listId, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateMembership(taskList.getBoard(), currentUser.getId());
+        validateWriteAccess(taskList.getBoard(), currentUser.getId());
         taskListRepository.delete(taskList);
         log.info("List deleted: {}", listId);
     }
@@ -111,6 +111,14 @@ public class TaskListServiceImpl implements TaskListService {
     private void validateMembership(Board board, Long userId) {
         if (!memberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), userId)) {
             throw new UnauthorizedException("You are not a member of this workspace");
+        }
+    }
+
+    private void validateWriteAccess(Board board, Long userId) {
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+                board.getWorkspace().getId(), userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
+        if (!hasAccess) {
+            throw new UnauthorizedException("VIEWERs cannot perform this action");
         }
     }
 

@@ -71,4 +71,44 @@ public class WorkspaceController {
         workspaceService.deleteWorkspace(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Workspace deleted successfully"));
     }
+
+    // ─── Member Management Endpoints ──────────────────────────────
+
+    @GetMapping("/{id}/members")
+    @Operation(summary = "Get workspace members")
+    public ResponseEntity<ApiResponse<List<com.okabe.dto.response.WorkspaceMemberResponse>>> getWorkspaceMembers(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(workspaceService.getWorkspaceMembers(id, currentUser)));
+    }
+
+    @PostMapping("/{id}/members")
+    @Operation(summary = "Add a member to workspace (ADMIN/OWNER only)")
+    public ResponseEntity<ApiResponse<com.okabe.dto.response.WorkspaceMemberResponse>> addMemberToWorkspace(
+            @PathVariable Long id,
+            @Valid @RequestBody com.okabe.dto.request.AddWorkspaceMemberRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(workspaceService.addMemberToWorkspace(id, request, currentUser), "Member added successfully"));
+    }
+
+    @PutMapping("/{id}/members/{memberId}/role")
+    @Operation(summary = "Update member role (ADMIN/OWNER only)")
+    public ResponseEntity<ApiResponse<com.okabe.dto.response.WorkspaceMemberResponse>> updateMemberRole(
+            @PathVariable Long id,
+            @PathVariable Long memberId,
+            @Valid @RequestBody com.okabe.dto.request.UpdateMemberRoleRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(workspaceService.updateMemberRole(id, memberId, request, currentUser), "Role updated successfully"));
+    }
+
+    @DeleteMapping("/{id}/members/{memberId}")
+    @Operation(summary = "Remove member from workspace (ADMIN/OWNER only)")
+    public ResponseEntity<ApiResponse<Void>> removeMemberFromWorkspace(
+            @PathVariable Long id,
+            @PathVariable Long memberId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        workspaceService.removeMemberFromWorkspace(id, memberId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Member removed successfully"));
+    }
 }

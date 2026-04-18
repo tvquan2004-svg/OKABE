@@ -115,6 +115,104 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         log.info("Workspace deleted: {} by user {}", workspace.getName(), currentUser.getEmail());
     }
 
+    // ─── Member Management ──────────────────────────────
+
+    @Override
+    public List<com.okabe.dto.response.WorkspaceMemberResponse> getWorkspaceMembers(Long workspaceId, UserPrincipal currentUser) {
+        validateMembership(workspaceId, currentUser.getId());
+        List<WorkspaceMember> members = memberRepository.findByWorkspaceId(workspaceId);
+        return members.stream()
+                .map(this::toMemberResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public com.okabe.dto.response.WorkspaceMemberResponse addMemberToWorkspace(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
+        validateAdminAccess(workspaceId, currentUser.getId());
+        
+        User userToAdd = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.email()));
+
+        if (memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userToAdd.getId())) {
+            throw new DuplicateResourceException("User is already a member of this workspace");
+        }
+
+        WorkspaceMember member = WorkspaceMember.builder()
+                .workspaceId(workspaceId)
+                .userId(userToAdd.getId())
+                .role(request.role() != null ? request.role() : Role.MEMBER)
+                .build();
+                
+        member = memberRepository.save(member);
+        
+        // Fetch user object to build full response
+        member.setUser(userToAdd);
+        
+        log.info("User {} added to workspace {} with role {}", request.email(), workspaceId, member.getRole());
+        return toMemberResponse(member);
+    }
+
+    @Override
+    @Transactional
+    public com.okabe.dto.response.WorkspaceMemberResponse updateMemberRole(Long workspaceId, Long memberId, com.okabe.dto.request.UpdateMemberRoleRequest request, UserPrincipal currentUser) {
+        validateAdminAccess(workspaceId, currentUser.getId());
+        
+        WorkspaceMember memberToUpdate = memberRepository.findByWorkspaceIdAndUserId(workspaceId, memberId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found in workspace"));
+
+        // If target is an OWNER, only another OWNER can change their role (or we can block changing OWNER role entirely, here we enforce only OWNER can change another OWNER)
+        if (memberToUpdate.getRole() == Role.OWNER) {
+            WorkspaceMember currentMember = memberRepository.findByWorkspaceIdAndUserId(workspaceId, currentUser.getId())
+                    .orElseThrow(() -> new UnauthorizedException("Not a member"));
+            if (currentMember.getRole() != Role.OWNER) {
+                throw new UnauthorizedException("Only OWNER can change another OWNER's role");
+            }
+        }
+        
+        memberToUpdate.setRole(request.role());
+        memberToUpdate = memberRepository.save(memberToUpdate);
+        
+        log.info("User {} role updated to {} in workspace {}", memberId, request.role(), workspaceId);
+        return toMemberResponse(memberToUpdate);
+    }
+
+    @Override
+    @Transactional
+    public void removeMemberFromWorkspace(Long workspaceId, Long memberId, UserPrincipal currentUser) {
+        validateAdminAccess(workspaceId, currentUser.getId());
+        
+        WorkspaceMember memberToRemove = memberRepository.findByWorkspaceIdAndUserId(workspaceId, memberId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found in workspace"));
+
+        // Cannot remove an OWNER unless you are an OWNER
+        if (memberToRemove.getRole() == Role.OWNER) {
+            WorkspaceMember currentMember = memberRepository.findByWorkspaceIdAndUserId(workspaceId, currentUser.getId())
+                    .orElseThrow(() -> new UnauthorizedException("Not a member"));
+            if (currentMember.getRole() != Role.OWNER) {
+                throw new UnauthorizedException("Only OWNER can remove another OWNER");
+            }
+        }
+        
+        memberRepository.delete(memberToRemove);
+        log.info("User {} removed from workspace {}", memberId, workspaceId);
+    }
+
+    private com.okabe.dto.response.WorkspaceMemberResponse toMemberResponse(WorkspaceMember member) {
+        User user = member.getUser();
+        if (user == null) {
+            user = userRepository.findById(member.getUserId()).orElse(new User());
+        }
+        return com.okabe.dto.response.WorkspaceMemberResponse.builder()
+                .userId(member.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .avatarUrl(user.getAvatarUrl())
+                .role(member.getRole().name())
+                .joinedAt(member.getJoinedAt())
+                .build();
+    }
+
     // ─── Helper Methods ─────────────────────────────────
 
     private Workspace findWorkspaceOrThrow(Long id) {

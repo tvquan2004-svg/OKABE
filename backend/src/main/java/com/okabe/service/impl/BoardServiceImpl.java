@@ -55,7 +55,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public BoardResponse createBoard(Long workspaceId, CreateBoardRequest request, UserPrincipal currentUser) {
-        validateWorkspaceMembership(workspaceId, currentUser.getId());
+        validateWorkspaceWriteAccess(workspaceId, currentUser.getId());
 
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace", workspaceId));
@@ -80,7 +80,7 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public BoardResponse updateBoard(Long boardId, UpdateBoardRequest request, UserPrincipal currentUser) {
         Board board = findBoardOrThrow(boardId);
-        validateWorkspaceAdmin(board.getWorkspace().getId(), currentUser.getId());
+        validateWorkspaceWriteAccess(board.getWorkspace().getId(), currentUser.getId());
 
         if (request.name() != null) board.setName(request.name());
         if (request.description() != null) board.setDescription(request.description());
@@ -95,7 +95,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public void reorderBoards(Long workspaceId, ReorderBoardRequest request, UserPrincipal currentUser) {
-        validateWorkspaceAdmin(workspaceId, currentUser.getId());
+        validateWorkspaceWriteAccess(workspaceId, currentUser.getId());
 
         List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedFalseOrderByPositionAscCreatedAtAsc(workspaceId);
         Map<Long, Board> boardById = boards.stream()
@@ -134,6 +134,14 @@ public class BoardServiceImpl implements BoardService {
     private void validateWorkspaceMembership(Long workspaceId, Long userId) {
         if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
             throw new UnauthorizedException("You are not a member of this workspace");
+        }
+    }
+
+    private void validateWorkspaceWriteAccess(Long workspaceId, Long userId) {
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+                workspaceId, userId, List.of(Role.OWNER, Role.ADMIN, Role.MEMBER));
+        if (!hasAccess) {
+            throw new UnauthorizedException("VIEWERs cannot perform this action");
         }
     }
 

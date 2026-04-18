@@ -11,10 +11,17 @@
 .header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--spacing-lg);
   padding: var(--spacing-lg) var(--spacing-xl);
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
+}
+
+.wsHeaderMain {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
 }
 
 .backBtn {
@@ -40,6 +47,12 @@
 .wsInfo p {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .main {

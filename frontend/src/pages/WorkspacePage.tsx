@@ -15,6 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useNavigate, useParams } from 'react-router-dom';
 import EntityModal from '../components/common/EntityModal';
+import MemberModal from '../components/workspace/MemberModal';
 import SortableBoardCard from '../components/workspace/SortableBoardCard';
 import {
   type Board,
@@ -46,6 +47,7 @@ function WorkspacePage() {
   const [orderedBoards, setOrderedBoards] = useState<Board[]>([]);
   const [isCreateBoardModalOpen, setIsCreateBoardModalOpen] = useState(false);
   const [isEditWorkspaceModalOpen, setIsEditWorkspaceModalOpen] = useState(false);
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState<Board | null>(null);
   const [boardName, setBoardName] = useState('');
   const [boardDescription, setBoardDescription] = useState('');
@@ -53,14 +55,18 @@ function WorkspacePage() {
   const [workspaceDescription, setWorkspaceDescription] = useState('');
 
   const workspace = workspaceData?.data;
-  const boards = boardsData?.data ?? [];
+  const boards = boardsData?.data;
   const canManageWorkspace =
     workspace?.currentUserRole === 'OWNER' || workspace?.currentUserRole === 'ADMIN';
+  const canEditBoards = 
+    canManageWorkspace || workspace?.currentUserRole === 'MEMBER';
 
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
   useEffect(() => {
-    setOrderedBoards(boards);
+    if (boards) {
+      setOrderedBoards(boards);
+    }
   }, [boards]);
 
   useEffect(() => {
@@ -142,7 +148,7 @@ function WorkspacePage() {
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    if (!canManageWorkspace || !event.over || event.active.id === event.over.id) {
+    if (!canEditBoards || !event.over || event.active.id === event.over.id) {
       return;
     }
 
@@ -162,32 +168,39 @@ function WorkspacePage() {
         orderedIds: nextBoards.map((board) => board.id),
       }).unwrap();
     } catch {
-      setOrderedBoards(boards);
+      setOrderedBoards(boards ?? []);
     }
   };
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate('/dashboard')}>
-          Back to dashboard
-        </button>
-        <div className={styles.wsInfo}>
-          <h1>{workspace?.name ?? 'Workspace'}</h1>
-          {workspace?.description ? <p>{workspace.description}</p> : null}
-        </div>
-        {canManageWorkspace ? (
-          <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
-            Edit workspace
+        <div className={styles.wsHeaderMain}>
+          <button className={styles.backBtn} onClick={() => navigate('/dashboard')}>
+            Back to dashboard
           </button>
-        ) : null}
+          <div className={styles.wsInfo}>
+            <h1>{workspace?.name ?? 'Workspace'}</h1>
+            {workspace?.description ? <p>{workspace.description}</p> : null}
+          </div>
+        </div>
+        <div className={styles.headerActions}>
+          <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
+            Members ({workspace?.memberCount ?? 0})
+          </button>
+          {canManageWorkspace ? (
+            <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
+              Edit workspace
+            </button>
+          ) : null}
+        </div>
       </header>
 
       <main className={styles.main}>
         <div className={styles.sectionHeader}>
           <div>
             <h2>Boards</h2>
-            {canManageWorkspace ? (
+            {canEditBoards ? (
               <p className={styles.muted}>Drag boards to reorder them.</p>
             ) : null}
           </div>
@@ -218,8 +231,8 @@ function WorkspacePage() {
                   <SortableBoardCard
                     key={board.id}
                     board={board}
-                    canManage={canManageWorkspace}
-                    canReorder={canManageWorkspace}
+                    canManage={canEditBoards}
+                    canReorder={canEditBoards}
                     onOpen={(boardId) => navigate(`/board/${boardId}`)}
                     onEdit={handleEditBoard}
                     onDelete={handleDeleteBoard}
@@ -278,6 +291,14 @@ function WorkspacePage() {
           isSubmitting={isUpdatingWorkspace}
         />
       ) : null}
+
+      {isMemberModalOpen && workspace && (
+        <MemberModal
+          workspaceId={id}
+          onClose={() => setIsMemberModalOpen(false)}
+          currentUserRole={workspace.currentUserRole}
+        />
+      )}
     </div>
   );
 }

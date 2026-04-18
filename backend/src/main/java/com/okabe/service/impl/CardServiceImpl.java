@@ -43,7 +43,7 @@ public class CardServiceImpl implements CardService {
     @Transactional
     public CardResponse createCard(Long listId, CreateCardRequest request, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateMembership(taskList, currentUser.getId());
+        validateWriteAccess(taskList, currentUser.getId());
 
         User creator = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId()));
@@ -83,7 +83,7 @@ public class CardServiceImpl implements CardService {
     @Transactional
     public CardResponse updateCard(Long cardId, UpdateCardRequest request, UserPrincipal currentUser) {
         Card card = findCardOrThrow(cardId);
-        validateMembership(card, currentUser.getId());
+        validateWriteAccess(card, currentUser.getId());
 
         if (request.title() != null) card.setTitle(request.title());
         if (request.description() != null) card.setDescription(request.description());
@@ -107,7 +107,7 @@ public class CardServiceImpl implements CardService {
     @Transactional
     public CardResponse moveCard(Long cardId, MoveCardRequest request, UserPrincipal currentUser) {
         Card card = findCardOrThrow(cardId);
-        validateMembership(card, currentUser.getId());
+        validateWriteAccess(card, currentUser.getId());
 
         TaskList targetList = findListOrThrow(request.targetListId());
 
@@ -145,7 +145,7 @@ public class CardServiceImpl implements CardService {
     @Transactional
     public void deleteCard(Long cardId, UserPrincipal currentUser) {
         Card card = findCardOrThrow(cardId);
-        validateMembership(card, currentUser.getId());
+        validateWriteAccess(card, currentUser.getId());
         cardRepository.delete(card);
         log.info("Card deleted: {}", cardId);
     }
@@ -173,6 +173,24 @@ public class CardServiceImpl implements CardService {
         Long workspaceId = taskList.getBoard().getWorkspace().getId();
         if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
             throw new UnauthorizedException("You are not a member of this workspace");
+        }
+    }
+
+    private void validateWriteAccess(Card card, Long userId) {
+        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+                workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
+        if (!hasAccess) {
+            throw new UnauthorizedException("VIEWERs cannot perform this action");
+        }
+    }
+
+    private void validateWriteAccess(TaskList taskList, Long userId) {
+        Long workspaceId = taskList.getBoard().getWorkspace().getId();
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+                workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
+        if (!hasAccess) {
+            throw new UnauthorizedException("VIEWERs cannot perform this action");
         }
     }
 

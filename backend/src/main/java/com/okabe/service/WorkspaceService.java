@@ -33,4 +33,10 @@ public interface WorkspaceService {
      * Delete a workspace. Only OWNER can delete.
      */
     void deleteWorkspace(Long workspaceId, UserPrincipal currentUser);
+
+    // Member Management
+    List<com.okabe.dto.response.WorkspaceMemberResponse> getWorkspaceMembers(Long workspaceId, UserPrincipal currentUser);
+    com.okabe.dto.response.WorkspaceMemberResponse addMemberToWorkspace(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser);
+    com.okabe.dto.response.WorkspaceMemberResponse updateMemberRole(Long workspaceId, Long memberId, com.okabe.dto.request.UpdateMemberRoleRequest request, UserPrincipal currentUser);
+    void removeMemberFromWorkspace(Long workspaceId, Long memberId, UserPrincipal currentUser);
 }
