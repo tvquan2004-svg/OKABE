@@ -95,6 +95,11 @@ function BoardListColumn({
                   ✅ {card.checklists.reduce((acc, c) => acc + c.items.filter(i => i.isCompleted).length, 0)}/{card.checklists.reduce((acc, c) => acc + c.items.length, 0)}
                 </span>
               ) : null}
+              {card.attachments?.length > 0 ? (
+                <span title="Attachments" style={{ fontSize: '0.8rem', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>
+                  📎 {card.attachments.length}
+                </span>
+              ) : null}
               
               <div style={{ display: 'flex', marginLeft: 'auto' }}>
                 {card.members?.slice(0, 3).map((member, i) => (

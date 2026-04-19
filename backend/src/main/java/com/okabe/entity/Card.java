@@ -74,4 +74,8 @@ public class Card extends BaseEntity {
     )
     @Builder.Default
     private Set<User> members = new HashSet<>();
+
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Attachment> attachments = new ArrayList<>();
 }

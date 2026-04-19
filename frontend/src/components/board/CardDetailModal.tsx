@@ -11,7 +11,21 @@ import {
   useGetBoardLabelsQuery,
   useAssignMemberMutation,
   useUnassignMemberMutation,
+  useUploadAttachmentMutation,
+  useDeleteAttachmentMutation,
 } from '../../services/boardApi';
+import {
+  MdAttachFile,
+  MdDelete,
+  MdCloudUpload,
+  MdInsertDriveFile,
+} from 'react-icons/md';
+import {
+  FaRegFilePdf,
+  FaRegFileWord,
+  FaRegFileImage,
+  FaRegFileArchive,
+} from 'react-icons/fa';
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
@@ -51,6 +65,8 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [removeLabelFromCard] = useRemoveLabelFromCardMutation();
   const [assignMember] = useAssignMemberMutation();
   const [unassignMember] = useUnassignMemberMutation();
+  const [uploadAttachment] = useUploadAttachmentMutation();
+  const [deleteAttachment] = useDeleteAttachmentMutation();
   
   const { data: labelsData } = useGetBoardLabelsQuery(boardId);
   const boardLabels = labelsData?.data || [];
@@ -113,6 +129,39 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   const handleUnassignMember = async (userId: number) => {
     await unassignMember({ cardId: card.id, userId, boardId }).unwrap();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        await uploadAttachment({ cardId: card.id, boardId, file }).unwrap();
+      } catch (err) {
+        alert('Failed to upload file');
+      }
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: number) => {
+    if (window.confirm('Are you sure you want to delete this attachment?')) {
+      await deleteAttachment({ attachmentId, boardId }).unwrap();
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.includes('image')) return <FaRegFileImage />;
+    if (mimeType.includes('pdf')) return <FaRegFilePdf />;
+    if (mimeType.includes('word') || mimeType.includes('officedocument.wordprocessingml')) return <FaRegFileWord />;
+    if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('archive')) return <FaRegFileArchive />;
+    return <MdInsertDriveFile />;
   };
 
   return (
@@ -241,6 +290,52 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 </div>
               );
             })}
+            {/* Attachments Section */}
+            <div className={styles.section} style={{ marginTop: '1rem' }}>
+              <h3 className={styles.sectionTitle}>
+                <MdAttachFile /> Attachments
+              </h3>
+              <div className={styles.attachmentsList}>
+                {card.attachments?.map((attachment) => (
+                  <div key={attachment.id} className={styles.attachmentItem}>
+                    <div className={styles.fileThumbnail}>
+                      {attachment.mimeType.includes('image') ? (
+                        <img src={attachment.url} alt={attachment.filename} className={styles.thumbnailImg} />
+                      ) : (
+                        <div style={{ fontSize: '1.5rem' }}>{getFileIcon(attachment.mimeType)}</div>
+                      )}
+                    </div>
+                    <div className={styles.fileInfo}>
+                      <a href={attachment.url} target="_blank" rel="noopener noreferrer" className={styles.fileName}>
+                        {attachment.filename}
+                      </a>
+                      <div className={styles.fileMeta}>
+                        {formatFileSize(attachment.fileSize)} • Added {new Date(attachment.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <button 
+                      className={styles.deleteFileBtn}
+                      onClick={() => handleDeleteAttachment(attachment.id)}
+                      title="Delete attachment"
+                    >
+                      <MdDelete size={18} />
+                    </button>
+                  </div>
+                ))}
+
+                <div className={styles.uploadZone}>
+                  <label className={styles.uploadLabel}>
+                    <MdCloudUpload size={20} />
+                    <span>Upload a file...</span>
+                    <input 
+                      type="file" 
+                      className={styles.fileInput} 
+                      onChange={handleFileUpload}
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
           </main>
 
           <aside className={styles.sidebar}>

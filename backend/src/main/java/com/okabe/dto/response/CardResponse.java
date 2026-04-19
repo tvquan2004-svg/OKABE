@@ -29,4 +29,5 @@ public class CardResponse {
     private List<LabelResponse> labels;
     private List<ChecklistResponse> checklists;
     private List<UserResponse> members;
+    private List<AttachmentResponse> attachments;
 }

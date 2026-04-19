@@ -30,6 +30,18 @@ export interface User {
   avatarUrl: string | null;
 }
 
+export interface Attachment {
+  id: number;
+  cardId: number;
+  uploadedById: number;
+  uploadedByUsername: string;
+  filename: string;
+  url: string;
+  fileSize: number;
+  mimeType: string;
+  createdAt: string;
+}
+
 export interface CardItem {
   id: number;
   listId: number;
@@ -45,6 +57,7 @@ export interface CardItem {
   labels: Label[];
   checklists: Checklist[];
   members: User[];
+  attachments: Attachment[];
 }
 
 export interface TaskList {
@@ -178,6 +191,24 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ cardId, userId }) => ({ url: `/cards/${cardId}/members/${userId}`, method: 'DELETE' }),
       invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
+
+    // Phase 2: Attachments
+    uploadAttachment: builder.mutation<ApiRes<Attachment>, { cardId: number; boardId: number; file: File }>({
+      query: ({ cardId, file }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return {
+          url: `/cards/${cardId}/attachments`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    deleteAttachment: builder.mutation<ApiRes<void>, { attachmentId: number; boardId: number }>({
+      query: ({ attachmentId }) => ({ url: `/attachments/${attachmentId}`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
   }),
 });
 
@@ -206,4 +237,6 @@ export const {
   useRemoveLabelFromCardMutation,
   useAssignMemberMutation,
   useUnassignMemberMutation,
+  useUploadAttachmentMutation,
+  useDeleteAttachmentMutation,
 } = boardApi;

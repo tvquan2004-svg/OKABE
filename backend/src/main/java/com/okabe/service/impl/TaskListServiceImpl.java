@@ -185,6 +185,19 @@ public class TaskListServiceImpl implements TaskListService {
                                 .avatarUrl(m.getAvatarUrl())
                                 .build())
                         .collect(Collectors.toList()))
+                .attachments(card.getAttachments().stream()
+                        .map(a -> AttachmentResponse.builder()
+                                .id(a.getId())
+                                .cardId(card.getId())
+                                .uploadedById(a.getUploadedBy().getId())
+                                .uploadedByUsername(a.getUploadedBy().getUsername())
+                                .filename(a.getFilename())
+                                .url(a.getStorageKey())
+                                .fileSize(a.getFileSize())
+                                .mimeType(a.getMimeType())
+                                .createdAt(a.getCreatedAt())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
     }
 }
