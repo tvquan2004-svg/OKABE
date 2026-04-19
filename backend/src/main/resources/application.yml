@@ -8,6 +8,13 @@ spring:
   profiles:
     default: dev
 
+  # Datasource Configuration
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/okabe_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:okabe}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   # JPA / Hibernate
   jpa:
     hibernate:
