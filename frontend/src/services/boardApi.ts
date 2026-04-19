@@ -1,5 +1,28 @@
 import { apiSlice } from './apiSlice';
 
+export interface Label {
+  id: number;
+  boardId: number;
+  name: string;
+  color: string;
+}
+
+export interface ChecklistItem {
+  id: number;
+  checklistId: number;
+  content: string;
+  isCompleted: boolean;
+  position: number;
+}
+
+export interface Checklist {
+  id: number;
+  cardId: number;
+  name: string;
+  position: number;
+  items: ChecklistItem[];
+}
+
 export interface CardItem {
   id: number;
   listId: number;
@@ -12,6 +35,8 @@ export interface CardItem {
   createdById: number;
   createdByName: string;
   createdAt: string;
+  labels: Label[];
+  checklists: Checklist[];
 }
 
 export interface TaskList {
@@ -103,6 +128,38 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ id }) => ({ url: `/cards/${id}`, method: 'DELETE' }),
       invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
+
+    // Phase 2: Checklists
+    createChecklist: builder.mutation<ApiRes<Checklist>, { cardId: number; boardId: number; name: string }>({
+      query: ({ cardId, name }) => ({ url: `/cards/${cardId}/checklists`, method: 'POST', body: { name } }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    createChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { checklistId: number; boardId: number; content: string }>({
+      query: ({ checklistId, content }) => ({ url: `/checklists/${checklistId}/items`, method: 'POST', body: { content } }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    updateChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { itemId: number; boardId: number; body: { content?: string; isCompleted?: boolean; position?: number } }>({
+      query: ({ itemId, body }) => ({ url: `/checklists/items/${itemId}`, method: 'PUT', body }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+
+    // Phase 2: Labels
+    createLabel: builder.mutation<ApiRes<Label>, { boardId: number; name?: string; color: string }>({
+      query: ({ boardId, ...body }) => ({ url: `/boards/${boardId}/labels`, method: 'POST', body }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    getBoardLabels: builder.query<ApiRes<Label[]>, number>({
+      query: (boardId) => `/boards/${boardId}/labels`,
+      providesTags: (_r, _e, boardId) => [{ type: 'Board', id: boardId }],
+    }),
+    addLabelToCard: builder.mutation<ApiRes<void>, { cardId: number; labelId: number; boardId: number }>({
+      query: ({ cardId, labelId }) => ({ url: `/cards/${cardId}/labels/${labelId}`, method: 'POST' }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    removeLabelFromCard: builder.mutation<ApiRes<void>, { cardId: number; labelId: number; boardId: number }>({
+      query: ({ cardId, labelId }) => ({ url: `/cards/${cardId}/labels/${labelId}`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
   }),
 });
 
@@ -121,4 +178,12 @@ export const {
   useUpdateCardMutation,
   useMoveCardMutation,
   useDeleteCardMutation,
+  // Phase 2
+  useCreateChecklistMutation,
+  useCreateChecklistItemMutation,
+  useUpdateChecklistItemMutation,
+  useCreateLabelMutation,
+  useGetBoardLabelsQuery,
+  useAddLabelToCardMutation,
+  useRemoveLabelFromCardMutation,
 } = boardApi;

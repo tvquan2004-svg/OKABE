@@ -1,9 +1,14 @@
 package com.okabe.dto.response;
 
-import lombok.*;
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,4 +24,8 @@ public class CardResponse {
     private Long createdById;
     private String createdByName;
     private LocalDateTime createdAt;
+    
+    // Phase 2 fields
+    private List<LabelResponse> labels;
+    private List<ChecklistResponse> checklists;
 }

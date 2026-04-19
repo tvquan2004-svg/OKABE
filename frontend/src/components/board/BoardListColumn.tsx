@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { TaskList } from '../../services/boardApi';
+import type { TaskList, CardItem } from '../../services/boardApi';
 import styles from '../../pages/BoardPage.module.css';
 
 interface BoardListColumnProps {
@@ -8,6 +8,7 @@ interface BoardListColumnProps {
   onDeleteList: (listId: number) => void;
   onDeleteCard: (cardId: number) => void;
   onAddCard: (listId: number, title: string) => Promise<void>;
+  onCardClick: (card: CardItem) => void;
   priorityColor: (priority: string) => string;
 }
 
@@ -17,6 +18,7 @@ function BoardListColumn({
   onDeleteList,
   onDeleteCard,
   onAddCard,
+  onCardClick,
   priorityColor,
 }: BoardListColumnProps) {
   const [isAddingCard, setIsAddingCard] = useState(false);
@@ -37,26 +39,36 @@ function BoardListColumn({
       <div className={styles.columnHeader}>
         <h3>{list.name}</h3>
         <span className={styles.cardCount}>{list.cards.length}</span>
-        <button
-          className={styles.secondaryActionBtn}
-          onClick={() => onEditList(list)}
-          title="Edit list"
-        >
-          Edit
-        </button>
-        <button
-          className={styles.deleteListBtn}
-          onClick={() => onDeleteList(list.id)}
-          title="Delete list"
-        >
-          x
-        </button>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button
+            className={styles.secondaryActionBtn}
+            onClick={() => onEditList(list)}
+            title="Edit list"
+          >
+            Edit
+          </button>
+          <button
+            className={styles.deleteListBtn}
+            onClick={() => onDeleteList(list.id)}
+            title="Delete list"
+          >
+            x
+          </button>
+        </div>
       </div>
 
       <div className={styles.cardList}>
         {list.cards.map((card) => (
-          <div key={card.id} className={styles.card}>
+          <div key={card.id} className={styles.card} onClick={() => onCardClick(card)}>
             <div className={styles.cardHeader}>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
+                {card.labels?.map(l => (
+                  <div 
+                    key={l.id} 
+                    style={{ width: '32px', height: '6px', background: l.color, borderRadius: '3px' }} 
+                  />
+                ))}
+              </div>
               <span
                 className={styles.priorityDot}
                 style={{ background: priorityColor(card.priority) }}
@@ -64,20 +76,31 @@ function BoardListColumn({
               />
               <button
                 className={styles.deleteCardBtn}
-                onClick={() => onDeleteCard(card.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteCard(card.id);
+                }}
               >
                 x
               </button>
             </div>
             <h4 className={styles.cardTitle}>{card.title}</h4>
-            {card.description ? (
-              <p className={styles.cardDesc}>{card.description}</p>
-            ) : null}
-            {card.dueDate ? (
-              <span className={styles.dueDate}>
-                {new Date(card.dueDate).toLocaleDateString()}
-              </span>
-            ) : null}
+            
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
+              {card.description ? (
+                <span title="This card has a description" style={{ fontSize: '0.8rem' }}>📝</span>
+              ) : null}
+              {card.checklists?.length > 0 ? (
+                <span title="Checklists" style={{ fontSize: '0.8rem', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>
+                  ✅ {card.checklists.reduce((acc, c) => acc + c.items.filter(i => i.isCompleted).length, 0)}/{card.checklists.reduce((acc, c) => acc + c.items.length, 0)}
+                </span>
+              ) : null}
+              {card.dueDate ? (
+                <span className={styles.dueDate} style={{ fontSize: '0.7rem', marginLeft: 'auto' }}>
+                  {new Date(card.dueDate).toLocaleDateString()}
+                </span>
+              ) : null}
+            </div>
           </div>
         ))}
 

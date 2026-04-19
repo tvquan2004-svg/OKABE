@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BoardListColumn from '../components/board/BoardListColumn';
 import EntityModal from '../components/common/EntityModal';
+import CardDetailModal from '../components/board/CardDetailModal';
 import {
   type TaskList,
+  type CardItem,
   useCreateCardMutation,
   useCreateListMutation,
   useDeleteCardMutation,
@@ -45,32 +47,26 @@ function BoardPage() {
   const [isEditBoardModalOpen, setIsEditBoardModalOpen] = useState(false);
   const [editingList, setEditingList] = useState<TaskList | null>(null);
   const [listName, setListName] = useState('');
+  
+  // Phase 2: Card Detail Modal State
+  const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
 
   const openBoardEditModal = () => {
-    if (!board) {
-      return;
-    }
-
+    if (!board) return;
     setBoardName(board.name);
     setBoardDescription(board.description ?? '');
     setIsEditBoardModalOpen(true);
   };
 
   const handleAddList = async () => {
-    if (!newListName.trim() || !board) {
-      return;
-    }
-
+    if (!newListName.trim() || !board) return;
     await createList({ boardId: id, name: newListName.trim() }).unwrap();
     setNewListName('');
     setShowAddList(false);
   };
 
   const handleSaveBoard = async () => {
-    if (!board || !boardName.trim()) {
-      return;
-    }
-
+    if (!board || !boardName.trim()) return;
     await updateBoard({
       id,
       body: {
@@ -87,10 +83,7 @@ function BoardPage() {
   };
 
   const handleSaveList = async () => {
-    if (!editingList || !listName.trim()) {
-      return;
-    }
-
+    if (!editingList || !listName.trim()) return;
     await updateList({
       id: editingList.id,
       boardId: id,
@@ -115,41 +108,32 @@ function BoardPage() {
 
   const priorityColor = (priority: string) => {
     switch (priority) {
-      case 'CRITICAL':
-        return '#ef4444';
-      case 'HIGH':
-        return '#f59e0b';
-      case 'MEDIUM':
-        return '#3b82f6';
-      case 'LOW':
-        return '#22c55e';
-      default:
-        return '#64748b';
+      case 'CRITICAL': return '#ef4444';
+      case 'HIGH': return '#f59e0b';
+      case 'MEDIUM': return '#3b82f6';
+      case 'LOW': return '#22c55e';
+      default: return '#64748b';
     }
   };
 
-  if (isLoading) {
-    return <div className={styles.loading}>Loading board...</div>;
-  }
+  if (isLoading) return <div className={styles.loading}>Loading board...</div>;
+  if (!board) return <div className={styles.loading}>Board not found</div>;
 
-  if (!board) {
-    return <div className={styles.loading}>Board not found</div>;
-  }
+  // Update selectedCard if board data changes (to keep modal in sync)
+  const currentCard = selectedCard 
+    ? lists.flatMap(l => l.cards).find(c => c.id === selectedCard.id) 
+    : null;
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate(-1)}>
-          Back
-        </button>
+        <button className={styles.backBtn} onClick={() => navigate(-1)}>Back</button>
         <div className={styles.boardMeta}>
           <h1 className={styles.boardName}>{board.name}</h1>
           {board.description ? <span className={styles.boardDesc}>{board.description}</span> : null}
         </div>
         {canManageBoard ? (
-          <button className="btn btn-outline" onClick={openBoardEditModal}>
-            Edit board
-          </button>
+          <button className="btn btn-outline" onClick={openBoardEditModal}>Edit board</button>
         ) : null}
       </header>
 
@@ -162,6 +146,7 @@ function BoardPage() {
             onDeleteList={(listId) => void handleDeleteList(listId)}
             onDeleteCard={(cardId) => void handleDeleteCard(cardId)}
             onAddCard={handleAddCard}
+            onCardClick={setSelectedCard}
             priorityColor={priorityColor}
           />
         ))}
@@ -172,29 +157,19 @@ function BoardPage() {
               <input
                 type="text"
                 value={newListName}
-                onChange={(event) => setNewListName(event.target.value)}
+                onChange={(e) => setNewListName(e.target.value)}
                 placeholder="Enter list name..."
                 className={styles.addListInput}
                 autoFocus
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    void handleAddList();
-                  }
-                }}
+                onKeyDown={(e) => e.key === 'Enter' && void handleAddList()}
               />
               <div className={styles.addCardActions}>
-                <button className="btn btn-primary" onClick={() => void handleAddList()}>
-                  Add
-                </button>
-                <button className="btn btn-outline" onClick={() => setShowAddList(false)}>
-                  Cancel
-                </button>
+                <button className="btn btn-primary" onClick={() => void handleAddList()}>Add</button>
+                <button className="btn btn-outline" onClick={() => setShowAddList(false)}>Cancel</button>
               </div>
             </div>
           ) : (
-            <button className={styles.addListBtn} onClick={() => setShowAddList(true)}>
-              + Add another list
-            </button>
+            <button className={styles.addListBtn} onClick={() => setShowAddList(true)}>+ Add another list</button>
           )}
         </div>
       </div>
@@ -227,6 +202,15 @@ function BoardPage() {
           submitLabel="Save changes"
           isSubmitting={isUpdatingList}
           showDescription={false}
+        />
+      ) : null}
+
+      {selectedCard && currentCard ? (
+        <CardDetailModal
+          card={currentCard}
+          boardId={id}
+          onClose={() => setSelectedCard(null)}
+          priorityColor={priorityColor}
         />
       ) : null}
     </div>
