@@ -10,6 +10,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+
     steps:
     - uses: actions/checkout@v4
     
@@ -20,10 +26,10 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
-    - name: Build with Maven
+    - name: Test & Build with Maven
       run: |
         cd backend
-        mvn -B package --file pom.xml -DskipTests
+        mvn -B package --file pom.xml
 
     - name: Build Docker Image
       run: |
