@@ -3,8 +3,7 @@ package com.okabe.service.impl;
 import com.okabe.dto.request.CreateListRequest;
 import com.okabe.dto.request.ReorderListRequest;
 import com.okabe.dto.request.UpdateListRequest;
-import com.okabe.dto.response.CardResponse;
-import com.okabe.dto.response.ListResponse;
+import com.okabe.dto.response.*;
 import com.okabe.entity.Board;
 import com.okabe.entity.Card;
 import com.okabe.entity.TaskList;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -136,6 +136,33 @@ public class TaskListServiceImpl implements TaskListService {
     }
 
     private CardResponse toCardResponse(Card card) {
+        List<LabelResponse> labelResponses = card.getLabels().stream()
+                .map(l -> LabelResponse.builder()
+                        .id(l.getId())
+                        .boardId(l.getBoard().getId())
+                        .name(l.getName())
+                        .color(l.getColor())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<ChecklistResponse> checklistResponses = card.getChecklists().stream()
+                .map(c -> ChecklistResponse.builder()
+                        .id(c.getId())
+                        .cardId(card.getId())
+                        .name(c.getName())
+                        .position(c.getPosition())
+                        .items(c.getItems().stream()
+                                .map(i -> ChecklistItemResponse.builder()
+                                        .id(i.getId())
+                                        .checklistId(c.getId())
+                                        .content(i.getContent())
+                                        .isCompleted(i.getIsCompleted())
+                                        .position(i.getPosition())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
         return CardResponse.builder()
                 .id(card.getId())
                 .listId(card.getTaskList().getId())
@@ -148,6 +175,8 @@ public class TaskListServiceImpl implements TaskListService {
                 .createdById(card.getCreatedBy().getId())
                 .createdByName(card.getCreatedBy().getUsername())
                 .createdAt(card.getCreatedAt())
+                .labels(labelResponses)
+                .checklists(checklistResponses)
                 .build();
     }
 }

@@ -1,10 +1,7 @@
 package com.okabe.controller;
 
-import com.okabe.dto.request.CreateCardRequest;
-import com.okabe.dto.request.MoveCardRequest;
-import com.okabe.dto.request.UpdateCardRequest;
-import com.okabe.dto.response.ApiResponse;
-import com.okabe.dto.response.CardResponse;
+import com.okabe.dto.request.*;
+import com.okabe.dto.response.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -69,5 +68,76 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         cardService.deleteCard(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Card deleted"));
+    }
+
+    // ─── Checklist Endpoints ───────────────────────────
+
+    @PostMapping("/api/v1/cards/{cardId}/checklists")
+    @Operation(summary = "Create a checklist for a card")
+    public ResponseEntity<ApiResponse<ChecklistResponse>> createChecklist(
+            @PathVariable Long cardId,
+            @Valid @RequestBody CreateChecklistRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(cardService.createChecklist(cardId, request, currentUser)));
+    }
+
+    @PostMapping("/api/v1/checklists/{checklistId}/items")
+    @Operation(summary = "Add an item to a checklist")
+    public ResponseEntity<ApiResponse<ChecklistItemResponse>> createChecklistItem(
+            @PathVariable Long checklistId,
+            @Valid @RequestBody CreateChecklistItemRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(cardService.createChecklistItem(checklistId, request, currentUser)));
+    }
+
+    @PutMapping("/api/v1/checklists/items/{itemId}")
+    @Operation(summary = "Update a checklist item")
+    public ResponseEntity<ApiResponse<ChecklistItemResponse>> updateChecklistItem(
+            @PathVariable Long itemId,
+            @Valid @RequestBody UpdateChecklistItemRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(cardService.updateChecklistItem(itemId, request, currentUser)));
+    }
+
+    // ─── Label Endpoints ───────────────────────────────
+
+    @PostMapping("/api/v1/boards/{boardId}/labels")
+    @Operation(summary = "Create a new label for a board")
+    public ResponseEntity<ApiResponse<LabelResponse>> createLabel(
+            @PathVariable Long boardId,
+            @Valid @RequestBody CreateLabelRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(cardService.createLabel(boardId, request, currentUser)));
+    }
+
+    @GetMapping("/api/v1/boards/{boardId}/labels")
+    @Operation(summary = "Get all labels in a board")
+    public ResponseEntity<ApiResponse<List<LabelResponse>>> getBoardLabels(
+            @PathVariable Long boardId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(cardService.getBoardLabels(boardId, currentUser)));
+    }
+
+    @PostMapping("/api/v1/cards/{cardId}/labels/{labelId}")
+    @Operation(summary = "Add a label to a card")
+    public ResponseEntity<ApiResponse<Void>> addLabelToCard(
+            @PathVariable Long cardId,
+            @PathVariable Long labelId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.addLabelToCard(cardId, labelId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Label added to card"));
+    }
+
+    @DeleteMapping("/api/v1/cards/{cardId}/labels/{labelId}")
+    @Operation(summary = "Remove a label from a card")
+    public ResponseEntity<ApiResponse<Void>> removeLabelFromCard(
+            @PathVariable Long cardId,
+            @PathVariable Long labelId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.removeLabelFromCard(cardId, labelId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Label removed from card"));
     }
 }

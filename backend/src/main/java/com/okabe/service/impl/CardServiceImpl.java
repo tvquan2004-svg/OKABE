@@ -1,12 +1,8 @@
 package com.okabe.service.impl;
 
-import com.okabe.dto.request.CreateCardRequest;
-import com.okabe.dto.request.MoveCardRequest;
-import com.okabe.dto.request.UpdateCardRequest;
-import com.okabe.dto.response.CardResponse;
-import com.okabe.entity.Card;
-import com.okabe.entity.TaskList;
-import com.okabe.entity.User;
+import com.okabe.dto.request.*;
+import com.okabe.dto.response.*;
+import com.okabe.entity.*;
 import com.okabe.entity.enums.Priority;
 import com.okabe.exception.ResourceNotFoundException;
 import com.okabe.exception.UnauthorizedException;
@@ -19,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,6 +29,10 @@ public class CardServiceImpl implements CardService {
     private final TaskListRepository taskListRepository;
     private final UserRepository userRepository;
     private final WorkspaceMemberRepository memberRepository;
+    private final ChecklistRepository checklistRepository;
+    private final ChecklistItemRepository checklistItemRepository;
+    private final LabelRepository labelRepository;
+    private final BoardRepository boardRepository;
 
     @Override
     public CardResponse getCard(Long cardId, UserPrincipal currentUser) {
@@ -54,9 +56,7 @@ public class CardServiceImpl implements CardService {
         if (request.priority() != null) {
             try {
                 priority = Priority.valueOf(request.priority().toUpperCase());
-            } catch (IllegalArgumentException ignored) {
-                // Keep default MEDIUM
-            }
+            } catch (IllegalArgumentException ignored) {}
         }
 
         LocalDateTime dueDate = null;
@@ -91,9 +91,7 @@ public class CardServiceImpl implements CardService {
         if (request.priority() != null) {
             try {
                 card.setPriority(Priority.valueOf(request.priority().toUpperCase()));
-            } catch (IllegalArgumentException ignored) {
-                // Keep current
-            }
+            } catch (IllegalArgumentException ignored) {}
         }
         if (request.dueDate() != null) {
             card.setDueDate(request.dueDate().isBlank() ? null : LocalDateTime.parse(request.dueDate()));
@@ -111,7 +109,6 @@ public class CardServiceImpl implements CardService {
 
         TaskList targetList = findListOrThrow(request.targetListId());
 
-        // Update positions in source list (shift cards up)
         List<Card> sourceCards = cardRepository
                 .findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(card.getTaskList().getId());
         sourceCards.remove(card);
@@ -120,7 +117,6 @@ public class CardServiceImpl implements CardService {
         }
         cardRepository.saveAll(sourceCards);
 
-        // Insert into target list at new position
         List<Card> targetCards = cardRepository
                 .findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(targetList.getId());
         int newPos = Math.min(request.newPosition(), targetCards.size());
@@ -128,7 +124,6 @@ public class CardServiceImpl implements CardService {
         card.setTaskList(targetList);
         card.setPosition(newPos);
 
-        // Shift existing cards in target list
         for (Card tc : targetCards) {
             if (tc.getPosition() >= newPos) {
                 tc.setPosition(tc.getPosition() + 1);
@@ -150,6 +145,150 @@ public class CardServiceImpl implements CardService {
         log.info("Card deleted: {}", cardId);
     }
 
+    // ─── Checklist Management ──────────────────────────
+
+    @Override
+    @Transactional
+    public ChecklistResponse createChecklist(Long cardId, CreateChecklistRequest request, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateWriteAccess(card, currentUser.getId());
+
+        int nextPosition = card.getChecklists().size();
+        Checklist checklist = Checklist.builder()
+                .card(card)
+                .name(request.name())
+                .position(nextPosition)
+                .build();
+        
+        checklist = checklistRepository.save(checklist);
+        
+        return ChecklistResponse.builder()
+                .id(checklist.getId())
+                .cardId(card.getId())
+                .name(checklist.getName())
+                .position(checklist.getPosition())
+                .items(Collections.emptyList())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public ChecklistItemResponse createChecklistItem(Long checklistId, CreateChecklistItemRequest request, UserPrincipal currentUser) {
+        Checklist checklist = checklistRepository.findById(checklistId)
+                .orElseThrow(() -> new ResourceNotFoundException("Checklist", checklistId));
+        validateWriteAccess(checklist.getCard(), currentUser.getId());
+
+        int nextPosition = checklist.getItems().size();
+        ChecklistItem item = ChecklistItem.builder()
+                .checklist(checklist)
+                .content(request.content())
+                .position(nextPosition)
+                .build();
+        
+        item = checklistItemRepository.save(item);
+        
+        return ChecklistItemResponse.builder()
+                .id(item.getId())
+                .checklistId(checklist.getId())
+                .content(item.getContent())
+                .isCompleted(item.getIsCompleted())
+                .position(item.getPosition())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public ChecklistItemResponse updateChecklistItem(Long itemId, UpdateChecklistItemRequest request, UserPrincipal currentUser) {
+        ChecklistItem item = checklistItemRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("ChecklistItem", itemId));
+        validateWriteAccess(item.getChecklist().getCard(), currentUser.getId());
+
+        if (request.content() != null) item.setContent(request.content());
+        if (request.isCompleted() != null) item.setIsCompleted(request.isCompleted());
+        if (request.position() != null) item.setPosition(request.position());
+
+        item = checklistItemRepository.save(item);
+
+        return ChecklistItemResponse.builder()
+                .id(item.getId())
+                .checklistId(item.getChecklist().getId())
+                .content(item.getContent())
+                .isCompleted(item.getIsCompleted())
+                .position(item.getPosition())
+                .build();
+    }
+
+    // ─── Label Management ───────────────────────────────
+
+    @Override
+    @Transactional
+    public LabelResponse createLabel(Long boardId, CreateLabelRequest request, UserPrincipal currentUser) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board", boardId));
+        validateWriteAccess(board.getWorkspace().getId(), currentUser.getId());
+
+        Label label = Label.builder()
+                .board(board)
+                .name(request.name())
+                .color(request.color())
+                .build();
+        
+        label = labelRepository.save(label);
+
+        return LabelResponse.builder()
+                .id(label.getId())
+                .boardId(board.getId())
+                .name(label.getName())
+                .color(label.getColor())
+                .build();
+    }
+
+    @Override
+    public List<LabelResponse> getBoardLabels(Long boardId, UserPrincipal currentUser) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board", boardId));
+        validateMembership(board.getWorkspace().getId(), currentUser.getId());
+
+        return labelRepository.findByBoardId(boardId).stream()
+                .map(l -> LabelResponse.builder()
+                        .id(l.getId())
+                        .boardId(boardId)
+                        .name(l.getName())
+                        .color(l.getColor())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void addLabelToCard(Long cardId, Long labelId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateWriteAccess(card, currentUser.getId());
+
+        Label label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Label", labelId));
+
+        if (!label.getBoard().getId().equals(card.getTaskList().getBoard().getId())) {
+            throw new UnauthorizedException("Label does not belong to this board");
+        }
+
+        card.getLabels().add(label);
+        cardRepository.save(card);
+    }
+
+    @Override
+    @Transactional
+    public void removeLabelFromCard(Long cardId, Long labelId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateWriteAccess(card, currentUser.getId());
+
+        Label label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Label", labelId));
+
+        card.getLabels().remove(label);
+        cardRepository.save(card);
+    }
+
     // ─── Helpers ────────────────────────────────────────
 
     private Card findCardOrThrow(Long id) {
@@ -163,30 +302,24 @@ public class CardServiceImpl implements CardService {
     }
 
     private void validateMembership(Card card, Long userId) {
-        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
-        if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
-            throw new UnauthorizedException("You are not a member of this workspace");
-        }
+        validateMembership(card.getTaskList().getBoard().getWorkspace().getId(), userId);
     }
 
-    private void validateMembership(TaskList taskList, Long userId) {
-        Long workspaceId = taskList.getBoard().getWorkspace().getId();
+    private void validateMembership(Long workspaceId, Long userId) {
         if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
             throw new UnauthorizedException("You are not a member of this workspace");
         }
     }
 
     private void validateWriteAccess(Card card, Long userId) {
-        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
-        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
-                workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
-        if (!hasAccess) {
-            throw new UnauthorizedException("VIEWERs cannot perform this action");
-        }
+        validateWriteAccess(card.getTaskList().getBoard().getWorkspace().getId(), userId);
     }
 
     private void validateWriteAccess(TaskList taskList, Long userId) {
-        Long workspaceId = taskList.getBoard().getWorkspace().getId();
+        validateWriteAccess(taskList.getBoard().getWorkspace().getId(), userId);
+    }
+
+    private void validateWriteAccess(Long workspaceId, Long userId) {
         boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
                 workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
         if (!hasAccess) {
@@ -195,6 +328,33 @@ public class CardServiceImpl implements CardService {
     }
 
     private CardResponse toCardResponse(Card card) {
+        List<LabelResponse> labelResponses = card.getLabels().stream()
+                .map(l -> LabelResponse.builder()
+                        .id(l.getId())
+                        .boardId(l.getBoard().getId())
+                        .name(l.getName())
+                        .color(l.getColor())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<ChecklistResponse> checklistResponses = card.getChecklists().stream()
+                .map(c -> ChecklistResponse.builder()
+                        .id(c.getId())
+                        .cardId(card.getId())
+                        .name(c.getName())
+                        .position(c.getPosition())
+                        .items(c.getItems().stream()
+                                .map(i -> ChecklistItemResponse.builder()
+                                        .id(i.getId())
+                                        .checklistId(c.getId())
+                                        .content(i.getContent())
+                                        .isCompleted(i.getIsCompleted())
+                                        .position(i.getPosition())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
         return CardResponse.builder()
                 .id(card.getId())
                 .listId(card.getTaskList().getId())
@@ -207,6 +367,8 @@ public class CardServiceImpl implements CardService {
                 .createdById(card.getCreatedBy().getId())
                 .createdByName(card.getCreatedBy().getUsername())
                 .createdAt(card.getCreatedAt())
+                .labels(labelResponses)
+                .checklists(checklistResponses)
                 .build();
     }
 }

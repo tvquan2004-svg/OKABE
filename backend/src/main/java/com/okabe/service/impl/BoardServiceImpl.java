@@ -3,9 +3,7 @@ package com.okabe.service.impl;
 import com.okabe.dto.request.CreateBoardRequest;
 import com.okabe.dto.request.ReorderBoardRequest;
 import com.okabe.dto.request.UpdateBoardRequest;
-import com.okabe.dto.response.BoardResponse;
-import com.okabe.dto.response.CardResponse;
-import com.okabe.dto.response.ListResponse;
+import com.okabe.dto.response.*;
 import com.okabe.entity.Board;
 import com.okabe.entity.Card;
 import com.okabe.entity.TaskList;
@@ -202,6 +200,33 @@ public class BoardServiceImpl implements BoardService {
     }
 
     private CardResponse toCardResponse(Card card) {
+        List<LabelResponse> labelResponses = card.getLabels().stream()
+                .map(l -> LabelResponse.builder()
+                        .id(l.getId())
+                        .boardId(l.getBoard().getId())
+                        .name(l.getName())
+                        .color(l.getColor())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<ChecklistResponse> checklistResponses = card.getChecklists().stream()
+                .map(c -> ChecklistResponse.builder()
+                        .id(c.getId())
+                        .cardId(card.getId())
+                        .name(c.getName())
+                        .position(c.getPosition())
+                        .items(c.getItems().stream()
+                                .map(i -> ChecklistItemResponse.builder()
+                                        .id(i.getId())
+                                        .checklistId(c.getId())
+                                        .content(i.getContent())
+                                        .isCompleted(i.getIsCompleted())
+                                        .position(i.getPosition())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
         return CardResponse.builder()
                 .id(card.getId())
                 .listId(card.getTaskList().getId())
@@ -214,6 +239,8 @@ public class BoardServiceImpl implements BoardService {
                 .createdById(card.getCreatedBy().getId())
                 .createdByName(card.getCreatedBy().getUsername())
                 .createdAt(card.getCreatedAt())
+                .labels(labelResponses)
+                .checklists(checklistResponses)
                 .build();
     }
 }
