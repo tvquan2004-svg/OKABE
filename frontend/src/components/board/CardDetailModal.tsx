@@ -15,10 +15,6 @@ import {
   useDeleteAttachmentMutation,
 } from '../../services/boardApi';
 import {
-  MdDescription,
-  MdChecklist,
-  MdLabel,
-  MdPerson,
   MdAttachFile,
   MdDelete,
   MdCloudUpload,
