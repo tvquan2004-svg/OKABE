@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
 
-    @Query("SELECT w FROM Workspace w WHERE EXISTS (SELECT 1 FROM WorkspaceMember wm WHERE wm.workspaceId = w.id AND wm.userId = :userId) ORDER BY w.createdAt DESC")
+    @Query("SELECT w FROM Workspace w JOIN FETCH w.owner WHERE EXISTS (SELECT 1 FROM WorkspaceMember wm WHERE wm.workspaceId = w.id AND wm.userId = :userId) ORDER BY w.createdAt DESC")
     List<Workspace> findAllByMemberUserId(@Param("userId") Long userId);
 
     Optional<Workspace> findBySlug(String slug);

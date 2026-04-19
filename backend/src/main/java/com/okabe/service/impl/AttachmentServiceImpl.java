@@ -12,6 +12,7 @@ import com.okabe.repository.CardRepository;
 import com.okabe.repository.UserRepository;
 import com.okabe.repository.WorkspaceMemberRepository;
 import com.okabe.security.UserPrincipal;
+import com.okabe.service.ActivityService;
 import com.okabe.service.AttachmentService;
 import com.okabe.service.StorageService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final UserRepository userRepository;
     private final WorkspaceMemberRepository memberRepository;
     private final StorageService storageService;
+    private final ActivityService activityService;
 
     @Override
     @Transactional
@@ -58,6 +60,8 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .build();
 
         attachment = attachmentRepository.save(attachment);
+        
+        activityService.logActivity(card, uploader, "ADD_ATTACHMENT", "attached " + attachment.getFilename() + " to this card");
         log.info("Attachment uploaded: {} for card {}", attachment.getFilename(), cardId);
 
         return toResponse(attachment);
@@ -90,6 +94,10 @@ public class AttachmentServiceImpl implements AttachmentService {
         }
 
         storageService.delete(attachment.getStorageKey());
+        
+        User actor = userRepository.findById(currentUser.getId()).orElse(null);
+        activityService.logActivity(attachment.getCard(), actor, "DELETE_ATTACHMENT", "deleted attachment " + attachment.getFilename());
+        
         attachmentRepository.delete(attachment);
         log.info("Attachment deleted: {}", attachmentId);
     }

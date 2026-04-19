@@ -60,6 +60,16 @@ export interface CardItem {
   attachments: Attachment[];
 }
 
+export interface Activity {
+  id: number;
+  userId: number;
+  username: string;
+  avatarUrl: string | null;
+  actionType: string;
+  description: string | null;
+  createdAt: string;
+}
+
 export interface TaskList {
   id: number;
   boardId: number;
@@ -139,11 +149,11 @@ export const boardApi = apiSlice.injectEndpoints({
     }),
     updateCard: builder.mutation<ApiRes<CardItem>, { id: number; boardId: number; body: Partial<CardItem> }>({
       query: ({ id, body }) => ({ url: `/cards/${id}`, method: 'PUT', body }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, id }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id }],
     }),
     moveCard: builder.mutation<ApiRes<CardItem>, { id: number; boardId: number; targetListId: number; newPosition: number }>({
       query: ({ id, boardId: _, ...body }) => ({ url: `/cards/${id}/move`, method: 'PUT', body }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, id }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id }],
     }),
     deleteCard: builder.mutation<ApiRes<void>, { id: number; boardId: number }>({
       query: ({ id }) => ({ url: `/cards/${id}`, method: 'DELETE' }),
@@ -153,15 +163,15 @@ export const boardApi = apiSlice.injectEndpoints({
     // Phase 2: Checklists
     createChecklist: builder.mutation<ApiRes<Checklist>, { cardId: number; boardId: number; name: string }>({
       query: ({ cardId, name }) => ({ url: `/cards/${cardId}/checklists`, method: 'POST', body: { name } }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
-    createChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { checklistId: number; boardId: number; content: string }>({
+    createChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { checklistId: number; boardId: number; cardId: number; content: string }>({
       query: ({ checklistId, content }) => ({ url: `/checklists/${checklistId}/items`, method: 'POST', body: { content } }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
-    updateChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { itemId: number; boardId: number; body: { content?: string; isCompleted?: boolean; position?: number } }>({
+    updateChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { itemId: number; boardId: number; cardId: number; body: { content?: string; isCompleted?: boolean; position?: number } }>({
       query: ({ itemId, body }) => ({ url: `/checklists/items/${itemId}`, method: 'PUT', body }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
 
     // Phase 2: Labels
@@ -185,13 +195,12 @@ export const boardApi = apiSlice.injectEndpoints({
     // Phase 2: Member Assignment
     assignMember: builder.mutation<ApiRes<void>, { cardId: number; userId: number; boardId: number }>({
       query: ({ cardId, userId }) => ({ url: `/cards/${cardId}/members`, method: 'POST', body: { userId } }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
     unassignMember: builder.mutation<ApiRes<void>, { cardId: number; userId: number; boardId: number }>({
       query: ({ cardId, userId }) => ({ url: `/cards/${cardId}/members/${userId}`, method: 'DELETE' }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
-
     // Phase 2: Attachments
     uploadAttachment: builder.mutation<ApiRes<Attachment>, { cardId: number; boardId: number; file: File }>({
       query: ({ cardId, file }) => {
@@ -203,11 +212,16 @@ export const boardApi = apiSlice.injectEndpoints({
           body: formData,
         };
       },
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
-    deleteAttachment: builder.mutation<ApiRes<void>, { attachmentId: number; boardId: number }>({
+    deleteAttachment: builder.mutation<ApiRes<void>, { attachmentId: number; boardId: number; cardId: number }>({
       query: ({ attachmentId }) => ({ url: `/attachments/${attachmentId}`, method: 'DELETE' }),
-      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
+    }),
+    // Phase 2: Activity
+    getCardActivities: builder.query<ApiRes<Activity[]>, number>({
+      query: (cardId) => `/cards/${cardId}/activities`,
+      providesTags: (_r, _e, cardId) => [{ type: 'Activity', id: cardId }],
     }),
   }),
 });
@@ -239,4 +253,5 @@ export const {
   useUnassignMemberMutation,
   useUploadAttachmentMutation,
   useDeleteAttachmentMutation,
+  useGetCardActivitiesQuery,
 } = boardApi;

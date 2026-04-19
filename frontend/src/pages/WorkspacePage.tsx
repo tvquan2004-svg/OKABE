@@ -58,7 +58,7 @@ function WorkspacePage() {
   const boards = boardsData?.data;
   const canManageWorkspace =
     workspace?.currentUserRole === 'OWNER' || workspace?.currentUserRole === 'ADMIN';
-  const canEditBoards = 
+  const canEditBoards =
     canManageWorkspace || workspace?.currentUserRole === 'MEMBER';
 
   const sensors = useSensors(
@@ -137,14 +137,18 @@ function WorkspacePage() {
       return;
     }
 
-    await updateWorkspace({
-      id,
-      body: {
-        name: workspaceName.trim(),
-        description: workspaceDescription.trim() || undefined,
-      },
-    }).unwrap();
-    setIsEditWorkspaceModalOpen(false);
+    try {
+      await updateWorkspace({
+        id,
+        body: {
+          name: workspaceName.trim(),
+          description: workspaceDescription.trim() || undefined,
+        },
+      }).unwrap();
+      setIsEditWorkspaceModalOpen(false);
+    } catch (err: any) {
+      alert(err.data?.message || 'Failed to update workspace');
+    }
   };
 
   const handleDeleteBoard = async (boardId: number, event: MouseEvent<HTMLButtonElement>) => {

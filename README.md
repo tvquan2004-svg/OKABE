@@ -4,12 +4,12 @@ Trello / Notion-style task management app built with Spring Boot, React, MySQL, 
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| Backend | Java 21, Spring Boot 3.4, Spring Security, JWT |
-| Frontend | React, TypeScript, Vite, Redux Toolkit |
-| Database | MySQL 8, Redis 7 |
-| Infra | Docker, Docker Compose, Nginx |
+| Layer    | Technology                                     |
+| -------- | ---------------------------------------------- |
+| Backend  | Java 21, Spring Boot 3.4, Spring Security, JWT |
+| Frontend | React, TypeScript, Vite, Redux Toolkit         |
+| Database | MySQL 8, Redis 7                               |
+| Infra    | Docker, Docker Compose, Nginx                  |
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ Make sure these tools are installed:
 1. Start MySQL and Redis:
 
 ```bash
-docker compose up mysql redis -d
+admin_findme@test.comdocker compose up mysql redis -d
 docker compose ps
 ```
 

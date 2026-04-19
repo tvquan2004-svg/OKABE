@@ -493,6 +493,66 @@
   color: #ef4444;
 }
 
+/* Activity Section */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.activityItem {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.activityAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.activityAvatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.activityContent {
+  flex: 1;
+}
+
+.activityHeader {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.activityUser {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.activityAction {
+  color: #64748b;
+  margin-left: 0.25rem;
+}
+
+.activityTime {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
 .uploadZone {
   display: flex;
   flex-direction: column;
