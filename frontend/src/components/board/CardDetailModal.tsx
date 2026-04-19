@@ -13,12 +13,14 @@ import {
   useUnassignMemberMutation,
   useUploadAttachmentMutation,
   useDeleteAttachmentMutation,
+  useGetCardActivitiesQuery,
 } from '../../services/boardApi';
 import {
   MdAttachFile,
   MdDelete,
   MdCloudUpload,
   MdInsertDriveFile,
+  MdList,
 } from 'react-icons/md';
 import {
   FaRegFilePdf,
@@ -67,6 +69,8 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [unassignMember] = useUnassignMemberMutation();
   const [uploadAttachment] = useUploadAttachmentMutation();
   const [deleteAttachment] = useDeleteAttachmentMutation();
+  const { data: activitiesRes } = useGetCardActivitiesQuery(card.id);
+  const activities = activitiesRes?.data || [];
   
   const { data: labelsData } = useGetBoardLabelsQuery(boardId);
   const boardLabels = labelsData?.data || [];
@@ -93,13 +97,13 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const handleAddItem = async (checklistId: number) => {
     const content = newItemContent[checklistId];
     if (content?.trim()) {
-      await createChecklistItem({ checklistId, boardId, content: content.trim() }).unwrap();
+      await createChecklistItem({ checklistId, boardId, cardId: card.id, content: content.trim() }).unwrap();
       setNewItemContent({ ...newItemContent, [checklistId]: '' });
     }
   };
 
   const handleToggleItem = async (itemId: number, isCompleted: boolean) => {
-    await updateChecklistItem({ itemId, boardId, body: { isCompleted } }).unwrap();
+    await updateChecklistItem({ itemId, boardId, cardId: card.id, body: { isCompleted } }).unwrap();
   };
 
   const handleAddLabel = async (labelId: number) => {
@@ -144,7 +148,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   const handleDeleteAttachment = async (attachmentId: number) => {
     if (window.confirm('Are you sure you want to delete this attachment?')) {
-      await deleteAttachment({ attachmentId, boardId }).unwrap();
+      await deleteAttachment({ attachmentId, boardId, cardId: card.id }).unwrap();
     }
   };
 
@@ -334,6 +338,36 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                     />
                   </label>
                 </div>
+              </div>
+            </div>
+            {/* Activity Section */}
+            <div className={styles.section} style={{ marginTop: '2rem' }}>
+              <h3 className={styles.sectionTitle}>
+                <MdList /> Activity
+              </h3>
+              <div className={styles.activityList}>
+                {activities.map((activity) => (
+                  <div key={activity.id} className={styles.activityItem}>
+                    <div className={styles.activityAvatar}>
+                      {activity.avatarUrl ? (
+                        <img src={activity.avatarUrl} alt={activity.username} />
+                      ) : (
+                        activity.username.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className={styles.activityContent}>
+                      <div className={styles.activityHeader}>
+                        <span className={styles.activityUser}>{activity.username}</span>
+                        <span className={styles.activityAction}>
+                          {activity.description || activity.actionType.toLowerCase().replace('_', ' ')}
+                        </span>
+                      </div>
+                      <span className={styles.activityTime}>
+                        {new Date(activity.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </main>

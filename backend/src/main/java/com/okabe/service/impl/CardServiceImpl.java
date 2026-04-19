@@ -8,6 +8,7 @@ import com.okabe.exception.ResourceNotFoundException;
 import com.okabe.exception.UnauthorizedException;
 import com.okabe.repository.*;
 import com.okabe.security.UserPrincipal;
+import com.okabe.service.ActivityService;
 import com.okabe.service.CardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class CardServiceImpl implements CardService {
     private final ChecklistItemRepository checklistItemRepository;
     private final LabelRepository labelRepository;
     private final BoardRepository boardRepository;
+    private final ActivityService activityService;
 
     @Override
     public CardResponse getCard(Long cardId, UserPrincipal currentUser) {
@@ -85,16 +87,35 @@ public class CardServiceImpl implements CardService {
         Card card = findCardOrThrow(cardId);
         validateWriteAccess(card, currentUser.getId());
 
-        if (request.title() != null) card.setTitle(request.title());
-        if (request.description() != null) card.setDescription(request.description());
-        if (request.isArchived() != null) card.setIsArchived(request.isArchived());
+        User user = findUserOrThrow(currentUser.getId());
+
+        if (request.title() != null && !request.title().equals(card.getTitle())) {
+            activityService.logActivity(card, user, "UPDATE_CARD", "changed title to \"" + request.title() + "\"");
+            card.setTitle(request.title());
+        }
+        if (request.description() != null && !request.description().equals(card.getDescription())) {
+            activityService.logActivity(card, user, "UPDATE_CARD", "updated description");
+            card.setDescription(request.description());
+        }
+        if (request.isArchived() != null && !request.isArchived().equals(card.getIsArchived())) {
+            activityService.logActivity(card, user, request.isArchived() ? "ARCHIVE_CARD" : "RESTORE_CARD", null);
+            card.setIsArchived(request.isArchived());
+        }
         if (request.priority() != null) {
             try {
-                card.setPriority(Priority.valueOf(request.priority().toUpperCase()));
+                Priority newPriority = Priority.valueOf(request.priority().toUpperCase());
+                if (newPriority != card.getPriority()) {
+                    activityService.logActivity(card, user, "UPDATE_CARD", "changed priority to " + newPriority);
+                    card.setPriority(newPriority);
+                }
             } catch (IllegalArgumentException ignored) {}
         }
         if (request.dueDate() != null) {
-            card.setDueDate(request.dueDate().isBlank() ? null : LocalDateTime.parse(request.dueDate()));
+            LocalDateTime newDueDate = request.dueDate().isBlank() ? null : LocalDateTime.parse(request.dueDate());
+            if (newDueDate != card.getDueDate()) {
+                activityService.logActivity(card, user, "UPDATE_CARD", "updated due date");
+                card.setDueDate(newDueDate);
+            }
         }
 
         card = cardRepository.save(card);
@@ -161,6 +182,9 @@ public class CardServiceImpl implements CardService {
                 .build();
         
         checklist = checklistRepository.save(checklist);
+
+        User user = findUserOrThrow(currentUser.getId());
+        activityService.logActivity(card, user, "ADD_CHECKLIST", "added checklist \"" + request.name() + "\"");
         
         return ChecklistResponse.builder()
                 .id(checklist.getId())
@@ -186,6 +210,9 @@ public class CardServiceImpl implements CardService {
                 .build();
         
         item = checklistItemRepository.save(item);
+        
+        User user = findUserOrThrow(currentUser.getId());
+        activityService.logActivity(checklist.getCard(), user, "ADD_CHECKLIST_ITEM", "added \"" + item.getContent() + "\" to " + checklist.getName());
         
         return ChecklistItemResponse.builder()
                 .id(item.getId())
@@ -237,7 +264,7 @@ public class CardServiceImpl implements CardService {
 
         return LabelResponse.builder()
                 .id(label.getId())
-                .boardId(board.getId())
+                .boardId(label.getBoard().getId())
                 .name(label.getName())
                 .color(label.getColor())
                 .build();
@@ -274,6 +301,10 @@ public class CardServiceImpl implements CardService {
 
         card.getLabels().add(label);
         cardRepository.save(card);
+
+        User user = findUserOrThrow(currentUser.getId());
+        activityService.logActivity(card, user, "ADD_LABEL", "added label \"" + label.getName() + "\"");
+        log.info("Label {} added to card {}", labelId, cardId);
     }
 
     @Override
@@ -287,6 +318,10 @@ public class CardServiceImpl implements CardService {
 
         card.getLabels().remove(label);
         cardRepository.save(card);
+
+        User user = findUserOrThrow(currentUser.getId());
+        activityService.logActivity(card, user, "REMOVE_LABEL", "removed label \"" + label.getName() + "\"");
+        log.info("Label {} removed from card {}", labelId, cardId);
     }
 
     // ─── Member Assignment ──────────────────────────────
@@ -297,8 +332,9 @@ public class CardServiceImpl implements CardService {
         Card card = findCardOrThrow(cardId);
         validateWriteAccess(card, currentUser.getId());
 
-        User user = userRepository.findById(userId)
+        User member = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        User actor = findUserOrThrow(currentUser.getId());
 
         // Validate user is a workspace member
         Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
@@ -306,9 +342,11 @@ public class CardServiceImpl implements CardService {
             throw new UnauthorizedException("User is not a member of this workspace");
         }
 
-        card.getMembers().add(user);
+        card.getMembers().add(member);
         cardRepository.save(card);
-        log.info("User {} assigned to card {}", userId, cardId);
+        
+        activityService.logActivity(card, actor, "ASSIGN_MEMBER", "added " + member.getUsername() + " to this card");
+        log.info("Member {} assigned to card {}", userId, cardId);
     }
 
     @Override
@@ -431,5 +469,10 @@ public class CardServiceImpl implements CardService {
                 .members(memberResponses)
                 .attachments(attachmentResponses)
                 .build();
+    }
+
+    private User findUserOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
     }
 }
