@@ -86,7 +86,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Override
     @Transactional
     public WorkspaceResponse updateWorkspace(Long workspaceId, UpdateWorkspaceRequest request,
-                                             UserPrincipal currentUser) {
+            UserPrincipal currentUser) {
         Workspace workspace = findWorkspaceOrThrow(workspaceId);
         validateAdminAccess(workspaceId, currentUser.getId());
 
@@ -118,7 +118,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     // ─── Member Management ──────────────────────────────
 
     @Override
-    public List<com.okabe.dto.response.WorkspaceMemberResponse> getWorkspaceMembers(Long workspaceId, UserPrincipal currentUser) {
+    public List<com.okabe.dto.response.WorkspaceMemberResponse> getWorkspaceMembers(Long workspaceId,
+            UserPrincipal currentUser) {
         validateMembership(workspaceId, currentUser.getId());
         List<WorkspaceMember> members = memberRepository.findByWorkspaceId(workspaceId);
         return members.stream()
@@ -128,9 +129,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Override
     @Transactional
-    public com.okabe.dto.response.WorkspaceMemberResponse addMemberToWorkspace(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
+    public com.okabe.dto.response.WorkspaceMemberResponse addMemberToWorkspace(Long workspaceId,
+            com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
         validateAdminAccess(workspaceId, currentUser.getId());
-        
+
         User userToAdd = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.email()));
 
@@ -143,36 +145,40 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .userId(userToAdd.getId())
                 .role(request.role() != null ? request.role() : Role.MEMBER)
                 .build();
-                
+
         member = memberRepository.save(member);
-        
+
         // Fetch user object to build full response
         member.setUser(userToAdd);
-        
+
         log.info("User {} added to workspace {} with role {}", request.email(), workspaceId, member.getRole());
         return toMemberResponse(member);
     }
 
     @Override
     @Transactional
-    public com.okabe.dto.response.WorkspaceMemberResponse updateMemberRole(Long workspaceId, Long memberId, com.okabe.dto.request.UpdateMemberRoleRequest request, UserPrincipal currentUser) {
+    public com.okabe.dto.response.WorkspaceMemberResponse updateMemberRole(Long workspaceId, Long memberId,
+            com.okabe.dto.request.UpdateMemberRoleRequest request, UserPrincipal currentUser) {
         validateAdminAccess(workspaceId, currentUser.getId());
-        
+
         WorkspaceMember memberToUpdate = memberRepository.findByWorkspaceIdAndUserId(workspaceId, memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found in workspace"));
 
-        // If target is an OWNER, only another OWNER can change their role (or we can block changing OWNER role entirely, here we enforce only OWNER can change another OWNER)
+        // If target is an OWNER, only another OWNER can change their role (or we can
+        // block changing OWNER role entirely, here we enforce only OWNER can change
+        // another OWNER)
         if (memberToUpdate.getRole() == Role.OWNER) {
-            WorkspaceMember currentMember = memberRepository.findByWorkspaceIdAndUserId(workspaceId, currentUser.getId())
+            WorkspaceMember currentMember = memberRepository
+                    .findByWorkspaceIdAndUserId(workspaceId, currentUser.getId())
                     .orElseThrow(() -> new UnauthorizedException("Not a member"));
             if (currentMember.getRole() != Role.OWNER) {
                 throw new UnauthorizedException("Only OWNER can change another OWNER's role");
             }
         }
-        
+
         memberToUpdate.setRole(request.role());
         memberToUpdate = memberRepository.save(memberToUpdate);
-        
+
         log.info("User {} role updated to {} in workspace {}", memberId, request.role(), workspaceId);
         return toMemberResponse(memberToUpdate);
     }
@@ -181,19 +187,20 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Transactional
     public void removeMemberFromWorkspace(Long workspaceId, Long memberId, UserPrincipal currentUser) {
         validateAdminAccess(workspaceId, currentUser.getId());
-        
+
         WorkspaceMember memberToRemove = memberRepository.findByWorkspaceIdAndUserId(workspaceId, memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found in workspace"));
 
         // Cannot remove an OWNER unless you are an OWNER
         if (memberToRemove.getRole() == Role.OWNER) {
-            WorkspaceMember currentMember = memberRepository.findByWorkspaceIdAndUserId(workspaceId, currentUser.getId())
+            WorkspaceMember currentMember = memberRepository
+                    .findByWorkspaceIdAndUserId(workspaceId, currentUser.getId())
                     .orElseThrow(() -> new UnauthorizedException("Not a member"));
             if (currentMember.getRole() != Role.OWNER) {
                 throw new UnauthorizedException("Only OWNER can remove another OWNER");
             }
         }
-        
+
         memberRepository.delete(memberToRemove);
         log.info("User {} removed from workspace {}", memberId, workspaceId);
     }
@@ -221,12 +228,24 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     private void validateMembership(Long workspaceId, Long userId) {
+        Workspace workspace = findWorkspaceOrThrow(workspaceId);
+        // Owner always has access
+        if (workspace.getOwner().getId().equals(userId)) {
+            return;
+        }
+
         if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
             throw new UnauthorizedException("You are not a member of this workspace");
         }
     }
 
     private void validateAdminAccess(Long workspaceId, Long userId) {
+        Workspace workspace = findWorkspaceOrThrow(workspaceId);
+        // Owner always has access
+        if (workspace.getOwner().getId().equals(userId)) {
+            return;
+        }
+
         boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
                 workspaceId, userId, List.of(Role.OWNER, Role.ADMIN));
         if (!hasAccess) {
@@ -236,13 +255,19 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     private WorkspaceResponse toResponse(Workspace workspace, Long currentUserId) {
         List<WorkspaceMember> members = memberRepository.findByWorkspaceId(workspace.getId());
+        User owner = workspace.getOwner();
+        
+        // Find user's role in the list we already fetched
         String currentRole = members.stream()
                 .filter(m -> m.getUserId().equals(currentUserId))
                 .map(m -> m.getRole().name())
                 .findFirst()
                 .orElse(null);
 
-        User owner = workspace.getOwner();
+        // Fallback for owner if not found in members list
+        if (currentRole == null && owner.getId().equals(currentUserId)) {
+            currentRole = Role.OWNER.name();
+        }
 
         return WorkspaceResponse.builder()
                 .id(workspace.getId())
@@ -267,8 +292,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private String generateSlug(String input) {
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         String slug = NON_LATIN.matcher(
-                WHITESPACE.matcher(normalized).replaceAll("-")
-        ).replaceAll("").toLowerCase(Locale.ENGLISH);
+                WHITESPACE.matcher(normalized).replaceAll("-")).replaceAll("").toLowerCase(Locale.ENGLISH);
         return slug.length() > 100 ? slug.substring(0, 100) : slug;
     }
 }

@@ -111,7 +111,6 @@ function LoginPage() {
             onError={() => {
               setError('Google Login Failed');
             }}
-            useOneTap
           />
         </div>
 
