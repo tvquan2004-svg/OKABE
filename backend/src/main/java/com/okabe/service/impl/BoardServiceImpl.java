@@ -241,6 +241,14 @@ public class BoardServiceImpl implements BoardService {
                 .createdAt(card.getCreatedAt())
                 .labels(labelResponses)
                 .checklists(checklistResponses)
+                .members(card.getMembers().stream()
+                        .map(m -> UserResponse.builder()
+                                .id(m.getId())
+                                .username(m.getUsername())
+                                .email(m.getEmail())
+                                .avatarUrl(m.getAvatarUrl())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

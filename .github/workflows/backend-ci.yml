@@ -2,15 +2,23 @@ name: Backend CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     
     services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: okabe_db_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       redis:
         image: redis:latest
         ports:
@@ -27,8 +35,22 @@ jobs:
         cache: maven
         
     - name: Test & Build with Maven
+      env:
+        SPRING_PROFILES_ACTIVE: test
+        SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/okabe_db_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+        SPRING_DATASOURCE_USERNAME: root
+        SPRING_DATASOURCE_PASSWORD: root
+        SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+        SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
       run: |
         cd backend
+        # First, run Flyway migrations to ensure they apply correctly
+        # (This will catch syntax errors, foreign key issues, etc.)
+        mvn -B flyway:migrate -Dflyway.url=$SPRING_DATASOURCE_URL -Dflyway.user=$SPRING_DATASOURCE_USERNAME -Dflyway.password=$SPRING_DATASOURCE_PASSWORD
+        
+        # Then run tests and package
         mvn -B package --file pom.xml
 
     - name: Build Docker Image

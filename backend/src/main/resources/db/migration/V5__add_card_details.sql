@@ -1,3 +1,9 @@
+-- Drop existing tables if they exist to ensure clean migration
+DROP TABLE IF EXISTS checklist_items;
+DROP TABLE IF EXISTS checklists;
+DROP TABLE IF EXISTS card_labels;
+DROP TABLE IF EXISTS labels;
+
 -- Create labels table
 CREATE TABLE labels (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
