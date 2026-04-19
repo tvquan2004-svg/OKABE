@@ -44,9 +44,9 @@ jobs:
         REDIS_PORT: 6379
       run: |
         cd backend
-        # First, validate Flyway migrations
-        # (This will fail if there are checksum mismatches or other issues)
-        mvn -B flyway:validate -Dflyway.url=$SPRING_DATASOURCE_URL -Dflyway.user=$SPRING_DATASOURCE_USERNAME -Dflyway.password=$SPRING_DATASOURCE_PASSWORD
+        # First, run Flyway migrations to ensure they apply correctly
+        # (This will catch syntax errors, foreign key issues, etc.)
+        mvn -B flyway:migrate -Dflyway.url=$SPRING_DATASOURCE_URL -Dflyway.user=$SPRING_DATASOURCE_USERNAME -Dflyway.password=$SPRING_DATASOURCE_PASSWORD
         
         # Then run tests and package
         mvn -B package --file pom.xml
