@@ -400,6 +400,20 @@ public class CardServiceImpl implements CardService {
                         .build())
                 .collect(Collectors.toList());
 
+        List<AttachmentResponse> attachmentResponses = card.getAttachments().stream()
+                .map(a -> AttachmentResponse.builder()
+                        .id(a.getId())
+                        .cardId(card.getId())
+                        .uploadedById(a.getUploadedBy().getId())
+                        .uploadedByUsername(a.getUploadedBy().getUsername())
+                        .filename(a.getFilename())
+                        .url(a.getStorageKey())
+                        .fileSize(a.getFileSize())
+                        .mimeType(a.getMimeType())
+                        .createdAt(a.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
         return CardResponse.builder()
                 .id(card.getId())
                 .listId(card.getTaskList().getId())
@@ -415,6 +429,7 @@ public class CardServiceImpl implements CardService {
                 .labels(labelResponses)
                 .checklists(checklistResponses)
                 .members(memberResponses)
+                .attachments(attachmentResponses)
                 .build();
     }
 }
