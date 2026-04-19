@@ -28,4 +28,8 @@ public interface CardService {
     List<LabelResponse> getBoardLabels(Long boardId, UserPrincipal currentUser);
     void addLabelToCard(Long cardId, Long labelId, UserPrincipal currentUser);
     void removeLabelFromCard(Long cardId, Long labelId, UserPrincipal currentUser);
+
+    // Member assignment
+    void assignMember(Long cardId, Long userId, UserPrincipal currentUser);
+    void unassignMember(Long cardId, Long userId, UserPrincipal currentUser);
 }

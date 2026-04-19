@@ -289,6 +289,42 @@ public class CardServiceImpl implements CardService {
         cardRepository.save(card);
     }
 
+    // ─── Member Assignment ──────────────────────────────
+
+    @Override
+    @Transactional
+    public void assignMember(Long cardId, Long userId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateWriteAccess(card, currentUser.getId());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
+        // Validate user is a workspace member
+        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
+        if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
+            throw new UnauthorizedException("User is not a member of this workspace");
+        }
+
+        card.getMembers().add(user);
+        cardRepository.save(card);
+        log.info("User {} assigned to card {}", userId, cardId);
+    }
+
+    @Override
+    @Transactional
+    public void unassignMember(Long cardId, Long userId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateWriteAccess(card, currentUser.getId());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
+        card.getMembers().remove(user);
+        cardRepository.save(card);
+        log.info("User {} unassigned from card {}", userId, cardId);
+    }
+
     // ─── Helpers ────────────────────────────────────────
 
     private Card findCardOrThrow(Long id) {
@@ -355,6 +391,15 @@ public class CardServiceImpl implements CardService {
                         .build())
                 .collect(Collectors.toList());
 
+        List<UserResponse> memberResponses = card.getMembers().stream()
+                .map(m -> UserResponse.builder()
+                        .id(m.getId())
+                        .username(m.getUsername())
+                        .email(m.getEmail())
+                        .avatarUrl(m.getAvatarUrl())
+                        .build())
+                .collect(Collectors.toList());
+
         return CardResponse.builder()
                 .id(card.getId())
                 .listId(card.getTaskList().getId())
@@ -369,6 +414,7 @@ public class CardServiceImpl implements CardService {
                 .createdAt(card.getCreatedAt())
                 .labels(labelResponses)
                 .checklists(checklistResponses)
+                .members(memberResponses)
                 .build();
     }
 }

@@ -65,4 +65,13 @@ public class Card extends BaseEntity {
     @OrderBy("position ASC")
     @Builder.Default
     private List<Checklist> checklists = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "card_members",
+        joinColumns = @JoinColumn(name = "card_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> members = new HashSet<>();
 }

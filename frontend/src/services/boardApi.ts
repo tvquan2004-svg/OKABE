@@ -23,6 +23,13 @@ export interface Checklist {
   items: ChecklistItem[];
 }
 
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
 export interface CardItem {
   id: number;
   listId: number;
@@ -37,6 +44,7 @@ export interface CardItem {
   createdAt: string;
   labels: Label[];
   checklists: Checklist[];
+  members: User[];
 }
 
 export interface TaskList {
@@ -160,6 +168,16 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ cardId, labelId }) => ({ url: `/cards/${cardId}/labels/${labelId}`, method: 'DELETE' }),
       invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
+
+    // Phase 2: Member Assignment
+    assignMember: builder.mutation<ApiRes<void>, { cardId: number; userId: number; boardId: number }>({
+      query: ({ cardId, userId }) => ({ url: `/cards/${cardId}/members`, method: 'POST', body: { userId } }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    unassignMember: builder.mutation<ApiRes<void>, { cardId: number; userId: number; boardId: number }>({
+      query: ({ cardId, userId }) => ({ url: `/cards/${cardId}/members/${userId}`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
   }),
 });
 
@@ -186,4 +204,6 @@ export const {
   useGetBoardLabelsQuery,
   useAddLabelToCardMutation,
   useRemoveLabelFromCardMutation,
+  useAssignMemberMutation,
+  useUnassignMemberMutation,
 } = boardApi;

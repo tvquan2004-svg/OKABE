@@ -209,6 +209,7 @@ function BoardPage() {
         <CardDetailModal
           card={currentCard}
           boardId={id}
+          workspaceId={board.workspaceId}
           onClose={() => setSelectedCard(null)}
           priorityColor={priorityColor}
         />

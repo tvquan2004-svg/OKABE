@@ -95,8 +95,55 @@ function BoardListColumn({
                   ✅ {card.checklists.reduce((acc, c) => acc + c.items.filter(i => i.isCompleted).length, 0)}/{card.checklists.reduce((acc, c) => acc + c.items.length, 0)}
                 </span>
               ) : null}
+              
+              <div style={{ display: 'flex', marginLeft: 'auto' }}>
+                {card.members?.slice(0, 3).map((member, i) => (
+                  <div 
+                    key={member.id} 
+                    style={{ 
+                      width: '24px', 
+                      height: '24px', 
+                      borderRadius: '50%', 
+                      background: '#e2e8f0', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      border: '2px solid #ffffff',
+                      marginLeft: i > 0 ? '-8px' : '0',
+                      zIndex: 3 - i,
+                      overflow: 'hidden'
+                    }}
+                    title={member.username}
+                  >
+                    {member.avatarUrl ? (
+                      <img src={member.avatarUrl} alt={member.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : member.username.charAt(0).toUpperCase()}
+                  </div>
+                ))}
+                {card.members?.length > 3 && (
+                  <div style={{ 
+                    width: '24px', 
+                    height: '24px', 
+                    borderRadius: '50%', 
+                    background: '#f1f5f9', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    fontSize: '0.6rem',
+                    fontWeight: 700,
+                    border: '2px solid #ffffff',
+                    marginLeft: '-8px',
+                    zIndex: 0
+                  }}>
+                    +{card.members.length - 3}
+                  </div>
+                )}
+              </div>
+
               {card.dueDate ? (
-                <span className={styles.dueDate} style={{ fontSize: '0.7rem', marginLeft: 'auto' }}>
+                <span className={styles.dueDate} style={{ fontSize: '0.7rem' }}>
                   {new Date(card.dueDate).toLocaleDateString()}
                 </span>
               ) : null}

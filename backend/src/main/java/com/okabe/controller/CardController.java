@@ -140,4 +140,26 @@ public class CardController {
         cardService.removeLabelFromCard(cardId, labelId, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Label removed from card"));
     }
+
+    // ─── Member Endpoints ──────────────────────────────
+
+    @PostMapping("/api/v1/cards/{cardId}/members")
+    @Operation(summary = "Assign a member to a card")
+    public ResponseEntity<ApiResponse<Void>> assignMember(
+            @PathVariable Long cardId,
+            @Valid @RequestBody AssignMemberRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.assignMember(cardId, request.userId(), currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Member assigned"));
+    }
+
+    @DeleteMapping("/api/v1/cards/{cardId}/members/{userId}")
+    @Operation(summary = "Unassign a member from a card")
+    public ResponseEntity<ApiResponse<Void>> unassignMember(
+            @PathVariable Long cardId,
+            @PathVariable Long userId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.unassignMember(cardId, userId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Member unassigned"));
+    }
 }

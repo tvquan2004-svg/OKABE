@@ -9,12 +9,18 @@ import {
   useAddLabelToCardMutation,
   useRemoveLabelFromCardMutation,
   useGetBoardLabelsQuery,
+  useAssignMemberMutation,
+  useUnassignMemberMutation,
 } from '../../services/boardApi';
+import {
+  useGetWorkspaceMembersQuery,
+} from '../../services/workspaceApi';
 import styles from './CardDetailModal.module.css';
 
 interface CardDetailModalProps {
   card: CardItem;
   boardId: number;
+  workspaceId: number;
   onClose: () => void;
   priorityColor: (priority: string) => string;
 }
@@ -27,12 +33,14 @@ const PRESET_COLORS = [
 const CardDetailModal: React.FC<CardDetailModalProps> = ({
   card,
   boardId,
+  workspaceId,
   onClose,
   priorityColor,
 }) => {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || '');
   const [newItemContent, setNewItemContent] = useState<{ [key: number]: string }>({});
+  const [showMemberPicker, setShowMemberPicker] = useState(false);
 
   const [updateCard] = useUpdateCardMutation();
   const [createChecklist] = useCreateChecklistMutation();
@@ -41,9 +49,14 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [createLabel] = useCreateLabelMutation();
   const [addLabelToCard] = useAddLabelToCardMutation();
   const [removeLabelFromCard] = useRemoveLabelFromCardMutation();
+  const [assignMember] = useAssignMemberMutation();
+  const [unassignMember] = useUnassignMemberMutation();
   
   const { data: labelsData } = useGetBoardLabelsQuery(boardId);
   const boardLabels = labelsData?.data || [];
+
+  const { data: workspaceMembersData } = useGetWorkspaceMembersQuery(workspaceId);
+  const workspaceMembers = workspaceMembersData?.data || [];
 
   useEffect(() => {
     setTitle(card.title);
@@ -91,6 +104,17 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     }
   };
 
+  const handleAssignMember = async (userId: number) => {
+    if (!card.members.some(m => m.id === userId)) {
+      await assignMember({ cardId: card.id, userId, boardId }).unwrap();
+    }
+    setShowMemberPicker(false);
+  };
+
+  const handleUnassignMember = async (userId: number) => {
+    await unassignMember({ cardId: card.id, userId, boardId }).unwrap();
+  };
+
   return (
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
@@ -111,25 +135,50 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
         <div className={styles.body}>
           <main className={styles.mainContent}>
-            {/* Labels Section */}
-            {card.labels.length > 0 && (
-              <div className={styles.section}>
-                <h3 className={styles.sidebarLabel}>Labels</h3>
-                <div className={styles.labelsList}>
-                  {card.labels.map(label => (
-                    <div
-                      key={label.id}
-                      className={styles.labelItem}
-                      style={{ background: label.color }}
-                      onClick={() => handleRemoveLabel(label.id)}
-                      title="Click to remove"
-                    >
-                      {label.name}
-                    </div>
-                  ))}
+            {/* Top Info Bar (Labels & Members) */}
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+              {card.labels.length > 0 && (
+                <div className={styles.section} style={{ flex: 1, minWidth: '150px' }}>
+                  <h3 className={styles.sidebarLabel}>Labels</h3>
+                  <div className={styles.labelsList}>
+                    {card.labels.map(label => (
+                      <div
+                        key={label.id}
+                        className={styles.labelItem}
+                        style={{ background: label.color }}
+                        onClick={() => handleRemoveLabel(label.id)}
+                        title="Click to remove"
+                      >
+                        {label.name}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {card.members.length > 0 && (
+                <div className={styles.section} style={{ flex: 1, minWidth: '150px' }}>
+                  <h3 className={styles.sidebarLabel}>Members</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {card.members.map(member => (
+                      <div 
+                        key={member.id} 
+                        className={styles.avatarCircle} 
+                        title={`${member.username} (Click to unassign)`}
+                        onClick={() => handleUnassignMember(member.id)}
+                      >
+                        {member.avatarUrl ? (
+                          <img src={member.avatarUrl} alt={member.username} className={styles.avatarImg} />
+                        ) : (
+                          member.username.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                    ))}
+                    <button className={styles.addAvatarBtn} onClick={() => setShowMemberPicker(true)}>+</button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Description Section */}
             <div className={styles.section}>
@@ -197,6 +246,34 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
           <aside className={styles.sidebar}>
             <div className={styles.sidebarGroup}>
               <h3 className={styles.sidebarLabel}>Add to card</h3>
+              <div style={{ position: 'relative' }}>
+                <button className={styles.actionBtn} onClick={() => setShowMemberPicker(!showMemberPicker)}>
+                  <span>👤</span> Members
+                </button>
+                {showMemberPicker && (
+                  <div className={styles.popover}>
+                    <div className={styles.popoverHeader}>
+                      <span>Members</span>
+                      <button onClick={() => setShowMemberPicker(false)}>&times;</button>
+                    </div>
+                    <div className={styles.popoverBody}>
+                      {workspaceMembers.map(m => (
+                        <div 
+                          key={m.userId} 
+                          className={styles.popoverItem}
+                          onClick={() => handleAssignMember(m.userId)}
+                        >
+                          <div className={styles.avatarCircleSmall}>
+                            {m.avatarUrl ? <img src={m.avatarUrl} alt={m.username} /> : m.username.charAt(0).toUpperCase()}
+                          </div>
+                          <span>{m.username}</span>
+                          {card.members.some(cm => cm.id === m.userId) && <span style={{ marginLeft: 'auto' }}>✔</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <button className={styles.actionBtn} onClick={handleCreateChecklist}>
                 <span>✅</span> Checklist
               </button>

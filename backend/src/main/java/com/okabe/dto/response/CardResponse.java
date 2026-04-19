@@ -28,4 +28,5 @@ public class CardResponse {
     // Phase 2 fields
     private List<LabelResponse> labels;
     private List<ChecklistResponse> checklists;
+    private List<UserResponse> members;
 }
