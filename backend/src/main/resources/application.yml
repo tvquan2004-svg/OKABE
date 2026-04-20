@@ -59,7 +59,7 @@ app:
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
   google:
-    client-id: 620325554164-7mp2l3l2jhcqk5gfh52nnr103523tlt3.apps.googleusercontent.com
+    client-id: ${GOOGLE_CLIENT_ID:620325554164-7mp2l3l2jhcqk5gfh52nnr103523tlt3.apps.googleusercontent.com}
   cloudinary:
     cloud-name: ${CLOUDINARY_CLOUD_NAME:}
     api-key: ${CLOUDINARY_API_KEY:}
