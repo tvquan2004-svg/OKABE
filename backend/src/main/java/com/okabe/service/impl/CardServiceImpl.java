@@ -153,7 +153,15 @@ public class CardServiceImpl implements CardService {
         validateWriteAccess(card, currentUser.getId());
 
         TaskList targetList = findListOrThrow(request.targetListId());
+        Board sourceBoard = card.getTaskList().getBoard();
+        Board targetBoard = targetList.getBoard();
 
+        // Validate write access to target workspace
+        validateWriteAccess(targetBoard.getWorkspace().getId(), currentUser.getId());
+
+        User actor = findUserOrThrow(currentUser.getId());
+
+        // 1. Remove from source list and reorder
         List<Card> sourceCards = cardRepository
                 .findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(card.getTaskList().getId());
         sourceCards.remove(card);
@@ -162,9 +170,24 @@ public class CardServiceImpl implements CardService {
         }
         cardRepository.saveAll(sourceCards);
 
+        // 2. Handle cross-board specific logic
+        if (!sourceBoard.getId().equals(targetBoard.getId())) {
+            // Clear labels as they are board-specific
+            card.getLabels().clear();
+            activityService.logActivity(card, actor, "MOVE_CARD", 
+                "moved card from board \"" + sourceBoard.getName() + "\" to \"" + targetBoard.getName() + "\"");
+        } else {
+            activityService.logActivity(card, actor, "MOVE_CARD", 
+                "moved card to list \"" + targetList.getName() + "\"");
+        }
+
+        // 3. Add to target list and reorder
         List<Card> targetCards = cardRepository
                 .findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(targetList.getId());
-        int newPos = Math.min(request.newPosition(), targetCards.size());
+        
+        // Use 0 as default position if not provided, or end of list
+        int newPos = (request.position() != null) ? request.position() : targetCards.size();
+        newPos = Math.max(0, Math.min(newPos, targetCards.size()));
 
         card.setTaskList(targetList);
         card.setPosition(newPos);
@@ -174,10 +197,13 @@ public class CardServiceImpl implements CardService {
                 tc.setPosition(tc.getPosition() + 1);
             }
         }
+        
         cardRepository.saveAll(targetCards);
         card = cardRepository.save(card);
 
-        log.info("Card {} moved to list {} at position {}", cardId, request.targetListId(), newPos);
+        log.info("Card {} moved from board {} to board {} list {} at position {}", 
+            cardId, sourceBoard.getId(), targetBoard.getId(), targetList.getId(), newPos);
+        
         return toCardResponse(card);
     }
 

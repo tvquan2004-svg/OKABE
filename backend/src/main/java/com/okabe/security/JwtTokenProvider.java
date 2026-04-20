@@ -23,9 +23,9 @@ public class JwtTokenProvider {
             @Value("${app.jwt.access-token-expiration}") long accessTokenExpiration,
             @Value("${app.jwt.refresh-token-expiration}") long refreshTokenExpiration) {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        // Pad key to minimum 256 bits (32 bytes) for HS256
-        if (keyBytes.length < 32) {
-            byte[] padded = new byte[32];
+        // Pad key to minimum 512 bits (64 bytes) for HS512 compatibility
+        if (keyBytes.length < 64) {
+            byte[] padded = new byte[64];
             System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
             keyBytes = padded;
         }

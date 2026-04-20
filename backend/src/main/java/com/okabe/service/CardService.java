@@ -17,7 +17,7 @@ public interface CardService {
     CardResponse createCard(Long listId, CreateCardRequest request, UserPrincipal currentUser);
 
     CardResponse updateCard(Long cardId, UpdateCardRequest request, UserPrincipal currentUser);
-
+    
     CardResponse moveCard(Long cardId, MoveCardRequest request, UserPrincipal currentUser);
 
     void deleteCard(Long cardId, UserPrincipal currentUser);

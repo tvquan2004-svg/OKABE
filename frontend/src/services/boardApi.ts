@@ -171,7 +171,7 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ id, body }) => ({ url: `/cards/${id}`, method: 'PUT', body }),
       invalidatesTags: (_r, _e, { boardId, id }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id }],
     }),
-    moveCard: builder.mutation<ApiRes<CardItem>, { id: number; boardId: number; targetListId: number; newPosition: number }>({
+    moveCard: builder.mutation<ApiRes<CardItem>, { id: number; boardId: number; targetListId: number; position?: number }>({
       query: ({ id, boardId: _, ...body }) => ({ url: `/cards/${id}/move`, method: 'PUT', body }),
       invalidatesTags: (_r, _e, { boardId, id }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id }],
     }),
@@ -308,3 +308,5 @@ export const {
   useSearchCardsQuery,
   useUpdateBoardBackgroundMutation,
 } = boardApi;
+
+export const useGetBoardsByWorkspaceQuery = useGetBoardsQuery;
