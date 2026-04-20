@@ -457,7 +457,7 @@ public class CardServiceImpl implements CardService {
         boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
                 workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
         if (!hasAccess) {
-            throw new UnauthorizedException("VIEWERs cannot perform this action");
+            throw new UnauthorizedException("You do not have permission to perform this action");
         }
     }
 
