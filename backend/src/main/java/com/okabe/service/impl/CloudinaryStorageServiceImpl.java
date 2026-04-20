@@ -15,26 +15,29 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@org.springframework.context.annotation.Primary
 @RequiredArgsConstructor
 public class CloudinaryStorageServiceImpl implements StorageService {
 
-    @Value("${app.cloudinary.cloud-name}")
+    @Value("${app.cloudinary.cloud-name:}")
     private String cloudName;
 
-    @Value("${app.cloudinary.api-key}")
+    @Value("${app.cloudinary.api-key:}")
     private String apiKey;
 
-    @Value("${app.cloudinary.api-secret}")
+    @Value("${app.cloudinary.api-secret:}")
     private String apiSecret;
 
     private Cloudinary cloudinary;
 
     @PostConstruct
     public void init() {
+        log.info("Initializing Cloudinary with Cloud Name: {}", mask(cloudName));
+        
         if (cloudName == null || cloudName.isEmpty() || 
             apiKey == null || apiKey.isEmpty() || 
             apiSecret == null || apiSecret.isEmpty()) {
-            log.error("Cloudinary credentials are missing! Upload feature will not work.");
+            log.error("Cloudinary credentials are missing! Environment variables CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET must be set.");
             return;
         }
         
@@ -44,12 +47,19 @@ public class CloudinaryStorageServiceImpl implements StorageService {
             "api_secret", apiSecret,
             "secure", true
         ));
+        log.info("Cloudinary initialized successfully.");
+    }
+
+    private String mask(String value) {
+        if (value == null || value.length() < 4) return "****";
+        return value.substring(0, 2) + "****" + value.substring(value.length() - 2);
     }
 
     @Override
     public String upload(MultipartFile file) throws IOException {
         if (cloudinary == null) {
-            throw new IOException("Cloudinary is not configured. Please check your .env file.");
+            log.error("Upload attempted but Cloudinary is not configured!");
+            throw new IOException("Cloudinary is not configured. Please add CLOUDINARY_CLOUD_NAME, API_KEY and API_SECRET to your .env file.");
         }
         try {
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
@@ -57,11 +67,11 @@ public class CloudinaryStorageServiceImpl implements StorageService {
                 "folder", "okabe/attachments"
             ));
             String url = (String) uploadResult.get("secure_url");
-            log.info("File uploaded to Cloudinary: {}", url);
+            log.info("File uploaded successfully to Cloudinary: {}", url);
             return url;
         } catch (Exception e) {
             log.error("Cloudinary upload failed: {}", e.getMessage());
-            throw new IOException("Failed to upload file to Cloudinary", e);
+            throw new IOException("Cloudinary upload failed: " + e.getMessage(), e);
         }
     }
 

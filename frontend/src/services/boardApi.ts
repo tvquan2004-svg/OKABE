@@ -260,6 +260,20 @@ export const boardApi = apiSlice.injectEndpoints({
       },
       providesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
+    updateBoardBackground: builder.mutation<ApiRes<Board>, { id: number; type: 'COLOR' | 'IMAGE'; value?: string; file?: File }>({
+      query: ({ id, type, value, file }) => {
+        const formData = new FormData();
+        formData.append('type', type);
+        if (value) formData.append('value', value);
+        if (file) formData.append('file', file);
+        return {
+          url: `/boards/${id}/background`,
+          method: 'PATCH',
+          body: formData,
+        };
+      },
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'Board', id }],
+    }),
   }),
 });
 
@@ -292,4 +306,5 @@ export const {
   useDeleteAttachmentMutation,
   useGetCardActivitiesQuery,
   useSearchCardsQuery,
+  useUpdateBoardBackgroundMutation,
 } = boardApi;

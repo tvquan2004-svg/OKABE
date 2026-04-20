@@ -6,7 +6,11 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: background 0.3s ease;
 }
 
 .loading {
@@ -24,8 +28,12 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-xl);
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  position: relative;
+  z-index: 1100; /* Higher than filter bar */
 }
 
 .boardMeta {
@@ -56,7 +64,7 @@
 
 .boardDesc {
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Kanban Board */
@@ -73,12 +81,13 @@
 .column {
   flex-shrink: 0;
   width: 300px;
-  background: var(--color-bg-secondary);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 150px);
 }
 
 .columnHeader {
@@ -288,9 +297,10 @@
 
 .addListBtn {
   width: 100%;
-  background: rgba(99, 102, 241, 0.08);
-  border: 2px dashed var(--color-border);
-  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  color: white;
   padding: var(--spacing-md);
   border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
@@ -300,8 +310,24 @@
 
 .addListBtn:hover {
   border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: rgba(99, 102, 241, 0.12);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.settingsBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.settingsBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .addListForm {
@@ -325,9 +351,41 @@
   box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
+.boardActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+}
+
+.backgroundPickerWrapper {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 2100; /* Higher than header itself */
+  margin-top: 12px;
+  background: #1e293b; 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  animation: slideDown 0.2s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 768px) {
   .header {
     flex-wrap: wrap;
     align-items: flex-start;
+  }
+  
+  .boardActions {
+    width: 100%;
+    margin-top: 8px;
+    justify-content: flex-end;
   }
 }

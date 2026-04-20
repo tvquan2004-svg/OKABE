@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
   const user = useAppSelector((state) => state.auth.user);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const { data: unreadCountRes, refetch } = useGetUnreadCountQuery(undefined, {
+  const { data: unreadCountRes } = useGetUnreadCountQuery(undefined, {
     pollingInterval: 5000, // Poll every 5s for better responsiveness during test
   });
 
