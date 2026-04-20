@@ -15,8 +15,14 @@ const addRefreshSubscriber = (callback: (token: string) => void) => {
   refreshSubscribers.push(callback);
 };
 
+const getBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL as string;
+  if (!envUrl) return 'http://localhost:8080/api/v1';
+  return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
+};
+
 const baseQuery = fetchBaseQuery({
-  baseUrl: (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:8080/api/v1',
+  baseUrl: getBaseUrl(),
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.accessToken;
     if (token) {
