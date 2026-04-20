@@ -298,7 +298,7 @@ export interface CommentResponse {
   id: number;
   cardId: number;
   author: User;
-  content: String;
+  content: string;
   isEdited: boolean;
   mentions: User[];
   createdAt: string;

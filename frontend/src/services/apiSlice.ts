@@ -62,7 +62,7 @@ const baseQueryWithReauth: BaseQueryFn<
             isRefreshing = false;
             api.dispatch(logout());
           }
-        } catch (err) {
+        } catch (_err) {
           isRefreshing = false;
           api.dispatch(logout());
         }
