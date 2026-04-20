@@ -57,3 +57,8 @@ jobs:
       run: |
         cd backend
         docker build -t okabe-backend:latest .
+
+    - name: Deploy to Render
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: |
+        curl -f ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
