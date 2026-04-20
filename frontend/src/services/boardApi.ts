@@ -93,6 +93,26 @@ export interface Board {
   lists: TaskList[] | null;
 }
 
+export interface CardSearchParams {
+  keyword?: string;
+  assigneeIds?: number[];
+  labelIds?: number[];
+  priorities?: string[];
+  dueDateFrom?: string;
+  dueDateTo?: string;
+  isOverdue?: boolean;
+  page?: number;
+  size?: number;
+}
+
+export interface PaginatedRes<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
 interface ApiRes<T> { success: boolean; data: T; message: string; }
 
 export const boardApi = apiSlice.injectEndpoints({
@@ -223,6 +243,37 @@ export const boardApi = apiSlice.injectEndpoints({
       query: (cardId) => `/cards/${cardId}/activities`,
       providesTags: (_r, _e, cardId) => [{ type: 'Activity', id: cardId }],
     }),
+    searchCards: builder.query<ApiRes<PaginatedRes<CardItem>>, { boardId: number; params: CardSearchParams }>({
+      query: ({ boardId, params }) => {
+        const queryParams = new URLSearchParams();
+        if (params.keyword) queryParams.append('keyword', params.keyword);
+        if (params.assigneeIds?.length) params.assigneeIds.forEach(id => queryParams.append('assigneeIds', id.toString()));
+        if (params.labelIds?.length) params.labelIds.forEach(id => queryParams.append('labelIds', id.toString()));
+        if (params.priorities?.length) params.priorities.forEach(p => queryParams.append('priorities', p));
+        if (params.dueDateFrom) queryParams.append('dueDateFrom', params.dueDateFrom);
+        if (params.dueDateTo) queryParams.append('dueDateTo', params.dueDateTo);
+        if (params.isOverdue !== undefined) queryParams.append('isOverdue', params.isOverdue.toString());
+        if (params.page !== undefined) queryParams.append('page', params.page.toString());
+        if (params.size !== undefined) queryParams.append('size', params.size.toString());
+
+        return `/boards/${boardId}/cards/search?${queryParams.toString()}`;
+      },
+      providesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    updateBoardBackground: builder.mutation<ApiRes<Board>, { id: number; type: 'COLOR' | 'IMAGE'; value?: string; file?: File }>({
+      query: ({ id, type, value, file }) => {
+        const formData = new FormData();
+        formData.append('type', type);
+        if (value) formData.append('value', value);
+        if (file) formData.append('file', file);
+        return {
+          url: `/boards/${id}/background`,
+          method: 'PATCH',
+          body: formData,
+        };
+      },
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'Board', id }],
+    }),
   }),
 });
 
@@ -254,4 +305,6 @@ export const {
   useUploadAttachmentMutation,
   useDeleteAttachmentMutation,
   useGetCardActivitiesQuery,
+  useSearchCardsQuery,
+  useUpdateBoardBackgroundMutation,
 } = boardApi;

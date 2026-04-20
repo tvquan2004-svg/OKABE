@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../features/auth/authSlice';
-import { useAppDispatch, useAppSelector } from '../hooks/useRedux';
+import { useAppSelector } from '../hooks/useRedux';
 import {
   useGetWorkspacesQuery,
   useCreateWorkspaceMutation,
@@ -11,7 +10,6 @@ import type { Workspace } from '../services/workspaceApi';
 import styles from './DashboardPage.module.css';
 
 function DashboardPage() {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.auth.user);
 
@@ -25,10 +23,6 @@ function DashboardPage() {
 
   const workspaces = workspacesData?.data ?? [];
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
-  };
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -50,21 +44,6 @@ function DashboardPage() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.topBar}>
-        <div className={styles.logo}>
-          <span>⚡</span>
-          <span className={styles.logoText}>OKABE</span>
-        </div>
-        <div className={styles.userSection}>
-          <div className={styles.avatar}>
-            {user?.username?.charAt(0).toUpperCase()}
-          </div>
-          <span className={styles.username}>{user?.username}</span>
-          <button onClick={handleLogout} className={styles.logoutBtn}>
-            Logout
-          </button>
-        </div>
-      </header>
 
       <main className={styles.main}>
         <div className={styles.welcome}>

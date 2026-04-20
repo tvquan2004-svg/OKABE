@@ -60,6 +60,6 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred", "INTERNAL_ERROR"));
+                .body(ApiResponse.error("Error: " + ex.getMessage(), "INTERNAL_ERROR"));
     }
 }

@@ -10,6 +10,7 @@ interface BoardListColumnProps {
   onAddCard: (listId: number, title: string) => Promise<void>;
   onCardClick: (card: CardItem) => void;
   priorityColor: (priority: string) => string;
+  matchedCardIds: number[] | null;
 }
 
 function BoardListColumn({
@@ -20,6 +21,7 @@ function BoardListColumn({
   onAddCard,
   onCardClick,
   priorityColor,
+  matchedCardIds,
 }: BoardListColumnProps) {
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState('');
@@ -59,7 +61,11 @@ function BoardListColumn({
 
       <div className={styles.cardList}>
         {list.cards.map((card) => (
-          <div key={card.id} className={styles.card} onClick={() => onCardClick(card)}>
+          <div 
+            key={card.id} 
+            className={`${styles.card} ${matchedCardIds !== null && !matchedCardIds.includes(card.id) ? styles.dimmed : ''}`} 
+            onClick={() => onCardClick(card)}
+          >
             <div className={styles.cardHeader}>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
                 {card.labels?.map(l => (

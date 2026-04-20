@@ -48,6 +48,10 @@ public class Card extends BaseEntity {
     @Builder.Default
     private Boolean isArchived = false;
 
+    @Column(name = "notification_sent", nullable = false)
+    @Builder.Default
+    private Boolean notificationSent = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;

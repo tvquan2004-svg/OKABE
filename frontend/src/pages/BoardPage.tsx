@@ -13,9 +13,15 @@ import {
   useGetBoardQuery,
   useUpdateBoardMutation,
   useUpdateListMutation,
+  useSearchCardsQuery,
+  type CardSearchParams,
 } from '../services/boardApi';
-import { useGetWorkspaceQuery } from '../services/workspaceApi';
+import { BoardFilter } from '../components/board/BoardFilter';
+import BackgroundPicker from '../components/board/BackgroundPicker';
+import { FiSettings, FiImage } from 'react-icons/fi';
+import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
+import { useEffect } from 'react';
 
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -40,6 +46,10 @@ function BoardPage() {
     workspaceData?.data.currentUserRole === 'OWNER' ||
     workspaceData?.data.currentUserRole === 'ADMIN';
 
+  const { data: membersData } = useGetWorkspaceMembersQuery(board?.workspaceId ?? 0, {
+    skip: !board?.workspaceId,
+  });
+
   const [newListName, setNewListName] = useState('');
   const [showAddList, setShowAddList] = useState(false);
   const [boardName, setBoardName] = useState('');
@@ -50,6 +60,22 @@ function BoardPage() {
   
   // Phase 2: Card Detail Modal State
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+
+  // Phase 2: Background Picker State
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
+
+  // Phase 2: Search & Filter State
+  const [filters, setFilters] = useState<CardSearchParams>({});
+  const { data: searchData } = useSearchCardsQuery(
+    { boardId: id, params: filters },
+    { skip: !id || Object.keys(filters).length === 0 }
+  );
+
+  const matchedCardIds = searchData?.data?.content.map(c => c.id) ?? null;
+  const isFiltering = Object.keys(filters).some(key => {
+    const val = (filters as any)[key];
+    return val !== undefined && val !== '' && (Array.isArray(val) ? val.length > 0 : true);
+  });
 
   const openBoardEditModal = () => {
     if (!board) return;
@@ -116,6 +142,15 @@ function BoardPage() {
     }
   };
 
+  // Close background picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowBackgroundPicker(false);
+    if (showBackgroundPicker) {
+      window.addEventListener('click', handleClickOutside);
+    }
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [showBackgroundPicker]);
+
   if (isLoading) return <div className={styles.loading}>Loading board...</div>;
   if (!board) return <div className={styles.loading}>Board not found</div>;
 
@@ -124,18 +159,62 @@ function BoardPage() {
     ? lists.flatMap(l => l.cards).find(c => c.id === selectedCard.id) 
     : null;
 
+  const isImageUrl = board.background?.startsWith('http') || board.background?.startsWith('/api/v1/files/');
+
+  const containerStyle: React.CSSProperties = {
+    backgroundImage: isImageUrl ? `url(${board.background})` : 'none',
+    backgroundColor: board.background?.startsWith('#') ? board.background : undefined,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  };
+
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={containerStyle}>
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={() => navigate(-1)}>Back</button>
         <div className={styles.boardMeta}>
           <h1 className={styles.boardName}>{board.name}</h1>
           {board.description ? <span className={styles.boardDesc}>{board.description}</span> : null}
         </div>
-        {canManageBoard ? (
-          <button className="btn btn-outline" onClick={openBoardEditModal}>Edit board</button>
-        ) : null}
+        <div className={styles.boardActions}>
+          {canManageBoard ? (
+            <div style={{ position: 'relative', display: 'flex', gap: '8px' }}>
+              <button 
+                className={styles.settingsBtn} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowBackgroundPicker(!showBackgroundPicker);
+                }}
+              >
+                <FiImage /> Background
+              </button>
+              {showBackgroundPicker && (
+                <div className={styles.backgroundPickerWrapper} onClick={(e) => e.stopPropagation()}>
+                  <BackgroundPicker 
+                    boardId={id} 
+                    currentBackground={board.background} 
+                  />
+                </div>
+              )}
+              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={openBoardEditModal}>
+                <FiSettings /> Edit
+              </button>
+            </div>
+          ) : null}
+        </div>
       </header>
+
+      <BoardFilter 
+        labels={board.lists?.flatMap(l => l.cards).flatMap(c => c.labels).reduce((acc: any[], curr) => acc.find(x => x.id === curr.id) ? acc : [...acc, curr], []) ?? []}
+        members={membersData?.data.map(m => ({
+          id: m.userId,
+          username: m.username,
+          email: m.email,
+          avatarUrl: m.avatarUrl
+        })) ?? []}
+        onFilterChange={setFilters}
+      />
 
       <div className={styles.kanban}>
         {lists.map((list) => (
@@ -145,9 +224,10 @@ function BoardPage() {
             onEditList={handleOpenEditList}
             onDeleteList={(listId) => void handleDeleteList(listId)}
             onDeleteCard={(cardId) => void handleDeleteCard(cardId)}
-            onAddCard={handleAddCard}
+             onAddCard={handleAddCard}
             onCardClick={setSelectedCard}
             priorityColor={priorityColor}
+            matchedCardIds={isFiltering ? matchedCardIds : null}
           />
         ))}
 

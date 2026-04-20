@@ -4,6 +4,7 @@ import com.okabe.dto.request.*;
 import com.okabe.dto.response.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.CardService;
+import org.springframework.data.domain.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +29,15 @@ public class CardController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(cardService.getCard(id, currentUser)));
+    }
+
+    @GetMapping("/api/v1/boards/{boardId}/cards/search")
+    @Operation(summary = "Search and filter cards across a board")
+    public ResponseEntity<ApiResponse<Page<CardResponse>>> searchCards(
+            @PathVariable Long boardId,
+            CardSearchRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(cardService.searchCards(boardId, request, currentUser)));
     }
 
     @PostMapping("/api/v1/lists/{listId}/cards")

@@ -15,6 +15,7 @@ import com.okabe.repository.WorkspaceMemberRepository;
 import com.okabe.repository.WorkspaceRepository;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.WorkspaceService;
+import com.okabe.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository memberRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Override
     public List<WorkspaceResponse> getUserWorkspaces(UserPrincipal currentUser) {
@@ -150,6 +152,16 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         // Fetch user object to build full response
         member.setUser(userToAdd);
+
+        User actor = userRepository.findById(currentUser.getId()).orElseThrow();
+        notificationService.createNotification(
+            userToAdd,
+            actor,
+            "BOARD_MEMBER_JOINED",
+            "WORKSPACE",
+            workspaceId,
+            String.format("%s added you to the workspace", actor.getUsername())
+        );
 
         log.info("User {} added to workspace {} with role {}", request.email(), workspaceId, member.getRole());
         return toMemberResponse(member);

@@ -81,4 +81,24 @@ public class BoardController {
         boardService.deleteBoard(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Board deleted"));
     }
+
+    @PatchMapping(value = "/api/v1/boards/{id}/background", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update board background")
+    public ResponseEntity<ApiResponse<BoardResponse>> updateBackground(
+            @PathVariable Long id,
+            @RequestParam("type") String type,
+            @RequestParam(value = "value", required = false) String value,
+            @RequestParam(value = "file", required = false) org.springframework.web.multipart.MultipartFile file,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        
+        System.out.println(">>> RECEIVED BACKGROUND UPDATE REQUEST for board: " + id + ", type: " + type);
+        if (file != null) {
+            System.out.println(">>> FILE RECEIVED: " + file.getOriginalFilename() + " (" + file.getSize() + " bytes)");
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(
+                boardService.updateBackground(id, type, value, file, currentUser),
+                "Background updated successfully"
+        ));
+    }
 }
