@@ -8,6 +8,7 @@ import com.okabe.exception.UnauthorizedException;
 import com.okabe.repository.NotificationRepository;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.NotificationService;
+import com.okabe.service.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final WebSocketService webSocketService;
 
     @Override
     @Transactional
@@ -40,8 +42,11 @@ public class NotificationServiceImpl implements NotificationService {
                 .message(message)
                 .build();
 
-        notificationRepository.save(notification);
+        notification = notificationRepository.save(notification);
         log.info("Notification created for user {} (ID: {}): {}", recipient.getEmail(), recipient.getId(), message);
+        
+        // Broadcast via WebSocket
+        webSocketService.sendToUser(recipient.getId(), "NOTIFICATION_RECEIVED", toResponse(notification));
     }
 
     @Override

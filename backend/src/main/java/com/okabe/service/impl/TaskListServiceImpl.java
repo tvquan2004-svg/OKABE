@@ -12,6 +12,7 @@ import com.okabe.exception.UnauthorizedException;
 import com.okabe.repository.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.TaskListService;
+import com.okabe.service.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class TaskListServiceImpl implements TaskListService {
     private final BoardRepository boardRepository;
     private final CardRepository cardRepository;
     private final WorkspaceMemberRepository memberRepository;
+    private final WebSocketService webSocketService;
 
     @Override
     public List<ListResponse> getListsByBoard(Long boardId, UserPrincipal currentUser) {
@@ -56,7 +58,11 @@ public class TaskListServiceImpl implements TaskListService {
 
         taskList = taskListRepository.save(taskList);
         log.info("List created: {} in board {}", taskList.getName(), boardId);
-        return toListResponse(taskList);
+        
+        ListResponse response = toListResponse(taskList);
+        webSocketService.broadcastToBoard(boardId, "LIST_CREATED", response, currentUser.getId());
+        
+        return response;
     }
 
     @Override
@@ -69,7 +75,10 @@ public class TaskListServiceImpl implements TaskListService {
         if (request.isArchived() != null) taskList.setIsArchived(request.isArchived());
 
         taskList = taskListRepository.save(taskList);
-        return toListResponse(taskList);
+        ListResponse response = toListResponse(taskList);
+        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_UPDATED", response, currentUser.getId());
+        
+        return response;
     }
 
     @Override
@@ -85,15 +94,17 @@ public class TaskListServiceImpl implements TaskListService {
             taskListRepository.save(taskList);
         }
         log.info("Lists reordered in board {}", boardId);
+        webSocketService.broadcastToBoard(boardId, "LIST_REORDERED", orderedIds, currentUser.getId());
     }
 
     @Override
     @Transactional
     public void deleteList(Long listId, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+        Long boardId = taskList.getBoard().getId();
         taskListRepository.delete(taskList);
         log.info("List deleted: {}", listId);
+        webSocketService.broadcastToBoard(boardId, "LIST_DELETED", listId, currentUser.getId());
     }
 
     // ─── Helpers ────────────────────────────────────────
