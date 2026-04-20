@@ -3,7 +3,6 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import { useAppSelector } from './hooks/useRedux';
 import BoardPage from './pages/BoardPage';
 import DashboardPage from './pages/DashboardPage';
-import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import WorkspacePage from './pages/WorkspacePage';
