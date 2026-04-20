@@ -14,6 +14,7 @@ import com.okabe.repository.UserRepository;
 import com.okabe.repository.WorkspaceMemberRepository;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.CommentService;
+import com.okabe.service.EmailNotificationService;
 import com.okabe.service.NotificationService;
 import com.okabe.service.WebSocketService;
 import com.okabe.util.MentionParser;
@@ -39,6 +40,7 @@ public class CommentServiceImpl implements CommentService {
     private final WorkspaceMemberRepository memberRepository;
     private final NotificationService notificationService;
     private final WebSocketService webSocketService;
+    private final EmailNotificationService emailNotificationService;
 
     @Override
     @Transactional
@@ -84,6 +86,15 @@ public class CommentServiceImpl implements CommentService {
                         "CARD",
                         card.getId(),
                         author.getUsername() + " mentioned you in a comment on card: " + card.getTitle()
+                );
+
+                emailNotificationService.sendMentionedEmail(
+                        author,
+                        mentionedUser,
+                        card.getTitle(),
+                        card.getTaskList().getBoard().getId(),
+                        card.getId(),
+                        request.getContent().length() > 100 ? request.getContent().substring(0, 100) + "..." : request.getContent()
                 );
             }
         }
@@ -137,6 +148,15 @@ public class CommentServiceImpl implements CommentService {
                         "CARD",
                         comment.getCard().getId(),
                         author.getUsername() + " mentioned you in an edited comment on card: " + comment.getCard().getTitle()
+                );
+
+                emailNotificationService.sendMentionedEmail(
+                        author,
+                        mentionedUser,
+                        comment.getCard().getTitle(),
+                        comment.getCard().getTaskList().getBoard().getId(),
+                        comment.getCard().getId(),
+                        request.getContent().length() > 100 ? request.getContent().substring(0, 100) + "..." : request.getContent()
                 );
             }
         }

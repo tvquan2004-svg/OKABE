@@ -15,6 +15,7 @@ import com.okabe.repository.WorkspaceMemberRepository;
 import com.okabe.repository.WorkspaceRepository;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.WorkspaceService;
+import com.okabe.service.EmailNotificationService;
 import com.okabe.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final WorkspaceMemberRepository memberRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final EmailNotificationService emailNotificationService;
 
     @Override
     public List<WorkspaceResponse> getUserWorkspaces(UserPrincipal currentUser) {
@@ -134,6 +136,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     public com.okabe.dto.response.WorkspaceMemberResponse addMemberToWorkspace(Long workspaceId,
             com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
         validateAdminAccess(workspaceId, currentUser.getId());
+        Workspace workspace = findWorkspaceOrThrow(workspaceId);
 
         User userToAdd = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.email()));
@@ -161,6 +164,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             "WORKSPACE",
             workspaceId,
             String.format("%s added you to the workspace", actor.getUsername())
+        );
+
+        emailNotificationService.sendInvitationEmail(
+            actor,
+            userToAdd,
+            workspace.getName()
         );
 
         log.info("User {} added to workspace {} with role {}", request.email(), workspaceId, member.getRole());

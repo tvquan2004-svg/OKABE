@@ -1,46 +1,53 @@
+version: '3.8'
+
 services:
-  # ─── MySQL Database ────────────────────────────────
+  # --- MySQL Database ---
   mysql:
     image: mysql:8.0
     container_name: okabe-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: okabe_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - okabe-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
 
-  # ─── Redis Cache ───────────────────────────────────
+  # --- Redis Cache ---
   redis:
-    image: redis:7-alpine
+    image: redis:7.0-alpine
     container_name: okabe-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - okabe-net
 
-  # ─── Spring Boot Backend ───────────────────────────
+  # --- MailHog (Email Testing) ---
+  mailhog:
+    image: mailhog/mailhog
+    container_name: okabe-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    networks:
+      - okabe-net
+
+  # --- Spring Boot Backend ---
   backend:
-    build:
+    build: 
       context: ./backend
       dockerfile: Dockerfile
     container_name: okabe-backend
@@ -48,22 +55,32 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/okabe_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET}
+      # MailHog Config
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: 
+      SPRING_MAIL_PASSWORD: 
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      APP_URL: http://localhost:5173
+      JWT_SECRET: ${JWT_SECRET:-your_very_strong_and_long_jwt_secret_key_here}
     depends_on:
       mysql:
         condition: service_healthy
       redis:
-        condition: service_healthy
+        condition: service_started
+      mailhog:
+        condition: service_started
     networks:
       - okabe-net
 
-  # ─── React Frontend ────────────────────────────────
+  # --- Vite Frontend ---
   frontend:
     build:
       context: ./frontend
@@ -71,7 +88,9 @@ services:
     container_name: okabe-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080/api/v1
     depends_on:
       - backend
     networks:
@@ -79,9 +98,7 @@ services:
 
 volumes:
   mysql_data:
-    driver: local
   redis_data:
-    driver: local
 
 networks:
   okabe-net:

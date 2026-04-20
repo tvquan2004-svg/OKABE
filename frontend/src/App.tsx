@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import WorkspacePage from './pages/WorkspacePage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -25,6 +26,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
         <Route path="/board/:boardId" element={<BoardPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
