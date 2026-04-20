@@ -135,6 +135,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     await unassignMember({ cardId: card.id, userId, boardId }).unwrap();
   };
 
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {

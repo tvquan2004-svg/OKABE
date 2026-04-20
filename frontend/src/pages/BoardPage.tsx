@@ -14,6 +14,7 @@ import {
   useUpdateBoardMutation,
   useUpdateListMutation,
   useSearchCardsQuery,
+  useMoveCardMutation,
   type CardSearchParams,
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
@@ -22,6 +23,14 @@ import { FiSettings, FiImage } from 'react-icons/fi';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
 import { useEffect } from 'react';
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+} from '@dnd-kit/core';
 
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -35,6 +44,15 @@ function BoardPage() {
   const [createCard] = useCreateCardMutation();
   const [deleteList] = useDeleteListMutation();
   const [deleteCard] = useDeleteCardMutation();
+  const [moveCard] = useMoveCardMutation();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
 
   const board = boardData?.data;
   const lists = board?.lists ?? [];
@@ -132,6 +150,51 @@ function BoardPage() {
     await deleteCard({ id: cardId, boardId: id }).unwrap();
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const cardId = Number(active.id);
+    const overId = over.id.toString();
+
+    // Find target list and position
+    let targetListId: number | null = null;
+    let newPosition = 0;
+
+    if (overId.startsWith('list-')) {
+      targetListId = Number(overId.replace('list-', ''));
+      // Find the list and put at the end
+      const targetList = lists.find(l => l.id === targetListId);
+      newPosition = targetList?.cards.length ?? 0;
+    } else {
+      // It's a card id or similar
+      const targetCardId = Number(overId);
+      const targetList = lists.find(l => l.cards.some(c => c.id === targetCardId));
+      if (targetList) {
+        targetListId = targetList.id;
+        const index = targetList.cards.findIndex(c => c.id === targetCardId);
+        newPosition = index !== -1 ? index : targetList.cards.length;
+      }
+    }
+
+    if (targetListId && cardId) {
+      const card = lists.flatMap(l => l.cards).find(c => c.id === cardId);
+      // Only call API if list or position changed
+      if (card && (card.listId !== targetListId || card.position !== newPosition)) {
+        try {
+          await moveCard({ 
+            id: cardId, 
+            boardId: id, 
+            targetListId, 
+            position: newPosition 
+          }).unwrap();
+        } catch (err) {
+          console.error('Failed to move card:', err);
+        }
+      }
+    }
+  };
+
   const priorityColor = (priority: string) => {
     switch (priority) {
       case 'CRITICAL': return '#ef4444';
@@ -216,43 +279,49 @@ function BoardPage() {
         onFilterChange={setFilters}
       />
 
-      <div className={styles.kanban}>
-        {lists.map((list) => (
-          <BoardListColumn
-            key={list.id}
-            list={list}
-            onEditList={handleOpenEditList}
-            onDeleteList={(listId) => void handleDeleteList(listId)}
-            onDeleteCard={(cardId) => void handleDeleteCard(cardId)}
-             onAddCard={handleAddCard}
-            onCardClick={setSelectedCard}
-            priorityColor={priorityColor}
-            matchedCardIds={isFiltering ? matchedCardIds : null}
-          />
-        ))}
+      <DndContext 
+        sensors={sensors} 
+        collisionDetection={closestCorners}
+        onDragEnd={handleDragEnd}
+      >
+        <div className={styles.kanban}>
+          {lists.map((list) => (
+            <BoardListColumn
+              key={list.id}
+              list={list}
+              onEditList={handleOpenEditList}
+              onDeleteList={(listId) => void handleDeleteList(listId)}
+              onDeleteCard={(cardId) => void handleDeleteCard(cardId)}
+              onAddCard={handleAddCard}
+              onCardClick={setSelectedCard}
+              priorityColor={priorityColor}
+              matchedCardIds={isFiltering ? matchedCardIds : null}
+            />
+          ))}
 
-        <div className={styles.addListColumn}>
-          {showAddList ? (
-            <div className={styles.addListForm}>
-              <input
-                type="text"
-                value={newListName}
-                onChange={(e) => setNewListName(e.target.value)}
-                placeholder="Enter list name..."
-                className={styles.addListInput}
-                autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && void handleAddList()}
-              />
-              <div className={styles.addCardActions}>
-                <button className="btn btn-primary" onClick={() => void handleAddList()}>Add</button>
-                <button className="btn btn-outline" onClick={() => setShowAddList(false)}>Cancel</button>
+          <div className={styles.addListColumn}>
+            {showAddList ? (
+              <div className={styles.addListForm}>
+                <input
+                  type="text"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="Enter list name..."
+                  className={styles.addListInput}
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && void handleAddList()}
+                />
+                <div className={styles.addCardActions}>
+                  <button className="btn btn-primary" onClick={() => void handleAddList()}>Add</button>
+                  <button className="btn btn-outline" onClick={() => setShowAddList(false)}>Cancel</button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <button className={styles.addListBtn} onClick={() => setShowAddList(true)}>+ Add another list</button>
-          )}
+            ) : (
+              <button className={styles.addListBtn} onClick={() => setShowAddList(true)}>+ Add another list</button>
+            )}
+          </div>
         </div>
-      </div>
+      </DndContext>
 
       {isEditBoardModalOpen ? (
         <EntityModal
