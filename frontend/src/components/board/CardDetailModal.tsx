@@ -31,6 +31,7 @@ import {
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
+import CommentSection from './CommentSection';
 import styles from './CardDetailModal.module.css';
 
 interface CardDetailModalProps {
@@ -371,6 +372,8 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 ))}
               </div>
             </div>
+
+            <CommentSection cardId={card.id} />
           </main>
 
           <aside className={styles.sidebar}>
