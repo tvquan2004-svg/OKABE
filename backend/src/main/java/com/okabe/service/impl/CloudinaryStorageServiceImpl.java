@@ -6,6 +6,7 @@ import com.okabe.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @org.springframework.context.annotation.Primary
+@ConditionalOnProperty(name = "app.storage.type", havingValue = "cloudinary")
 @RequiredArgsConstructor
 public class CloudinaryStorageServiceImpl implements StorageService {
 

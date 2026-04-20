@@ -25,18 +25,12 @@ import styles from './BoardPage.module.css';
 import { useEffect } from 'react';
 import {
   DndContext,
-  DragOverEvent,
   DragEndEvent,
   PointerSensor,
   useSensor,
   useSensors,
   closestCorners,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
 
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
