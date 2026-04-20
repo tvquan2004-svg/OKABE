@@ -35,6 +35,17 @@ const SortableCard: React.FC<SortableCardProps> = ({
     zIndex: isDragging ? 1000 : 1,
   };
 
+  const getFullUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  };
+
+  const coverImage = card.attachments?.find(a => a.mimeType.includes('image'))?.url;
+  const totalItems = card.checklists?.reduce((acc, c) => acc + c.items.length, 0) || 0;
+  const completedItems = card.checklists?.reduce((acc, c) => acc + c.items.filter((i) => i.isCompleted).length, 0) || 0;
+  const isChecklistCompleted = totalItems > 0 && totalItems === completedItems;
+
   return (
     <div
       ref={setNodeRef}
@@ -46,124 +57,141 @@ const SortableCard: React.FC<SortableCardProps> = ({
       }`}
       onClick={() => onCardClick(card)}
     >
-      <div className={styles.cardHeader}>
-        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
-          {card.labels?.map((l) => (
-            <div
-              key={l.id}
-              style={{ width: '32px', height: '6px', background: l.color, borderRadius: '3px' }}
-            />
-          ))}
+      {coverImage && (
+        <div className={styles.cardCover}>
+          <img src={getFullUrl(coverImage)} alt="Cover" />
         </div>
-        <span
-          className={styles.priorityDot}
-          style={{ background: priorityColor(card.priority) }}
-          title={card.priority}
-        />
-        <button
-          className={styles.deleteCardBtn}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDeleteCard(card.id);
-          }}
-          onPointerDown={(e) => e.stopPropagation()} // Prevent drag when clicking delete
-        >
-          x
-        </button>
-      </div>
-      <h4 className={styles.cardTitle}>{card.title}</h4>
-
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
-        {card.description ? (
-          <span title="This card has a description" style={{ fontSize: '0.8rem' }}>📝</span>
-        ) : null}
-        {card.checklists?.length > 0 ? (
+      )}
+      
+      <div className={styles.cardContent}>
+        <div className={styles.cardHeader}>
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
+            {card.labels?.map((l) => (
+              <div
+                key={l.id}
+                style={{ width: '32px', height: '6px', background: l.color, borderRadius: '3px' }}
+              />
+            ))}
+          </div>
           <span
-            title="Checklists"
-            style={{
-              fontSize: '0.8rem',
-              background: '#f1f5f9',
-              padding: '2px 4px',
-              borderRadius: '4px',
+            className={styles.priorityDot}
+            style={{ background: priorityColor(card.priority) }}
+            title={card.priority}
+          />
+          <button
+            className={styles.deleteCardBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteCard(card.id);
             }}
+            onPointerDown={(e) => e.stopPropagation()}
           >
-            ✅ {card.checklists.reduce((acc, c) => acc + c.items.filter((i) => i.isCompleted).length, 0)}/
-            {card.checklists.reduce((acc, c) => acc + c.items.length, 0)}
-          </span>
-        ) : null}
-        {card.attachments?.length > 0 ? (
-          <span
-            title="Attachments"
-            style={{
-              fontSize: '0.8rem',
-              background: '#f1f5f9',
-              padding: '2px 4px',
-              borderRadius: '4px',
-            }}
-          >
-            📎 {card.attachments.length}
-          </span>
-        ) : null}
+            x
+          </button>
+        </div>
 
-        <div style={{ display: 'flex', marginLeft: 'auto' }}>
-          {card.members?.slice(0, 3).map((member, i) => (
-            <div
-              key={member.id}
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: '#e2e8f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                border: '2px solid #ffffff',
-                marginLeft: i > 0 ? '-8px' : '0',
-                zIndex: 3 - i,
-                overflow: 'hidden',
-              }}
-              title={member.username}
-            >
-              {member.avatarUrl ? (
-                <img
-                  src={member.avatarUrl}
-                  alt={member.username}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                member.username.charAt(0).toUpperCase()
-              )}
-            </div>
-          ))}
-          {card.members?.length > 3 && (
-            <div
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: '#f1f5f9',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.6rem',
-                fontWeight: 700,
-                border: '2px solid #ffffff',
-                marginLeft: '-8px',
-                zIndex: 0,
-              }}
-            >
-              +{card.members.length - 3}
-            </div>
+        <h4 className={styles.cardTitle}>{card.title}</h4>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
+          {card.description && (
+            <span title="Có mô tả" style={{ fontSize: '0.8rem' }}>📝</span>
           )}
+          
+          {totalItems > 0 && (
+            <span
+              title="Tiến trình"
+              style={{
+                fontSize: '0.75rem',
+                background: isChecklistCompleted ? '#10b981' : 'rgba(255,255,255,0.1)',
+                color: isChecklistCompleted ? 'white' : '#94a3b8',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              ✅ {completedItems}/{totalItems}
+            </span>
+          )}
+
+          {card.attachments?.length > 0 && (
+            <span
+              title="Đính kèm"
+              style={{
+                fontSize: '0.75rem',
+                background: 'rgba(255,255,255,0.1)',
+                color: '#94a3b8',
+                padding: '2px 6px',
+                borderRadius: '3px',
+              }}
+            >
+              📎 {card.attachments.length}
+            </span>
+          )}
+
+          <div style={{ display: 'flex', marginLeft: 'auto' }}>
+            {card.members?.slice(0, 3).map((member, i) => (
+              <div
+                key={member.id}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  background: '#334155',
+                  color: '#f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  border: '2px solid #1e293b',
+                  marginLeft: i > 0 ? '-10px' : '0',
+                  zIndex: 3 - i,
+                  overflow: 'hidden',
+                }}
+                title={member.username}
+              >
+                {member.avatarUrl ? (
+                  <img
+                    src={getFullUrl(member.avatarUrl)}
+                    alt={member.username}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  member.username.charAt(0).toUpperCase()
+                )}
+              </div>
+            ))}
+            {card.members?.length > 3 && (
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  background: '#475569',
+                  color: '#f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.6rem',
+                  fontWeight: 700,
+                  border: '2px solid #1e293b',
+                  marginLeft: '-10px',
+                  zIndex: 0,
+                }}
+              >
+                +{card.members.length - 3}
+              </div>
+            )}
+          </div>
         </div>
 
-        {card.dueDate ? (
-          <span className={styles.dueDate} style={{ fontSize: '0.7rem' }}>
-            {new Date(card.dueDate).toLocaleDateString()}
-          </span>
-        ) : null}
+        {card.dueDate && (
+          <div style={{ marginTop: '8px', fontSize: '0.7rem', color: '#94a3b8' }}>
+            📅 {new Date(card.dueDate).toLocaleDateString()}
+          </div>
+        )}
       </div>
     </div>
   );

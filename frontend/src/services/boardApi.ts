@@ -274,8 +274,36 @@ export const boardApi = apiSlice.injectEndpoints({
       },
       invalidatesTags: (_r, _e, { id }) => [{ type: 'Board', id }],
     }),
+    // Phase 3: Comments
+    getCardComments: builder.query<ApiRes<PaginatedRes<CommentResponse>>, { cardId: number; page?: number }>({
+      query: ({ cardId, page = 0 }) => `/cards/${cardId}/comments?page=${page}&size=20`,
+      providesTags: (_r, _e, { cardId }) => [{ type: 'Comment', id: cardId }],
+    }),
+    createComment: builder.mutation<ApiRes<CommentResponse>, { cardId: number; content: string }>({
+      query: ({ cardId, content }) => ({ url: `/cards/${cardId}/comments`, method: 'POST', body: { content } }),
+      invalidatesTags: (_r, _e, { cardId }) => [{ type: 'Comment', id: cardId }],
+    }),
+    updateComment: builder.mutation<ApiRes<CommentResponse>, { id: number; cardId: number; content: string }>({
+      query: ({ id, content }) => ({ url: `/comments/${id}`, method: 'PUT', body: { content } }),
+      invalidatesTags: (_r, _e, { cardId }) => [{ type: 'Comment', id: cardId }],
+    }),
+    deleteComment: builder.mutation<ApiRes<void>, { id: number; cardId: number }>({
+      query: ({ id }) => ({ url: `/comments/${id}`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, { cardId }) => [{ type: 'Comment', id: cardId }],
+    }),
   }),
 });
+
+export interface CommentResponse {
+  id: number;
+  cardId: number;
+  author: User;
+  content: String;
+  isEdited: boolean;
+  mentions: User[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const {
   useGetBoardsQuery,
@@ -307,6 +335,10 @@ export const {
   useGetCardActivitiesQuery,
   useSearchCardsQuery,
   useUpdateBoardBackgroundMutation,
+  useGetCardCommentsQuery,
+  useCreateCommentMutation,
+  useUpdateCommentMutation,
+  useDeleteCommentMutation,
 } = boardApi;
 
 export const useGetBoardsByWorkspaceQuery = useGetBoardsQuery;

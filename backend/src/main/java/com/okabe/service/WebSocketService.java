@@ -58,4 +58,24 @@ public class WebSocketService {
             messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", event);
         }
     }
+
+    public void sendToTopic(String destination, String type, Object payload) {
+        WebSocketEvent event = WebSocketEvent.builder()
+                .type(type)
+                .payload(payload)
+                .build();
+        
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    log.debug("Sending {} to topic {} after commit", type, destination);
+                    messagingTemplate.convertAndSend(destination, event);
+                }
+            });
+        } else {
+            log.debug("Sending {} to topic {} (no active transaction)", type, destination);
+            messagingTemplate.convertAndSend(destination, event);
+        }
+    }
 }
