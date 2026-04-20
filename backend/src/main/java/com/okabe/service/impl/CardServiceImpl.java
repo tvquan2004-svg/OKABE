@@ -11,6 +11,7 @@ import com.okabe.security.UserPrincipal;
 import com.okabe.service.ActivityService;
 import com.okabe.service.CardService;
 import com.okabe.service.NotificationService;
+import com.okabe.service.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,7 @@ public class CardServiceImpl implements CardService {
     private final BoardRepository boardRepository;
     private final ActivityService activityService;
     private final NotificationService notificationService;
+    private final WebSocketService webSocketService;
 
     @Override
     public Page<CardResponse> searchCards(Long boardId, CardSearchRequest request, UserPrincipal currentUser) {
@@ -102,7 +104,11 @@ public class CardServiceImpl implements CardService {
 
         card = cardRepository.save(card);
         log.info("Card created: {} in list {}", card.getTitle(), listId);
-        return toCardResponse(card);
+        
+        CardResponse response = toCardResponse(card);
+        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "CARD_CREATED", response, currentUser.getId());
+        
+        return response;
     }
 
     @Override
@@ -143,7 +149,10 @@ public class CardServiceImpl implements CardService {
         }
 
         card = cardRepository.save(card);
-        return toCardResponse(card);
+        CardResponse response = toCardResponse(card);
+        webSocketService.broadcastToBoard(card.getTaskList().getBoard().getId(), "CARD_UPDATED", response, currentUser.getId());
+        
+        return response;
     }
 
     @Override
@@ -204,16 +213,23 @@ public class CardServiceImpl implements CardService {
         log.info("Card {} moved from board {} to board {} list {} at position {}", 
             cardId, sourceBoard.getId(), targetBoard.getId(), targetList.getId(), newPos);
         
-        return toCardResponse(card);
+        CardResponse response = toCardResponse(card);
+        webSocketService.broadcastToBoard(sourceBoard.getId(), "CARD_MOVED", response, currentUser.getId());
+        if (!sourceBoard.getId().equals(targetBoard.getId())) {
+            webSocketService.broadcastToBoard(targetBoard.getId(), "CARD_MOVED", response, currentUser.getId());
+        }
+        
+        return response;
     }
 
     @Override
     @Transactional
     public void deleteCard(Long cardId, UserPrincipal currentUser) {
         Card card = findCardOrThrow(cardId);
-        validateWriteAccess(card, currentUser.getId());
+        Long boardId = card.getTaskList().getBoard().getId();
         cardRepository.delete(card);
         log.info("Card deleted: {}", cardId);
+        webSocketService.broadcastToBoard(boardId, "CARD_DELETED", cardId, currentUser.getId());
     }
 
     // ─── Checklist Management ──────────────────────────
@@ -457,7 +473,7 @@ public class CardServiceImpl implements CardService {
         boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
                 workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
         if (!hasAccess) {
-            throw new UnauthorizedException("VIEWERs cannot perform this action");
+            throw new UnauthorizedException("You do not have permission to perform this action");
         }
     }
 

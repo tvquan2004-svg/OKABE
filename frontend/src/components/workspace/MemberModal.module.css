@@ -216,7 +216,6 @@
 .role_OWNER { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 .role_ADMIN { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
 .role_MEMBER { background: rgba(99, 102, 241, 0.1); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.2); }
-.role_VIEWER { background: rgba(165, 165, 165, 0.1); color: #a5a5a5; border: 1px solid rgba(165, 165, 165, 0.2); }
 
 .actionBtn {
   background: none;

@@ -104,7 +104,6 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
                 >
                   <option value="ADMIN">Admin</option>
                   <option value="MEMBER">Member</option>
-                  <option value="VIEWER">Viewer</option>
                 </select>
                 <button type="submit" className="btn btn-primary" disabled={isInviting}>
                   {isInviting ? 'Inviting...' : 'Invite'}
@@ -149,7 +148,6 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
                           >
                             <option value="ADMIN">Admin</option>
                             <option value="MEMBER">Member</option>
-                            <option value="VIEWER">Viewer</option>
                           </select>
                           <button
                             className={`${styles.actionBtn} ${styles.removeBtn}`}

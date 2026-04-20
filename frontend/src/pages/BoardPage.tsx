@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAppDispatch } from '../hooks/useRedux';
+import { useWebSocket } from '../hooks/useWebSocket';
+import { apiSlice } from '../services/apiSlice';
 import BoardListColumn from '../components/board/BoardListColumn';
 import EntityModal from '../components/common/EntityModal';
 import CardDetailModal from '../components/board/CardDetailModal';
@@ -35,7 +38,21 @@ import {
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const id = Number(boardId);
+
+  // Phase 3: WebSocket Real-time Updates
+  useWebSocket({
+    topics: [`/topic/board.${id}`],
+    onMessage: (message) => {
+      if (message.type.startsWith('CARD_') || message.type.startsWith('LIST_')) {
+        dispatch(apiSlice.util.invalidateTags([{ type: 'Board', id }]));
+      }
+      if (message.type === 'NOTIFICATION_RECEIVED') {
+        dispatch(apiSlice.util.invalidateTags(['Notification']));
+      }
+    },
+  });
 
   const { data: boardData, isLoading } = useGetBoardQuery(id);
   const [createList] = useCreateListMutation();

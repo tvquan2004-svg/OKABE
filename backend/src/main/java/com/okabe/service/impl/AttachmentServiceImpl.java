@@ -114,7 +114,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
                 workspaceId, userId, List.of(Role.OWNER, Role.ADMIN, Role.MEMBER));
         if (!hasAccess) {
-            throw new UnauthorizedException("VIEWERs cannot perform this action");
+            throw new UnauthorizedException("You do not have permission to perform this action");
         }
     }
 
