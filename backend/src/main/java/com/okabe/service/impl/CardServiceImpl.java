@@ -12,8 +12,14 @@ import com.okabe.service.ActivityService;
 import com.okabe.service.CardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.okabe.repository.specification.CardSpecification;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -35,6 +41,22 @@ public class CardServiceImpl implements CardService {
     private final LabelRepository labelRepository;
     private final BoardRepository boardRepository;
     private final ActivityService activityService;
+
+    @Override
+    public Page<CardResponse> searchCards(Long boardId, CardSearchRequest request, UserPrincipal currentUser) {
+        // Validate board exists and user has access
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board", boardId));
+        validateMembership(board.getWorkspace().getId(), currentUser.getId());
+
+        Sort sort = Sort.by(Sort.Direction.ASC, "dueDate").and(Sort.by(Sort.Direction.ASC, "position"));
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize(), sort);
+
+        Specification<Card> spec = CardSpecification.filterByRequest(boardId, request);
+        
+        return cardRepository.findAll(spec, pageRequest)
+                .map(this::toCardResponse);
+    }
 
     @Override
     public CardResponse getCard(Long cardId, UserPrincipal currentUser) {

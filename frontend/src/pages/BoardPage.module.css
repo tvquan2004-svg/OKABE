@@ -169,6 +169,12 @@
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
+.card.dimmed {
+  opacity: 0.3;
+  filter: grayscale(0.5);
+  pointer-events: none;
+}
+
 .cardHeader {
   display: flex;
   align-items: center;

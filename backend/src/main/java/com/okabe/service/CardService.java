@@ -4,9 +4,13 @@ import com.okabe.dto.request.*;
 import com.okabe.dto.response.*;
 import com.okabe.security.UserPrincipal;
 
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 
 public interface CardService {
+
+    Page<CardResponse> searchCards(Long boardId, CardSearchRequest request, UserPrincipal currentUser);
 
     CardResponse getCard(Long cardId, UserPrincipal currentUser);
 

@@ -13,8 +13,11 @@ import {
   useGetBoardQuery,
   useUpdateBoardMutation,
   useUpdateListMutation,
+  useSearchCardsQuery,
+  type CardSearchParams,
 } from '../services/boardApi';
-import { useGetWorkspaceQuery } from '../services/workspaceApi';
+import { BoardFilter } from '../components/board/BoardFilter';
+import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
 
 function BoardPage() {
@@ -40,6 +43,10 @@ function BoardPage() {
     workspaceData?.data.currentUserRole === 'OWNER' ||
     workspaceData?.data.currentUserRole === 'ADMIN';
 
+  const { data: membersData } = useGetWorkspaceMembersQuery(board?.workspaceId ?? 0, {
+    skip: !board?.workspaceId,
+  });
+
   const [newListName, setNewListName] = useState('');
   const [showAddList, setShowAddList] = useState(false);
   const [boardName, setBoardName] = useState('');
@@ -50,6 +57,19 @@ function BoardPage() {
   
   // Phase 2: Card Detail Modal State
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+
+  // Phase 2: Search & Filter State
+  const [filters, setFilters] = useState<CardSearchParams>({});
+  const { data: searchData } = useSearchCardsQuery(
+    { boardId: id, params: filters },
+    { skip: !id || Object.keys(filters).length === 0 }
+  );
+
+  const matchedCardIds = searchData?.data?.content.map(c => c.id) ?? null;
+  const isFiltering = Object.keys(filters).some(key => {
+    const val = (filters as any)[key];
+    return val !== undefined && val !== '' && (Array.isArray(val) ? val.length > 0 : true);
+  });
 
   const openBoardEditModal = () => {
     if (!board) return;
@@ -137,6 +157,17 @@ function BoardPage() {
         ) : null}
       </header>
 
+      <BoardFilter 
+        labels={board.lists?.flatMap(l => l.cards).flatMap(c => c.labels).reduce((acc: any[], curr) => acc.find(x => x.id === curr.id) ? acc : [...acc, curr], []) ?? []}
+        members={membersData?.data.map(m => ({
+          id: m.userId,
+          username: m.username,
+          email: m.email,
+          avatarUrl: m.avatarUrl
+        })) ?? []}
+        onFilterChange={setFilters}
+      />
+
       <div className={styles.kanban}>
         {lists.map((list) => (
           <BoardListColumn
@@ -145,9 +176,10 @@ function BoardPage() {
             onEditList={handleOpenEditList}
             onDeleteList={(listId) => void handleDeleteList(listId)}
             onDeleteCard={(cardId) => void handleDeleteCard(cardId)}
-            onAddCard={handleAddCard}
+             onAddCard={handleAddCard}
             onCardClick={setSelectedCard}
             priorityColor={priorityColor}
+            matchedCardIds={isFiltering ? matchedCardIds : null}
           />
         ))}
 
