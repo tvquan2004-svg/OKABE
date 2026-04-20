@@ -149,7 +149,6 @@ function RegisterPage() {
             onError={() => {
               setError('Google Login Failed');
             }}
-            useOneTap
           />
         </div>
 

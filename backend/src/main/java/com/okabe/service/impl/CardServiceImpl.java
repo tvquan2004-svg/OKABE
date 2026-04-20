@@ -10,6 +10,7 @@ import com.okabe.repository.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.ActivityService;
 import com.okabe.service.CardService;
+import com.okabe.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,6 +42,7 @@ public class CardServiceImpl implements CardService {
     private final LabelRepository labelRepository;
     private final BoardRepository boardRepository;
     private final ActivityService activityService;
+    private final NotificationService notificationService;
 
     @Override
     public Page<CardResponse> searchCards(Long boardId, CardSearchRequest request, UserPrincipal currentUser) {
@@ -368,6 +370,16 @@ public class CardServiceImpl implements CardService {
         cardRepository.save(card);
         
         activityService.logActivity(card, actor, "ASSIGN_MEMBER", "added " + member.getUsername() + " to this card");
+        
+        notificationService.createNotification(
+            member, 
+            actor, 
+            "ASSIGNED_TO_CARD", 
+            "CARD", 
+            card.getId(), 
+            String.format("%s assigned you to the card \"%s\"", actor.getUsername(), card.getTitle())
+        );
+        
         log.info("Member {} assigned to card {}", userId, cardId);
     }
 
