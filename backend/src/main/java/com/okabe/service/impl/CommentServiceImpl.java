@@ -108,7 +108,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         Set<Long> oldMentionIds = comment.getMentions().stream().map(User::getId).collect(Collectors.toSet());
-        // Improved mention parsing for update
+        Long workspaceId = comment.getCard().getTaskList().getBoard().getWorkspace().getId();
         var workspaceMembers = memberRepository.findByWorkspaceId(workspaceId);
         Set<User> newMentions = new HashSet<>();
 
