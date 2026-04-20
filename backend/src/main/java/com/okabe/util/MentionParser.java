@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class MentionParser {
     
-    private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
+    private static final Pattern MENTION_PATTERN = Pattern.compile("@([^\\s@]+(?:\\s+[^\\s@]+)*)");
 
     /**
      * Extracts usernames from content string (e.g., "@john hello @jane" -> ["john", "jane"])

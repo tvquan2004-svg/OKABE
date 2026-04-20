@@ -51,16 +51,17 @@ public class CommentServiceImpl implements CommentService {
         User author = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId()));
 
-        Set<String> mentionedUsernames = MentionParser.extractUsernames(request.getContent());
+        // Improved mention parsing: check against workspace members
+        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
+        var workspaceMembers = memberRepository.findByWorkspaceId(workspaceId);
         Set<User> mentions = new HashSet<>();
         
-        for (String username : mentionedUsernames) {
-            userRepository.findByUsername(username).ifPresent(user -> {
-                // Optional: only mention users who are members of the workspace
-                if (memberRepository.existsByWorkspaceIdAndUserId(card.getTaskList().getBoard().getWorkspace().getId(), user.getId())) {
-                    mentions.add(user);
-                }
-            });
+        for (var member : workspaceMembers) {
+            User user = member.getUser();
+            String mentionTag = "@" + user.getUsername();
+            if (request.getContent().contains(mentionTag)) {
+                mentions.add(user);
+            }
         }
 
         Comment comment = Comment.builder()
@@ -107,17 +108,16 @@ public class CommentServiceImpl implements CommentService {
         }
 
         Set<Long> oldMentionIds = comment.getMentions().stream().map(User::getId).collect(Collectors.toSet());
-        Set<String> mentionedUsernames = MentionParser.extractUsernames(request.getContent());
+        // Improved mention parsing for update
+        var workspaceMembers = memberRepository.findByWorkspaceId(workspaceId);
         Set<User> newMentions = new HashSet<>();
-        
-        Long workspaceId = comment.getCard().getTaskList().getBoard().getWorkspace().getId();
 
-        for (String username : mentionedUsernames) {
-            userRepository.findByUsername(username).ifPresent(user -> {
-                if (memberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
-                    newMentions.add(user);
-                }
-            });
+        for (var member : workspaceMembers) {
+            User user = member.getUser();
+            String mentionTag = "@" + user.getUsername();
+            if (request.getContent().contains(mentionTag)) {
+                newMentions.add(user);
+            }
         }
 
         comment.setContent(request.getContent());

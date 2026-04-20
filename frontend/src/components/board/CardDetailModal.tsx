@@ -58,6 +58,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [description, setDescription] = useState(card.description || '');
   const [newItemContent, setNewItemContent] = useState<{ [key: number]: string }>({});
   const [showMemberPicker, setShowMemberPicker] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [updateCard] = useUpdateCardMutation();
   const [createChecklist] = useCreateChecklistMutation();
@@ -137,13 +138,22 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   };
 
 
+  const getFullUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
+        console.log('Uploading file:', file.name);
         await uploadAttachment({ cardId: card.id, boardId, file }).unwrap();
-      } catch (err) {
-        alert('Failed to upload file');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      } catch (err: any) {
+        console.error('Upload error:', err);
+        alert(`Tải lên thất bại: ${err?.data?.message || err?.message || 'Lỗi kết nối'}`);
       }
     }
   };
@@ -304,11 +314,20 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               <div className={styles.attachmentsList}>
                 {card.attachments?.map((attachment) => (
                   <div key={attachment.id} className={styles.attachmentItem}>
-                    <div className={styles.fileThumbnail}>
+                    <div className={styles.fileThumbnail} style={{ width: '112px', height: '80px', flexShrink: 0, background: '#f4f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                       {attachment.mimeType.includes('image') ? (
-                        <img src={attachment.url} alt={attachment.filename} className={styles.thumbnailImg} />
+                        <img 
+                          src={getFullUrl(attachment.url)} 
+                          alt={attachment.filename} 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) parent.innerHTML = '<span style="font-size: 24px;">🖼️</span>';
+                          }}
+                        />
                       ) : (
-                        <div style={{ fontSize: '1.5rem' }}>{getFileIcon(attachment.mimeType)}</div>
+                        <div style={{ fontSize: '24px' }}>{getFileIcon(attachment.mimeType)}</div>
                       )}
                     </div>
                     <div className={styles.fileInfo}>
@@ -329,16 +348,17 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                   </div>
                 ))}
 
-                <div className={styles.uploadZone}>
-                  <label className={styles.uploadLabel}>
+                <div className={styles.uploadZone} onClick={() => fileInputRef.current?.click()} style={{ cursor: 'pointer' }}>
+                  <div className={styles.uploadLabel}>
                     <MdCloudUpload size={20} />
                     <span>Upload a file...</span>
                     <input 
                       type="file" 
-                      className={styles.fileInput} 
+                      ref={fileInputRef}
+                      style={{ display: 'none' }} 
                       onChange={handleFileUpload}
                     />
-                  </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -373,7 +393,6 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               </div>
             </div>
 
-            <CommentSection cardId={card.id} />
           </main>
 
           <aside className={styles.sidebar}>
@@ -464,6 +483,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 onChange={(e) => handleUpdateCard({ dueDate: e.target.value })}
               />
             </div>
+
+            <hr style={{ margin: '2rem 0', border: 'none', borderTop: '2px solid #334155' }} />
+            <CommentSection cardId={card.id} workspaceId={workspaceId} />
           </aside>
         </div>
       </div>
