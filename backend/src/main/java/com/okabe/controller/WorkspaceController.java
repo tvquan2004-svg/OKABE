@@ -83,13 +83,14 @@ public class WorkspaceController {
     }
 
     @PostMapping("/{id}/members")
-    @Operation(summary = "Add a member to workspace (ADMIN/OWNER only)")
-    public ResponseEntity<ApiResponse<com.okabe.dto.response.WorkspaceMemberResponse>> addMemberToWorkspace(
+    @Operation(summary = "Invite a member to workspace (ADMIN/OWNER only)")
+    public ResponseEntity<ApiResponse<Void>> addMemberToWorkspace(
             @PathVariable Long id,
             @Valid @RequestBody com.okabe.dto.request.AddWorkspaceMemberRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
+        workspaceService.inviteMember(id, request, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(workspaceService.addMemberToWorkspace(id, request, currentUser), "Member added successfully"));
+                .body(ApiResponse.success(null, "Invitation sent successfully"));
     }
 
     @PutMapping("/{id}/members/{memberId}/role")
@@ -110,5 +111,33 @@ public class WorkspaceController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         workspaceService.removeMemberFromWorkspace(id, memberId, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Member removed successfully"));
+    }
+
+    @PostMapping("/{id}/invite")
+    @Operation(summary = "Invite a member to workspace (ADMIN/OWNER only)")
+    public ResponseEntity<ApiResponse<Void>> inviteMember(
+            @PathVariable Long id,
+            @Valid @RequestBody com.okabe.dto.request.AddWorkspaceMemberRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        workspaceService.inviteMember(id, request, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Invitation sent successfully"));
+    }
+
+    @PostMapping("/invitations/accept")
+    @Operation(summary = "Accept a workspace invitation")
+    public ResponseEntity<ApiResponse<Void>> acceptInvitation(
+            @RequestParam String token,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        workspaceService.acceptInvitation(token, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Invitation accepted"));
+    }
+
+    @PostMapping("/invitations/reject")
+    @Operation(summary = "Reject a workspace invitation")
+    public ResponseEntity<ApiResponse<Void>> rejectInvitation(
+            @RequestParam String token,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        workspaceService.rejectInvitation(token, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Invitation rejected"));
     }
 }

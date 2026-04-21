@@ -101,4 +101,14 @@ public class BoardController {
                 "Background updated successfully"
         ));
     }
+
+    @PostMapping("/api/v1/boards/{id}/invite")
+    @Operation(summary = "Invite a member to a board")
+    public ResponseEntity<ApiResponse<Void>> inviteMember(
+            @PathVariable Long id,
+            @RequestParam String email,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        boardService.inviteMember(id, email, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Invitation sent"));
+    }
 }

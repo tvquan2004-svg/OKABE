@@ -24,4 +24,6 @@ public interface BoardService {
     void deleteBoard(Long boardId, UserPrincipal currentUser);
 
     BoardResponse updateBackground(Long boardId, String type, String colorValue, MultipartFile file, UserPrincipal currentUser);
+
+    void inviteMember(Long boardId, String email, UserPrincipal currentUser);
 }

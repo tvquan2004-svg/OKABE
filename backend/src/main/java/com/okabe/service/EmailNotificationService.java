@@ -33,17 +33,31 @@ public class EmailNotificationService {
     private String fromEmail;
 
     @Async
-    public void sendInvitationEmail(User inviter, User recipient, String workspaceName) {
+    public void sendWorkspaceInvitationEmail(User inviter, String recipientEmail, String recipientName, String workspaceName, String token) {
+        log.info("Preparing workspace invitation email for {} (workspace: {})", recipientEmail, workspaceName);
+        
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipientName);
+        vars.put("inviterName", inviter.getUsername());
+        vars.put("workspaceName", workspaceName);
+        vars.put("invitationUrl", appUrl + "/invitations/accept?token=" + token);
+
+        sendEmail(recipientEmail, "You've been invited to join workspace: " + workspaceName, "workspace-invitation", vars);
+        log.info("Invitation email sent to queue for {}", recipientEmail);
+    }
+
+    @Async
+    public void sendBoardInvitationEmail(User inviter, User recipient, String boardName, Long boardId) {
         NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
         if (!pref.isEmailInvited()) return;
 
         Map<String, Object> vars = new HashMap<>();
         vars.put("recipientName", recipient.getUsername());
         vars.put("inviterName", inviter.getUsername());
-        vars.put("workspaceName", workspaceName);
-        vars.put("invitationUrl", appUrl + "/invitations");
+        vars.put("boardName", boardName);
+        vars.put("boardUrl", appUrl + "/board/" + boardId);
 
-        sendEmail(recipient.getEmail(), "You've been invited to join " + workspaceName, "invitation", vars);
+        sendEmail(recipient.getEmail(), "You've been added to board: " + boardName, "board-invitation", vars);
     }
 
     @Async
