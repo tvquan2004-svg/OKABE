@@ -47,4 +47,11 @@ public interface AuthService {
      * @return auth response with user info (no tokens)
      */
     AuthResponse.UserInfo getCurrentUser(UserPrincipal currentUser);
+
+    /**
+     * Verify user email using token.
+     *
+     * @param token verification token
+     */
+    void verifyEmail(String token);
 }

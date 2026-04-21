@@ -104,6 +104,16 @@ public class EmailNotificationService {
         sendEmail(recipient.getEmail(), "Reminder: " + cardTitle + " is due soon", "due-soon", vars);
     }
 
+    @Async
+    public void sendEmailVerification(User user, String token) {
+        log.info("Preparing email verification for {}", user.getEmail());
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", user.getUsername());
+        vars.put("verificationUrl", appUrl + "/verify-email?token=" + token);
+
+        sendEmail(user.getEmail(), "Verify your email address - OKABE", "email-verification", vars);
+    }
+
     private void sendEmail(String to, String subject, String templateName, Map<String, Object> variables) {
         try {
             String htmlContent = templateService.render(templateName, variables);

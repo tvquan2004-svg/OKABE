@@ -17,6 +17,7 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -28,18 +29,36 @@ function RegisterPage() {
     }
 
     try {
-      const result = await register({ username, email, password }).unwrap();
-      dispatch(setCredentials({
-        accessToken: result.data.accessToken,
-        refreshToken: result.data.refreshToken,
-        user: result.data.user,
-      }));
-      navigate('/dashboard');
+      await register({ username, email, password }).unwrap();
+      setSuccess(true);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       setError(error.data?.message ?? 'Registration failed. Please try again.');
     }
   };
+
+  if (success) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.formWrapper} style={{ textAlign: 'center' }}>
+          <div className={styles.header}>
+            <div className={styles.logo}>
+              <span className={styles.logoIcon}>⚡</span>
+              <span className={styles.logoText}>OKABE</span>
+            </div>
+            <h1 className={styles.title}>Check your email</h1>
+            <p className={styles.subtitle}>
+              We've sent a verification link to <strong>{email}</strong>.
+              Please check your inbox and click the link to activate your account.
+            </p>
+          </div>
+          <Link to="/login" className="btn btn-primary" style={{ marginTop: '20px', display: 'inline-block', textDecoration: 'none' }}>
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

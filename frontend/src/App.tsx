@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage';
 import WorkspacePage from './pages/WorkspacePage';
 import SettingsPage from './pages/SettingsPage';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 function LoginRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [searchParams] = useSearchParams();
@@ -40,6 +41,7 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="/invitations/accept" element={<AcceptInvitationPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

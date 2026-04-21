@@ -65,6 +65,9 @@ export const authApi = apiSlice.injectEndpoints({
         body,
       }),
     }),
+    verifyEmail: builder.query<ApiResponseWrapper<void>, string>({
+      query: (token) => `/auth/verify-email?token=${token}`,
+    }),
   }),
 });
 
@@ -74,4 +77,5 @@ export const {
   useGetMeQuery,
   useRefreshTokenMutation,
   useGoogleLoginMutation,
+  useVerifyEmailQuery,
 } = authApi;

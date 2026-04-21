@@ -65,4 +65,12 @@ public class AuthController {
         AuthResponse.UserInfo userInfo = authService.getCurrentUser(currentUser);
         return ResponseEntity.ok(ApiResponse.success(userInfo));
     }
+
+    @GetMapping("/verify-email")
+    @Operation(summary = "Verify user email using token")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(
+            @RequestParam String token) {
+        authService.verifyEmail(token);
+        return ResponseEntity.ok(ApiResponse.success(null, "Email verified successfully. You can now login."));
+    }
 }
