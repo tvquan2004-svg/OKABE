@@ -1,0 +1,134 @@
+package com.okabe.service;
+
+import com.okabe.entity.NotificationPreference;
+import com.okabe.entity.User;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class EmailNotificationService {
+
+    private final JavaMailSender mailSender;
+    private final EmailTemplateService templateService;
+    private final NotificationPreferenceService preferenceService;
+
+    @Value("${app.url}")
+    private String appUrl;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
+    @Async
+    public void sendWorkspaceInvitationEmail(User inviter, String recipientEmail, String recipientName, String workspaceName, String token) {
+        log.info("Preparing workspace invitation email for {} (workspace: {})", recipientEmail, workspaceName);
+        
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipientName);
+        vars.put("inviterName", inviter.getUsername());
+        vars.put("workspaceName", workspaceName);
+        vars.put("invitationUrl", appUrl + "/invitations/accept?token=" + token);
+
+        sendEmail(recipientEmail, "You've been invited to join workspace: " + workspaceName, "workspace-invitation", vars);
+        log.info("Invitation email sent to queue for {}", recipientEmail);
+    }
+
+    @Async
+    public void sendBoardInvitationEmail(User inviter, User recipient, String boardName, Long boardId) {
+        NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
+        if (!pref.isEmailInvited()) return;
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipient.getUsername());
+        vars.put("inviterName", inviter.getUsername());
+        vars.put("boardName", boardName);
+        vars.put("boardUrl", appUrl + "/board/" + boardId);
+
+        sendEmail(recipient.getEmail(), "You've been added to board: " + boardName, "board-invitation", vars);
+    }
+
+    @Async
+    public void sendCardAssignedEmail(User actor, User recipient, String cardTitle, Long boardId, Long cardId, String boardName) {
+        NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
+        if (!pref.isEmailAssigned()) return;
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipient.getUsername());
+        vars.put("actorName", actor.getUsername());
+        vars.put("cardTitle", cardTitle);
+        vars.put("boardName", boardName);
+        vars.put("cardUrl", String.format("%s/board/%d?card=%d", appUrl, boardId, cardId));
+
+        sendEmail(recipient.getEmail(), String.format("%s assigned you to %s", actor.getUsername(), cardTitle), "card-assigned", vars);
+    }
+
+    @Async
+    public void sendMentionedEmail(User actor, User recipient, String cardTitle, Long boardId, Long cardId, String commentSnippet) {
+        NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
+        if (!pref.isEmailMentioned()) return;
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipient.getUsername());
+        vars.put("actorName", actor.getUsername());
+        vars.put("cardTitle", cardTitle);
+        vars.put("commentContent", commentSnippet);
+        vars.put("cardUrl", String.format("%s/board/%d?card=%d", appUrl, boardId, cardId));
+
+        sendEmail(recipient.getEmail(), String.format("%s mentioned you in %s", actor.getUsername(), cardTitle), "mentioned", vars);
+    }
+
+    @Async
+    public void sendDueSoonEmail(User recipient, String cardTitle, Long boardId, Long cardId, LocalDateTime dueDate) {
+        NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
+        if (!pref.isEmailDueSoon()) return;
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipient.getUsername());
+        vars.put("cardTitle", cardTitle);
+        vars.put("dueDate", dueDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));
+        vars.put("cardUrl", String.format("%s/board/%d?card=%d", appUrl, boardId, cardId));
+
+        sendEmail(recipient.getEmail(), "Reminder: " + cardTitle + " is due soon", "due-soon", vars);
+    }
+
+    @Async
+    public void sendEmailVerification(User user, String token) {
+        log.info("Preparing email verification for {}", user.getEmail());
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", user.getUsername());
+        vars.put("verificationUrl", appUrl + "/verify-email?token=" + token);
+
+        sendEmail(user.getEmail(), "Verify your email address - OKABE", "email-verification", vars);
+    }
+
+    private void sendEmail(String to, String subject, String templateName, Map<String, Object> variables) {
+        try {
+            String htmlContent = templateService.render(templateName, variables);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail != null && !fromEmail.isEmpty() ? fromEmail : "noreply@okabe.com");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Email sent to {} with template {}", to, templateName);
+        } catch (MessagingException e) {
+            log.error("Failed to send email to {}: {}", to, e.getMessage());
+        }
+    }
+}

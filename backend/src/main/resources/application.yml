@@ -44,6 +44,27 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  # Mail Configuration
+  mail:
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:false}
+
+  # Thymeleaf Configuration for Email Templates
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
 # Server
 server:
   port: 8080
@@ -52,6 +73,7 @@ server:
 
 # App Config
 app:
+  url: ${APP_URL:http://localhost:5173}
   jwt:
     secret: ${JWT_SECRET:okabe-default-secret-key-change-me-in-production-please-256-bits}
     access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}

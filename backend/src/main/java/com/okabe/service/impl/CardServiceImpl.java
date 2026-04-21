@@ -10,6 +10,7 @@ import com.okabe.repository.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.ActivityService;
 import com.okabe.service.CardService;
+import com.okabe.service.EmailNotificationService;
 import com.okabe.service.NotificationService;
 import com.okabe.service.WebSocketService;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class CardServiceImpl implements CardService {
     private final ActivityService activityService;
     private final NotificationService notificationService;
     private final WebSocketService webSocketService;
+    private final EmailNotificationService emailNotificationService;
 
     @Override
     public Page<CardResponse> searchCards(Long boardId, CardSearchRequest request, UserPrincipal currentUser) {
@@ -420,6 +422,15 @@ public class CardServiceImpl implements CardService {
             "CARD", 
             card.getId(), 
             String.format("%s assigned you to the card \"%s\"", actor.getUsername(), card.getTitle())
+        );
+
+        emailNotificationService.sendCardAssignedEmail(
+            actor,
+            member,
+            card.getTitle(),
+            card.getTaskList().getBoard().getId(),
+            card.getId(),
+            card.getTaskList().getBoard().getName()
         );
         
         log.info("Member {} assigned to card {}", userId, cardId);

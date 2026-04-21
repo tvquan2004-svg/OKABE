@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #6366f1; }
+        .logo { font-size: 24px; font-weight: bold; color: #6366f1; text-decoration: none; }
+        .content { padding: 30px 0; }
+        .button-wrapper { text-align: center; margin: 30px 0; }
+        .button { background-color: #6366f1; color: white !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .footer { font-size: 12px; color: #777; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="#" class="logo">OKABE</a>
+        </div>
+        <div class="content">
+            <h3>Hi <span th:text="${recipientName}">User</span>,</h3>
+            <p>Welcome to OKABE! We're excited to have you on board.</p>
+            <p>To complete your registration and activate your account, please click the button below to verify your email address:</p>
+            
+            <div class="button-wrapper">
+                <a th:href="${verificationUrl}" class="button">Verify Email Address</a>
+            </div>
+            
+            <p>If the button doesn't work, you can copy and paste the following link into your browser:</p>
+            <p th:text="${verificationUrl}" style="word-break: break-all; color: #6366f1; font-size: 14px;"></p>
+            
+            <p>This link will expire in 24 hours.</p>
+            <p>If you did not create an account, no further action is required.</p>
+        </div>
+        <div class="footer">
+            &copy; 2026 OKABE Task Manager. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

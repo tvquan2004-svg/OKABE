@@ -14,7 +14,10 @@ import com.okabe.repository.UserRepository;
 import com.okabe.repository.WorkspaceMemberRepository;
 import com.okabe.repository.WorkspaceRepository;
 import com.okabe.security.UserPrincipal;
+import com.okabe.entity.WorkspaceInvitation;
+import com.okabe.repository.WorkspaceInvitationRepository;
 import com.okabe.service.WorkspaceService;
+import com.okabe.service.EmailNotificationService;
 import com.okabe.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -34,8 +39,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository memberRepository;
+    private final WorkspaceInvitationRepository invitationRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final EmailNotificationService emailNotificationService;
 
     @Override
     public List<WorkspaceResponse> getUserWorkspaces(UserPrincipal currentUser) {
@@ -133,7 +140,15 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Transactional
     public com.okabe.dto.response.WorkspaceMemberResponse addMemberToWorkspace(Long workspaceId,
             com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
+        // Keep this method for direct addition if needed (e.g. by owner)
+        // But for common flow, we use inviteMember
+        return inviteAndAddDirectly(workspaceId, request, currentUser);
+    }
+
+    private com.okabe.dto.response.WorkspaceMemberResponse inviteAndAddDirectly(Long workspaceId,
+            com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
         validateAdminAccess(workspaceId, currentUser.getId());
+        Workspace workspace = findWorkspaceOrThrow(workspaceId);
 
         User userToAdd = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.email()));
@@ -149,22 +164,116 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .build();
 
         member = memberRepository.save(member);
-
-        // Fetch user object to build full response
         member.setUser(userToAdd);
 
         User actor = userRepository.findById(currentUser.getId()).orElseThrow();
         notificationService.createNotification(
             userToAdd,
             actor,
-            "BOARD_MEMBER_JOINED",
+            "WORKSPACE_JOINED",
             "WORKSPACE",
             workspaceId,
-            String.format("%s added you to the workspace", actor.getUsername())
+            String.format("%s added you to the workspace: %s", actor.getUsername(), workspace.getName())
         );
 
-        log.info("User {} added to workspace {} with role {}", request.email(), workspaceId, member.getRole());
+        log.info("User {} added directly to workspace {} by {}", request.email(), workspaceId, currentUser.getEmail());
         return toMemberResponse(member);
+    }
+
+    @Override
+    @Transactional
+    public void inviteMember(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
+        validateAdminAccess(workspaceId, currentUser.getId());
+        Workspace workspace = findWorkspaceOrThrow(workspaceId);
+
+        if (memberRepository.existsByWorkspaceIdAndEmail(workspaceId, request.email())) {
+            throw new DuplicateResourceException("User is already a member");
+        }
+
+        if (invitationRepository.existsByWorkspaceIdAndEmailAndStatus(workspaceId, request.email(), "PENDING")) {
+            throw new DuplicateResourceException("An invitation is already pending for this email");
+        }
+
+        String token = UUID.randomUUID().toString();
+        WorkspaceInvitation invitation = WorkspaceInvitation.builder()
+                .workspaceId(workspaceId)
+                .email(request.email())
+                .role(request.role())
+                .inviterId(currentUser.getId())
+                .token(token)
+                .status("PENDING")
+                .expiresAt(LocalDateTime.now().plusDays(7))
+                .build();
+
+        invitationRepository.save(invitation);
+
+        User inviter = userRepository.findById(currentUser.getId()).orElseThrow();
+        
+        // Find if user already exists to get their name
+        String recipientName = userRepository.findByEmail(request.email())
+                .map(User::getUsername)
+                .orElse("there");
+
+        emailNotificationService.sendWorkspaceInvitationEmail(
+            inviter,
+            request.email(),
+            recipientName,
+            workspace.getName(),
+            token
+        );
+
+        log.info("Invitation sent to {} for workspace {}", request.email(), workspaceId);
+    }
+
+    @Override
+    @Transactional
+    public void acceptInvitation(String token, UserPrincipal currentUser) {
+        WorkspaceInvitation invitation = invitationRepository.findByToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
+
+        if (!invitation.getStatus().equals("PENDING")) {
+            throw new IllegalStateException("Invitation is no longer pending");
+        }
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            invitation.setStatus("EXPIRED");
+            invitationRepository.save(invitation);
+            throw new IllegalStateException("Invitation has expired");
+        }
+
+        User user = userRepository.findById(currentUser.getId()).orElseThrow();
+        if (!user.getEmail().equalsIgnoreCase(invitation.getEmail())) {
+            throw new UnauthorizedException("This invitation was sent to a different email address");
+        }
+
+        // Add to workspace
+        WorkspaceMember member = WorkspaceMember.builder()
+                .workspaceId(invitation.getWorkspaceId())
+                .userId(user.getId())
+                .role(invitation.getRole())
+                .build();
+        memberRepository.save(member);
+
+        invitation.setStatus("ACCEPTED");
+        invitationRepository.save(invitation);
+
+        log.info("User {} accepted invitation to workspace {}", user.getEmail(), invitation.getWorkspaceId());
+    }
+
+    @Override
+    @Transactional
+    public void rejectInvitation(String token, UserPrincipal currentUser) {
+        WorkspaceInvitation invitation = invitationRepository.findByToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
+
+        User user = userRepository.findById(currentUser.getId()).orElseThrow();
+        if (!user.getEmail().equalsIgnoreCase(invitation.getEmail())) {
+            throw new UnauthorizedException("You cannot reject this invitation");
+        }
+
+        invitation.setStatus("REJECTED");
+        invitationRepository.save(invitation);
+        log.info("User {} rejected invitation to workspace {}", user.getEmail(), invitation.getWorkspaceId());
     }
 
     @Override

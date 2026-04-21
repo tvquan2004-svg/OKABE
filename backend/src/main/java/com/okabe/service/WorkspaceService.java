@@ -39,4 +39,9 @@ public interface WorkspaceService {
     com.okabe.dto.response.WorkspaceMemberResponse addMemberToWorkspace(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser);
     com.okabe.dto.response.WorkspaceMemberResponse updateMemberRole(Long workspaceId, Long memberId, com.okabe.dto.request.UpdateMemberRoleRequest request, UserPrincipal currentUser);
     void removeMemberFromWorkspace(Long workspaceId, Long memberId, UserPrincipal currentUser);
+
+    // Invitation Management
+    void inviteMember(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser);
+    void acceptInvitation(String token, UserPrincipal currentUser);
+    void rejectInvitation(String token, UserPrincipal currentUser);
 }

@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useLoginMutation, useGoogleLoginMutation } from '../services/authApi';
 import { setCredentials } from '../features/auth/authSlice';
 import { useAppDispatch } from '../hooks/useRedux';
@@ -8,7 +8,9 @@ import styles from './AuthPage.module.css';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const dispatch = useAppDispatch();
+  const redirect = searchParams.get('redirect') || '/dashboard';
   const [login, { isLoading }] = useLoginMutation();
   const [googleLogin] = useGoogleLoginMutation();
 
@@ -27,7 +29,7 @@ function LoginPage() {
         refreshToken: result.data.refreshToken,
         user: result.data.user,
       }));
-      navigate('/dashboard');
+      navigate(redirect);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       setError(error.data?.message ?? 'Login failed. Please try again.');
@@ -101,7 +103,7 @@ function LoginPage() {
                     refreshToken: result.data.refreshToken,
                     user: result.data.user,
                   }));
-                  navigate('/dashboard');
+                  navigate(redirect);
                 } catch (err: unknown) {
                   const error = err as { data?: { message?: string } };
                   setError(error.data?.message ?? 'Google Login failed. Please try again.');

@@ -8,12 +8,15 @@ import com.okabe.entity.Board;
 import com.okabe.entity.Card;
 import com.okabe.entity.TaskList;
 import com.okabe.entity.Workspace;
+import com.okabe.entity.User;
 import com.okabe.entity.enums.Role;
 import com.okabe.exception.ResourceNotFoundException;
 import com.okabe.exception.UnauthorizedException;
 import com.okabe.repository.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.BoardService;
+import com.okabe.service.EmailNotificationService;
+import com.okabe.service.NotificationService;
 import com.okabe.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +40,9 @@ public class BoardServiceImpl implements BoardService {
     private final TaskListRepository taskListRepository;
     private final CardRepository cardRepository;
     private final StorageService storageService;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
+    private final EmailNotificationService emailNotificationService;
 
     @Override
     public List<BoardResponse> getBoardsByWorkspace(Long workspaceId, UserPrincipal currentUser) {
@@ -171,6 +177,42 @@ public class BoardServiceImpl implements BoardService {
         board = boardRepository.save(board);
         log.info("Board {} background updated to {}", boardId, backgroundValue);
         return toBoardResponse(board, false);
+    }
+
+    @Override
+    @Transactional
+    public void inviteMember(Long boardId, String email, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceWriteAccess(board.getWorkspace().getId(), currentUser.getId());
+
+        User recipient = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        User actor = userRepository.findById(currentUser.getId()).orElseThrow();
+
+        // Check if user is in workspace. If not, maybe we should add them?
+        // For now, let's assume they must be in the workspace, or we add them as MEMBER.
+        if (!memberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), recipient.getId())) {
+             // Automatically add to workspace as MEMBER if not present
+             com.okabe.entity.WorkspaceMember newMember = com.okabe.entity.WorkspaceMember.builder()
+                     .workspaceId(board.getWorkspace().getId())
+                     .userId(recipient.getId())
+                     .role(com.okabe.entity.enums.Role.MEMBER)
+                     .build();
+             memberRepository.save(newMember);
+             log.info("User {} added to workspace {} because of board invitation", email, board.getWorkspace().getId());
+        }
+
+        notificationService.createNotification(
+                recipient,
+                actor,
+                "BOARD_INVITATION",
+                "BOARD",
+                boardId,
+                String.format("%s invited you to collaborate on the board: %s", actor.getUsername(), board.getName())
+        );
+
+        emailNotificationService.sendBoardInvitationEmail(actor, recipient, board.getName(), boardId);
+        log.info("Board invitation sent to {} for board {}", email, boardId);
     }
 
     // ─── Helpers ────────────────────────────────────────

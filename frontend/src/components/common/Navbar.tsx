@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiBell, FiLogOut } from 'react-icons/fi';
+import { FiBell, FiLogOut, FiSettings } from 'react-icons/fi';
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
 import { logout } from '../../features/auth/authSlice';
 import { apiSlice } from '../../services/apiSlice';
@@ -64,6 +64,9 @@ const Navbar: React.FC = () => {
             {user?.username?.charAt(0).toUpperCase()}
           </div>
           <span className={styles.username}>{user?.username}</span>
+          <Link to="/settings" className={styles.settingsLink} title="Settings">
+            <FiSettings />
+          </Link>
           <button onClick={handleLogout} className={styles.logoutBtn}>
             <FiLogOut style={{ marginRight: '6px' }} />
             Logout

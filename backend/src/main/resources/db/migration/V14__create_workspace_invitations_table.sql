@@ -1,0 +1,13 @@
+CREATE TABLE workspace_invitations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    workspace_id BIGINT NOT NULL,
+    inviter_id BIGINT NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP,
+    FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
+    FOREIGN KEY (inviter_id) REFERENCES users(id) ON DELETE CASCADE
+);

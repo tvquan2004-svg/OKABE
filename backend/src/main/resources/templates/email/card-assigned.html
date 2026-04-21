@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header { background-color: #6366f1; padding: 20px; text-align: center; color: #ffffff; }
+        .content { padding: 30px; line-height: 1.6; color: #333333; }
+        .btn { display: inline-block; padding: 12px 24px; background-color: #6366f1; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }
+        .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>OKABE</h1>
+        </div>
+        <div class="content">
+            <p>Hi <span th:text="${recipientName}">User</span>,</p>
+            <p><strong th:text="${actorName}">Someone</strong> assigned you to a new card: <strong><span th:text="${cardTitle}">Card Title</span></strong>.</p>
+            <p>Board: <span th:text="${boardName}">Board Name</span></p>
+            <a th:href="${cardUrl}" class="btn">View Card</a>
+        </div>
+        <div class="footer">
+            <p>You received this because you are a member of the workspace.</p>
+        </div>
+    </div>
+</body>
+</html>

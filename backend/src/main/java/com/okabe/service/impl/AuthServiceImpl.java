@@ -4,30 +4,55 @@ import com.okabe.dto.request.LoginRequest;
 import com.okabe.dto.request.RegisterRequest;
 import com.okabe.dto.response.AuthResponse;
 import com.okabe.entity.User;
+import com.okabe.entity.EmailVerificationToken;
 import com.okabe.exception.DuplicateResourceException;
 import com.okabe.exception.ResourceNotFoundException;
+import com.okabe.exception.UnauthorizedException;
 import com.okabe.repository.UserRepository;
+import com.okabe.repository.EmailVerificationTokenRepository;
 import com.okabe.security.JwtTokenProvider;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.AuthService;
-import lombok.RequiredArgsConstructor;
+import com.okabe.service.EmailNotificationService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final EmailVerificationTokenRepository tokenRepository;
+    private final EmailNotificationService emailNotificationService;
+
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider,
+            @Lazy AuthenticationManager authenticationManager,
+            EmailVerificationTokenRepository tokenRepository,
+            @Lazy EmailNotificationService emailNotificationService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.authenticationManager = authenticationManager;
+        this.tokenRepository = tokenRepository;
+        this.emailNotificationService = emailNotificationService;
+    }
 
     @Override
     @Transactional
@@ -40,30 +65,53 @@ public class AuthServiceImpl implements AuthService {
                 .username(request.username())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
-                .isActive(true)
+                .isActive(false)
                 .build();
 
         user = userRepository.save(user);
-        log.info("New user registered: {}", user.getEmail());
+        log.info("New user registered (inactive): {}", user.getEmail());
 
-        UserPrincipal userPrincipal = UserPrincipal.from(user);
-        return buildAuthResponse(userPrincipal, user);
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = EmailVerificationToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusHours(24))
+                .build();
+        tokenRepository.save(verificationToken);
+
+        emailNotificationService.sendEmailVerification(user, token);
+
+        return AuthResponse.builder()
+                .user(AuthResponse.UserInfo.builder()
+                        .id(user.getId())
+                        .email(user.getEmail())
+                        .username(user.getUsername())
+                        .build())
+                .build();
     }
 
     @Override
     public AuthResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UnauthorizedException("Bad credentials"));
 
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        User user = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", userPrincipal.getId()));
+        if (!user.getIsActive()) {
+            throw new UnauthorizedException("Please verify your email before logging in.");
+        }
 
-        log.info("User logged in: {}", user.getEmail());
-        return buildAuthResponse(userPrincipal, user);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            log.info("User logged in: {}", user.getEmail());
+            return buildAuthResponse(userPrincipal, user);
+        } catch (BadCredentialsException e) {
+            throw new UnauthorizedException("Bad credentials");
+        }
     }
 
-    @org.springframework.beans.factory.annotation.Value("${app.google.client-id:YOUR_GOOGLE_CLIENT_ID}")
+    @Value("${app.google.client-id:YOUR_GOOGLE_CLIENT_ID}")
     private String googleClientId;
 
     @Override
@@ -89,11 +137,10 @@ public class AuthServiceImpl implements AuthService {
                 User user = userRepository.findByEmail(email).orElse(null);
                 
                 if (user == null) {
-                    // Create new user for Google Login
                     user = User.builder()
                             .email(email)
                             .username(name != null ? name : email.split("@")[0])
-                            .password(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                            .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                             .avatarUrl(pictureUrl)
                             .provider("GOOGLE")
                             .isActive(true)
@@ -101,7 +148,6 @@ public class AuthServiceImpl implements AuthService {
                     user = userRepository.save(user);
                     log.info("New Google user registered: {}", email);
                 } else {
-                    // Update avatar if missing or changed, optional
                     if (user.getAvatarUrl() == null && pictureUrl != null) {
                         user.setAvatarUrl(pictureUrl);
                         user = userRepository.save(user);
@@ -163,5 +209,23 @@ public class AuthServiceImpl implements AuthService {
                         .avatarUrl(user.getAvatarUrl())
                         .build())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmail(String token) {
+        EmailVerificationToken verificationToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid verification token"));
+
+        if (verificationToken.isExpired()) {
+            throw new IllegalArgumentException("Verification token has expired");
+        }
+
+        User user = verificationToken.getUser();
+        user.setIsActive(true);
+        userRepository.save(user);
+
+        tokenRepository.delete(verificationToken);
+        log.info("User email verified: {}", user.getEmail());
     }
 }

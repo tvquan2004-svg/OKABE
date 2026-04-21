@@ -18,5 +18,8 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
     boolean existsByWorkspaceIdAndUserId(Long workspaceId, Long userId);
 
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(wm) > 0 FROM WorkspaceMember wm WHERE wm.workspaceId = :workspaceId AND wm.user.email = :email")
+    boolean existsByWorkspaceIdAndEmail(@org.springframework.data.repository.query.Param("workspaceId") Long workspaceId, @org.springframework.data.repository.query.Param("email") String email);
+
     boolean existsByWorkspaceIdAndUserIdAndRoleIn(Long workspaceId, Long userId, List<Role> roles);
 }
