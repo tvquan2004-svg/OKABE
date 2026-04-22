@@ -4,14 +4,14 @@ import { logout, setCredentials } from '../features/auth/authSlice';
 
 // Biến để kiểm soát việc làm mới token
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshSubscribers: ((token: string | null) => void)[] = [];
 
-const onTokenRefreshed = (token: string) => {
-  refreshSubscribers.map((callback) => callback(token));
+const onTokenRefreshed = (token: string | null) => {
+  refreshSubscribers.forEach((callback) => callback(token));
   refreshSubscribers = [];
 };
 
-const addRefreshSubscriber = (callback: (token: string) => void) => {
+const addRefreshSubscriber = (callback: (token: string | null) => void) => {
   refreshSubscribers.push(callback);
 };
 
@@ -70,10 +70,12 @@ const baseQueryWithReauth: BaseQueryFn<
             result = await baseQuery(args, api, extraOptions);
           } else {
             isRefreshing = false;
+            onTokenRefreshed(null);
             api.dispatch(logout());
           }
         } catch (_err) {
           isRefreshing = false;
+          onTokenRefreshed(null);
           api.dispatch(logout());
         }
       } else {
@@ -82,8 +84,12 @@ const baseQueryWithReauth: BaseQueryFn<
     } else {
       // Nếu đang có tiến trình refresh khác, tạo một Promise để chờ nó xong
       return new Promise((resolve) => {
-        addRefreshSubscriber((_token) => {
-          resolve(baseQuery(args, api, extraOptions));
+        addRefreshSubscriber((token) => {
+          if (token) {
+            resolve(baseQuery(args, api, extraOptions));
+          } else {
+            resolve(result); // Trả về lỗi 401 ban đầu nếu refresh thất bại
+          }
         });
       });
     }
