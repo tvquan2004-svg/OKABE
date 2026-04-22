@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  FiLayout, FiCheckCircle, FiActivity, FiUsers, 
-  FiArrowRight, FiGithub, FiMonitor, FiGlobe 
+  FiLayout, FiCheckCircle, FiActivity, 
+  FiArrowRight, FiMonitor, FiGlobe 
 } from 'react-icons/fi';
 import styles from './LandingPage.module.css';
 
