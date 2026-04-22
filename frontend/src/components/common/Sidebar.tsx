@@ -4,7 +4,8 @@ import {
   FiGrid, 
   FiSettings, 
   FiChevronLeft, 
-  FiChevronRight 
+  FiChevronRight,
+  FiX
 } from 'react-icons/fi';
 import { useGetWorkspacesQuery } from '../../services/workspaceApi';
 import styles from './Sidebar.module.css';
@@ -12,19 +13,30 @@ import styles from './Sidebar.module.css';
 interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }) => {
   const { data: workspacesRes } = useGetWorkspacesQuery();
   const workspaces = workspacesRes?.data ?? [];
 
   return (
-    <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
+    <aside className={`
+      ${styles.sidebar} 
+      ${isCollapsed ? styles.collapsed : ''} 
+      ${isMobileOpen ? styles.mobileOpen : ''}
+    `}>
       <div className={styles.header}>
-        {!isCollapsed && <span className={styles.logo}>OKABE</span>}
-        <button className={styles.toggleBtn} onClick={onToggle}>
-          {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
-        </button>
+        <span className={styles.logo}>OKABE</span>
+        <div className={styles.headerActions}>
+          <button className={styles.toggleBtn} onClick={onToggle}>
+            {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+          </button>
+          <button className={styles.closeMobileBtn} onClick={onCloseMobile}>
+            <FiX />
+          </button>
+        </div>
       </div>
 
       <nav className={styles.nav}>
@@ -33,6 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           <NavLink 
             to="/dashboard" 
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+            onClick={onCloseMobile}
             title="Dashboard"
           >
             <FiGrid />
@@ -49,6 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               key={ws.id}
               to={`/workspace/${ws.id}`}
               className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+              onClick={onCloseMobile}
               title={ws.name}
             >
               <div className={styles.wsIcon}>{ws.name.charAt(0).toUpperCase()}</div>
@@ -62,6 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           <NavLink 
             to="/settings" 
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+            onClick={onCloseMobile}
             title="Settings"
           >
             <FiSettings />
