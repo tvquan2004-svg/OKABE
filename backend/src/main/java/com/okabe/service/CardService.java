@@ -30,6 +30,8 @@ public interface CardService {
     // Label methods
     LabelResponse createLabel(Long boardId, CreateLabelRequest request, UserPrincipal currentUser);
     List<LabelResponse> getBoardLabels(Long boardId, UserPrincipal currentUser);
+    LabelResponse updateLabel(Long labelId, UpdateLabelRequest request, UserPrincipal currentUser);
+    void deleteLabel(Long labelId, UserPrincipal currentUser);
     void addLabelToCard(Long cardId, Long labelId, UserPrincipal currentUser);
     void removeLabelFromCard(Long cardId, Long labelId, UserPrincipal currentUser);
 

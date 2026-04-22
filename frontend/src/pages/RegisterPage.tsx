@@ -102,7 +102,7 @@ function RegisterPage() {
         <div className={styles.formWrapper} style={{ textAlign: 'center' }}>
           <div className={styles.header}>
             <div className={styles.logo}>
-              <span className={styles.logoIcon}>⚡</span>
+              <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
               <span className={styles.logoText}>OKABE</span>
             </div>
             <h1 className={styles.title}>Kiểm tra email của bạn</h1>
@@ -125,7 +125,7 @@ function RegisterPage() {
         <div className={styles.formWrapper}>
           <div className={styles.header}>
             <div className={styles.logo}>
-              <span className={styles.logoIcon}>⚡</span>
+              <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
               <span className={styles.logoText}>OKABE</span>
             </div>
             <h1 className={styles.title}>Xác nhận đăng ký</h1>
@@ -178,7 +178,7 @@ function RegisterPage() {
       <div className={styles.formWrapper}>
         <div className={styles.header}>
           <Link to="/" className={styles.logo}>
-            <span className={styles.logoIcon}>⚡</span>
+            <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
             <span className={styles.logoText}>OKABE</span>
           </Link>
           <h1 className={styles.title}>Tạo tài khoản</h1>

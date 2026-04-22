@@ -114,6 +114,37 @@ export interface PaginatedRes<T> {
   number: number;
 }
 
+export interface BoardAnalyticsResponse {
+  cardsByStatus: {
+    listId: number;
+    listName: string;
+    total: number;
+    overdue: number;
+    completedThisWeek: number;
+  }[];
+  cardsByPriority: {
+    priority: string;
+    count: number;
+  }[];
+  cardsByMember: {
+    userId: number;
+    username: string;
+    avatarUrl: string | null;
+    assignedCount: number;
+    overdueCount: number;
+  }[];
+  burndown: {
+    date: string;
+    remaining: number;
+    completed: number;
+  }[];
+  avgCompletionDays: number;
+  activityHeatmap: {
+    date: string;
+    count: number;
+  }[];
+}
+
 interface ApiRes<T> { success: boolean; data: T; message: string; }
 
 export const boardApi = apiSlice.injectEndpoints({
@@ -203,6 +234,14 @@ export const boardApi = apiSlice.injectEndpoints({
     getBoardLabels: builder.query<ApiRes<Label[]>, number>({
       query: (boardId) => `/boards/${boardId}/labels`,
       providesTags: (_r, _e, boardId) => [{ type: 'Board', id: boardId }],
+    }),
+    updateLabel: builder.mutation<ApiRes<Label>, { id: number; boardId: number; body: Partial<Label> }>({
+      query: ({ id, body }) => ({ url: `/labels/${id}`, method: 'PUT', body }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    deleteLabel: builder.mutation<ApiRes<void>, { id: number; boardId: number }>({
+      query: ({ id }) => ({ url: `/labels/${id}`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
     addLabelToCard: builder.mutation<ApiRes<void>, { cardId: number; labelId: number; boardId: number }>({
       query: ({ cardId, labelId }) => ({ url: `/cards/${cardId}/labels/${labelId}`, method: 'POST' }),
@@ -329,6 +368,10 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ boardId, page = 0, size = 20 }) => `/boards/${boardId}/cards/archived?page=${page}&size=${size}`,
       providesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
+    getBoardAnalytics: builder.query<ApiRes<BoardAnalyticsResponse>, number>({
+      query: (boardId) => `/boards/${boardId}/analytics`,
+      providesTags: (_r, _e, boardId) => [{ type: 'Board', id: boardId }],
+    }),
   }),
 });
 
@@ -364,6 +407,8 @@ export const {
   useUpdateChecklistItemMutation,
   useCreateLabelMutation,
   useGetBoardLabelsQuery,
+  useUpdateLabelMutation,
+  useDeleteLabelMutation,
   useAddLabelToCardMutation,
   useRemoveLabelFromCardMutation,
   useAssignMemberMutation,
@@ -386,6 +431,7 @@ export const {
   useArchiveCardMutation,
   useRestoreCardMutation,
   useGetArchivedCardsQuery,
+  useGetBoardAnalyticsQuery,
 } = boardApi;
 
 export const useGetBoardsByWorkspaceQuery = useGetBoardsQuery;

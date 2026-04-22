@@ -185,6 +185,77 @@
   gap: 0.5rem;
 }
 
+.boardLabelsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.boardLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.boardLabelItem {
+  flex: 1;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.boardLabelItem:hover {
+  opacity: 0.85;
+}
+
+.labelCheck {
+  font-size: 0.75rem;
+}
+
+.labelActions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.boardLabelRow:hover .labelActions {
+  opacity: 1;
+}
+
+.labelActions button {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: #94a3b8;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.labelActions button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+
+.labelActions button:last-child:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
 .labelItem {
   min-width: 48px;
   height: 32px;

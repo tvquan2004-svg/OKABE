@@ -34,7 +34,7 @@ export const BoardFilter: React.FC<BoardFilterProps> = ({ labels, members, onFil
       dueDateTo: dueDateTo || undefined,
       isOverdue: isOverdue || undefined,
     });
-  }, [debouncedKeyword, selectedLabels, selectedMembers, selectedPriorities, dueDateFrom, dueDateTo, isOverdue]);
+  }, [debouncedKeyword, selectedLabels, selectedMembers, selectedPriorities, dueDateFrom, dueDateTo, isOverdue, onFilterChange]);
 
   const toggleLabel = (id: number) => {
     setSelectedLabels(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);

@@ -15,6 +15,8 @@ import {
   useDeleteAttachmentMutation,
   useGetCardActivitiesQuery,
   useArchiveCardMutation,
+  useUpdateLabelMutation,
+  useDeleteLabelMutation,
 } from '../../services/boardApi';
 import {
   MdAttachFile,
@@ -76,6 +78,8 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [uploadAttachment] = useUploadAttachmentMutation();
   const [deleteAttachment] = useDeleteAttachmentMutation();
   const [archiveCard] = useArchiveCardMutation();
+  const [updateLabel] = useUpdateLabelMutation();
+  const [deleteLabel] = useDeleteLabelMutation();
   const { data: activitiesRes } = useGetCardActivitiesQuery(card.id);
   const activities = activitiesRes?.data || [];
   
@@ -134,9 +138,27 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   const handleCreateAndAddLabel = async (color: string) => {
     const name = prompt('Nhập tên nhãn (không bắt buộc):');
-    const res = await createLabel({ boardId, color, name: name || '' }).unwrap();
+    if (name === null) return;
+    const res = await createLabel({ boardId, color, name: name.trim() || '' }).unwrap();
     if (res.success) {
       await addLabelToCard({ cardId: card.id, labelId: res.data.id, boardId }).unwrap();
+    }
+  };
+
+  const handleUpdateLabel = async (labelId: number, currentName: string, currentColor: string) => {
+    const newName = prompt('Sửa tên nhãn:', currentName);
+    if (newName === null) return;
+    
+    // Simple color picker mock for prompt, or just keep same color
+    const newColor = prompt('Sửa mã màu (HEX):', currentColor);
+    if (newColor === null) return;
+
+    await updateLabel({ id: labelId, boardId, body: { name: newName.trim(), color: newColor.trim() } }).unwrap();
+  };
+
+  const handleDeleteLabel = async (labelId: number) => {
+    if (confirm('Xóa nhãn này khỏi toàn bộ bảng?')) {
+      await deleteLabel({ id: labelId, boardId }).unwrap();
     }
   };
 
@@ -455,16 +477,25 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 ))}
               </div>
               {boardLabels.length > 0 && (
-                <div style={{ marginTop: '8px' }}>
-                   <h3 className={styles.sidebarLabel} style={{ fontSize: '0.65rem' }}>Nhãn của bảng</h3>
-                   <div className={styles.labelsList}>
+                <div style={{ marginTop: '12px' }}>
+                   <h3 className={styles.sidebarLabel} style={{ fontSize: '0.65rem', marginBottom: '8px' }}>Nhãn của bảng</h3>
+                   <div className={styles.boardLabelsList}>
                     {boardLabels.map(l => (
-                      <div 
-                        key={l.id} 
-                        style={{ width: '100%', height: '8px', background: l.color, borderRadius: '2px', cursor: 'pointer' }}
-                        onClick={() => handleAddLabel(l.id)}
-                        title={l.name}
-                      />
+                      <div key={l.id} className={styles.boardLabelRow}>
+                        <div 
+                          className={styles.boardLabelItem}
+                          style={{ background: l.color }}
+                          onClick={() => handleAddLabel(l.id)}
+                          title={`Thêm nhãn "${l.name}" vào thẻ`}
+                        >
+                          {l.name}
+                          {card.labels.some(cl => cl.id === l.id) && <span className={styles.labelCheck}>✔</span>}
+                        </div>
+                        <div className={styles.labelActions}>
+                          <button onClick={() => handleUpdateLabel(l.id, l.name, l.color)} title="Sửa nhãn">✎</button>
+                          <button onClick={() => handleDeleteLabel(l.id)} title="Xóa nhãn">×</button>
+                        </div>
+                      </div>
                     ))}
                    </div>
                 </div>

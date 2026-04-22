@@ -11,6 +11,8 @@ import AcceptInvitationPage from './pages/AcceptInvitationPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import CalendarView from './pages/CalendarView';
 import TimelineView from './pages/TimelineView';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import LandingPage from './pages/LandingPage';
 
 function LoginRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [searchParams] = useSearchParams();
@@ -27,7 +29,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
       <Route
         path="/login"
         element={<LoginRoute isAuthenticated={isAuthenticated} />}
@@ -42,11 +44,12 @@ function App() {
         <Route path="/board/:boardId" element={<BoardPage />} />
         <Route path="/board/:boardId/calendar" element={<CalendarView />} />
         <Route path="/board/:boardId/timeline" element={<TimelineView />} />
+        <Route path="/board/:boardId/analytics" element={<AnalyticsDashboard />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="/invitations/accept" element={<AcceptInvitationPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

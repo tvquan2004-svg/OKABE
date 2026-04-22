@@ -375,6 +375,44 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    public LabelResponse updateLabel(Long labelId, UpdateLabelRequest request, UserPrincipal currentUser) {
+        Label label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Label", labelId));
+        validateWriteAccess(label.getBoard().getWorkspace().getId(), currentUser.getId());
+
+        if (request.name() != null) label.setName(request.name());
+        if (request.color() != null) label.setColor(request.color());
+
+        label = labelRepository.save(label);
+
+        return LabelResponse.builder()
+                .id(label.getId())
+                .boardId(label.getBoard().getId())
+                .name(label.getName())
+                .color(label.getColor())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteLabel(Long labelId, UserPrincipal currentUser) {
+        Label label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Label", labelId));
+        validateWriteAccess(label.getBoard().getWorkspace().getId(), currentUser.getId());
+
+        // Also remove association from all cards in this board
+        List<Card> cards = cardRepository.findByTaskListBoardIdAndIsArchivedFalse(label.getBoard().getId());
+        for (Card card : cards) {
+            card.getLabels().remove(label);
+        }
+        cardRepository.saveAll(cards);
+
+        labelRepository.delete(label);
+        log.info("Label deleted: {}", labelId);
+    }
+
+    @Override
+    @Transactional
     public void addLabelToCard(Long cardId, Long labelId, UserPrincipal currentUser) {
         Card card = findCardOrThrow(cardId);
         validateWriteAccess(card, currentUser.getId());

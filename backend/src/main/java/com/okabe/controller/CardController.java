@@ -131,6 +131,24 @@ public class CardController {
         return ResponseEntity.ok(ApiResponse.success(cardService.getBoardLabels(boardId, currentUser)));
     }
 
+    @PutMapping("/api/v1/labels/{id}")
+    @Operation(summary = "Update a label")
+    public ResponseEntity<ApiResponse<LabelResponse>> updateLabel(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateLabelRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(cardService.updateLabel(id, request, currentUser)));
+    }
+
+    @DeleteMapping("/api/v1/labels/{id}")
+    @Operation(summary = "Delete a label")
+    public ResponseEntity<ApiResponse<Void>> deleteLabel(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.deleteLabel(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Label deleted"));
+    }
+
     @PostMapping("/api/v1/cards/{cardId}/labels/{labelId}")
     @Operation(summary = "Add a label to a card")
     public ResponseEntity<ApiResponse<Void>> addLabelToCard(
