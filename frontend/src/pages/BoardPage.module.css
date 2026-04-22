@@ -11,6 +11,7 @@
   background-position: center;
   background-attachment: fixed;
   transition: background 0.3s ease;
+  overflow: hidden; /* Prevent body overflow, handle in .kanban */
 }
 
 .loading {
@@ -33,13 +34,14 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   position: relative;
-  z-index: 1100; /* Higher than filter bar */
+  z-index: 1100;
 }
 
 .boardMeta {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
 }
 
 .backBtn {
@@ -61,12 +63,18 @@
   font-size: var(--font-size-xl);
   font-weight: 800;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .boardDesc {
   font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Kanban Board */
@@ -76,20 +84,23 @@
   gap: var(--spacing-lg);
   padding: var(--spacing-lg);
   overflow-x: auto;
+  overflow-y: hidden;
   align-items: flex-start;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Column (List) */
 .column {
   flex-shrink: 0;
-  width: 340px;
+  width: 320px;
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(20px);
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 150px);
+  max-height: calc(100vh - 160px);
 }
 
 .columnHeader {
@@ -317,7 +328,7 @@
 /* Add List */
 .addListColumn {
   flex-shrink: 0;
-  width: 340px;
+  width: 320px;
 }
 
 .addListBtn {
@@ -388,7 +399,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  z-index: 2100; /* Higher than header itself */
+  z-index: 2100;
   margin-top: 12px;
   background: #1e293b; 
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -405,13 +416,31 @@
 
 @media (max-width: 768px) {
   .header {
-    flex-wrap: wrap;
+    padding: var(--spacing-sm) var(--spacing-md);
+    flex-direction: column;
     align-items: flex-start;
+    gap: var(--spacing-sm);
   }
   
   .boardActions {
     width: 100%;
-    margin-top: 8px;
-    justify-content: flex-end;
+    margin-left: 0;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  
+  .kanban {
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+  
+  .column {
+    width: 280px;
+    max-height: calc(100vh - 180px);
+  }
+  
+  .addListColumn {
+    width: 280px;
   }
 }
