@@ -16,6 +16,24 @@ interface UseWebSocketOptions {
   topics?: string[];
 }
 
+const getWebSocketUrl = () => {
+  // Ưu tiên sử dụng biến môi trường cụ thể cho WS
+  if (import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+  
+  // Nếu không có, suy luận từ VITE_API_BASE_URL
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL as string;
+  if (apiBaseUrl) {
+    // Thay thế /api/v1 (hoặc phần cuối của URL) bằng /ws
+    const baseUrl = apiBaseUrl.split('/api')[0];
+    return `${baseUrl}/ws`;
+  }
+  
+  // Mặc định cho môi trường phát triển local
+  return 'http://localhost:8080/ws';
+};
+
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const { onMessage, topics = [] } = options;
   const { accessToken, user } = useAppSelector((state) => state.auth);
@@ -24,8 +42,8 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const connect = useCallback(() => {
     if (!accessToken || !user) return;
 
-    // Use absolute URL for WebSocket if defined in env, otherwise relative
-    const socketUrl = import.meta.env.VITE_WS_URL || '/ws';
+    const socketUrl = getWebSocketUrl();
+    if (import.meta.env.DEV) console.log('Connecting to WebSocket at:', socketUrl);
     
     const client = new Client({
       webSocketFactory: () => new SockJS(socketUrl),
@@ -41,7 +59,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     });
 
     client.onConnect = (frame: IFrame) => {
-      if (import.meta.env.DEV) console.log('Connected to WebSocket: ' + frame.body);
+      if (import.meta.env.DEV) console.log('Connected to WebSocket');
       
       // Subscribe to personal notifications
       client.subscribe(`/user/${user.id}/queue/notifications`, (message: IMessage) => {
