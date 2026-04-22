@@ -291,6 +291,43 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ id }) => ({ url: `/comments/${id}`, method: 'DELETE' }),
       invalidatesTags: (_r, _e, { cardId }) => [{ type: 'Comment', id: cardId }],
     }),
+    // Archive/Restore
+    archiveBoard: builder.mutation<ApiRes<Board>, number>({
+      query: (id) => ({ url: `/boards/${id}/archive`, method: 'PUT' }),
+      invalidatesTags: ['Board'],
+    }),
+    restoreBoard: builder.mutation<ApiRes<Board>, number>({
+      query: (id) => ({ url: `/boards/${id}/restore`, method: 'PUT' }),
+      invalidatesTags: ['Board'],
+    }),
+    getArchivedBoards: builder.query<ApiRes<Board[]>, number>({
+      query: (workspaceId) => `/workspaces/${workspaceId}/boards?archived=true`,
+      providesTags: ['Board'],
+    }),
+    archiveList: builder.mutation<ApiRes<TaskList>, { id: number; boardId: number }>({
+      query: ({ id }) => ({ url: `/lists/${id}/archive`, method: 'PUT' }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    restoreList: builder.mutation<ApiRes<TaskList>, { id: number; boardId: number }>({
+      query: ({ id }) => ({ url: `/lists/${id}/restore`, method: 'PUT' }),
+      invalidatesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    getArchivedLists: builder.query<ApiRes<TaskList[]>, number>({
+      query: (boardId) => `/boards/${boardId}/lists?archived=true`,
+      providesTags: (_r, _e, boardId) => [{ type: 'Board', id: boardId }],
+    }),
+    archiveCard: builder.mutation<ApiRes<CardItem>, { id: number; boardId: number }>({
+      query: ({ id }) => ({ url: `/cards/${id}/archive`, method: 'PUT' }),
+      invalidatesTags: (_r, _e, { boardId, id }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id }],
+    }),
+    restoreCard: builder.mutation<ApiRes<CardItem>, { id: number; boardId: number }>({
+      query: ({ id }) => ({ url: `/cards/${id}/restore`, method: 'PUT' }),
+      invalidatesTags: (_r, _e, { boardId, id }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id }],
+    }),
+    getArchivedCards: builder.query<ApiRes<PaginatedRes<CardItem>>, { boardId: number; page?: number; size?: number }>({
+      query: ({ boardId, page = 0, size = 20 }) => `/boards/${boardId}/cards/archived?page=${page}&size=${size}`,
+      providesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
   }),
 });
 
@@ -339,6 +376,15 @@ export const {
   useCreateCommentMutation,
   useUpdateCommentMutation,
   useDeleteCommentMutation,
+  useArchiveBoardMutation,
+  useRestoreBoardMutation,
+  useGetArchivedBoardsQuery,
+  useArchiveListMutation,
+  useRestoreListMutation,
+  useGetArchivedListsQuery,
+  useArchiveCardMutation,
+  useRestoreCardMutation,
+  useGetArchivedCardsQuery,
 } = boardApi;
 
 export const useGetBoardsByWorkspaceQuery = useGetBoardsQuery;

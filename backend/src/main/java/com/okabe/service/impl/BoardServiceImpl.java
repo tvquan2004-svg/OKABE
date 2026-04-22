@@ -244,6 +244,41 @@ public class BoardServiceImpl implements BoardService {
         log.info("Board invitation sent to {} for board {}", email, boardId);
     }
 
+    @Override
+    @Transactional
+    public BoardResponse archiveBoard(Long boardId, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceAdmin(board.getWorkspace().getId(), currentUser.getId());
+        board.setIsArchived(true);
+        board = boardRepository.save(board);
+        log.info("Board archived: {}", boardId);
+        return toBoardResponse(board, false);
+    }
+
+    @Override
+    @Transactional
+    public BoardResponse restoreBoard(Long boardId, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceAdmin(board.getWorkspace().getId(), currentUser.getId());
+
+        // Reset position to end
+        Board lastBoard = boardRepository.findTopByWorkspaceIdAndIsArchivedFalseOrderByPositionDesc(board.getWorkspace().getId());
+        int nextPosition = lastBoard == null ? 0 : lastBoard.getPosition() + 1;
+
+        board.setIsArchived(false);
+        board.setPosition(nextPosition);
+        board = boardRepository.save(board);
+        log.info("Board restored: {}", boardId);
+        return toBoardResponse(board, false);
+    }
+
+    @Override
+    public List<BoardResponse> getArchivedBoards(Long workspaceId, UserPrincipal currentUser) {
+        validateWorkspaceMembership(workspaceId, currentUser.getId());
+        List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedTrueOrderByPositionAscCreatedAtAsc(workspaceId);
+        return boards.stream().map(b -> toBoardResponse(b, false)).toList();
+    }
+
     // ─── Helpers ────────────────────────────────────────
 
     private Board findBoardOrThrow(Long id) {

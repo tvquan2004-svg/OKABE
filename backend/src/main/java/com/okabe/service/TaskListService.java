@@ -19,4 +19,10 @@ public interface TaskListService {
     void reorderLists(Long boardId, ReorderListRequest request, UserPrincipal currentUser);
 
     void deleteList(Long listId, UserPrincipal currentUser);
+
+    ListResponse archiveList(Long listId, UserPrincipal currentUser);
+
+    ListResponse restoreList(Long listId, UserPrincipal currentUser);
+
+    List<ListResponse> getArchivedLists(Long boardId, UserPrincipal currentUser);
 }

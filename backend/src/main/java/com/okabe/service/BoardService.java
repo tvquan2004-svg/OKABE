@@ -26,4 +26,10 @@ public interface BoardService {
     BoardResponse updateBackground(Long boardId, String type, String colorValue, MultipartFile file, UserPrincipal currentUser);
 
     void inviteMember(Long boardId, String email, UserPrincipal currentUser);
+
+    BoardResponse archiveBoard(Long boardId, UserPrincipal currentUser);
+
+    BoardResponse restoreBoard(Long boardId, UserPrincipal currentUser);
+
+    List<BoardResponse> getArchivedBoards(Long workspaceId, UserPrincipal currentUser);
 }

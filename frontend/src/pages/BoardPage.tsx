@@ -22,8 +22,13 @@ import {
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
+import { 
+  useArchiveBoardMutation,
+  useArchiveListMutation,
+} from '../services/boardApi';
+import ArchivedItemsPanel from '../components/board/ArchivedItemsPanel';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
 import { useEffect } from 'react';
@@ -64,6 +69,10 @@ function BoardPage() {
   const [deleteCard] = useDeleteCardMutation();
   const [moveCard] = useMoveCardMutation();
   const [saveAsTemplate, { isLoading: isSavingAsTemplate }] = useSaveAsTemplateMutation();
+  const [archiveBoard] = useArchiveBoardMutation();
+  const [archiveList] = useArchiveListMutation();
+
+  const [showArchivedPanel, setShowArchivedPanel] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -180,6 +189,18 @@ function BoardPage() {
   const handleDeleteList = async (listId: number) => {
     if (confirm('Delete this list and all its cards?')) {
       await deleteList({ id: listId, boardId: id }).unwrap();
+    }
+  };
+
+  const handleArchiveList = async (listId: number) => {
+    await archiveList({ id: listId, boardId: id }).unwrap();
+  };
+
+  const handleArchiveBoard = async () => {
+    if (!board) return;
+    if (confirm('Archive this board? It will be moved to archived boards.')) {
+      await archiveBoard(id).unwrap();
+      navigate(`/workspace/${board.workspaceId}`);
     }
   };
 
@@ -314,6 +335,20 @@ function BoardPage() {
               >
                 <FiCopy /> Save as Template
               </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} 
+                onClick={() => setShowArchivedPanel(true)}
+              >
+                <FiArchive /> Archived Items
+              </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ color: '#ff4d4f', borderColor: 'rgba(255,77,79,0.3)' }} 
+                onClick={handleArchiveBoard}
+              >
+                <FiArchive /> Archive Board
+              </button>
             </div>
           ) : null}
         </div>
@@ -341,6 +376,7 @@ function BoardPage() {
               key={list.id}
               list={list}
               onEditList={handleOpenEditList}
+              onArchiveList={handleArchiveList}
               onDeleteList={(listId) => void handleDeleteList(listId)}
               onDeleteCard={(cardId) => void handleDeleteCard(cardId)}
               onAddCard={handleAddCard}
@@ -430,6 +466,13 @@ function BoardPage() {
           isSubmitting={isSavingAsTemplate}
         />
       ) : null}
+
+      {showArchivedPanel && (
+        <ArchivedItemsPanel 
+          boardId={id} 
+          onClose={() => setShowArchivedPanel(false)} 
+        />
+      )}
     </div>
   );
 }

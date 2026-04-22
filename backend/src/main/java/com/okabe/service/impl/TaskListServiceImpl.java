@@ -107,6 +107,63 @@ public class TaskListServiceImpl implements TaskListService {
         webSocketService.broadcastToBoard(boardId, "LIST_DELETED", listId, currentUser.getId());
     }
 
+    @Override
+    @Transactional
+    public ListResponse archiveList(Long listId, UserPrincipal currentUser) {
+        TaskList taskList = findListOrThrow(listId);
+        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+
+        taskList.setIsArchived(true);
+        taskList = taskListRepository.save(taskList);
+
+        // Cascade archive to cards
+        List<Card> cards = cardRepository.findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(listId);
+        for (Card card : cards) {
+            card.setIsArchived(true);
+        }
+        cardRepository.saveAll(cards);
+
+        log.info("List and its cards archived: {}", listId);
+        ListResponse response = toListResponse(taskList);
+        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_ARCHIVED", listId, currentUser.getId());
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public ListResponse restoreList(Long listId, UserPrincipal currentUser) {
+        TaskList taskList = findListOrThrow(listId);
+        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+
+        // Reset position to end
+        TaskList lastList = taskListRepository.findTopByBoardIdAndIsArchivedFalseOrderByPositionDesc(taskList.getBoard().getId());
+        int nextPosition = lastList == null ? 0 : lastList.getPosition() + 1;
+
+        taskList.setIsArchived(false);
+        taskList.setPosition(nextPosition);
+        taskList = taskListRepository.save(taskList);
+
+        // Restore cards
+        List<Card> archivedCards = cardRepository.findByTaskListIdAndIsArchivedTrueOrderByPositionAsc(listId);
+        for (Card card : archivedCards) {
+            card.setIsArchived(false);
+        }
+        cardRepository.saveAll(archivedCards);
+
+        log.info("List and its cards restored: {}", listId);
+        ListResponse response = toListResponse(taskList);
+        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_RESTORED", response, currentUser.getId());
+        return response;
+    }
+
+    @Override
+    public List<ListResponse> getArchivedLists(Long boardId, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateMembership(board, currentUser.getId());
+        return taskListRepository.findByBoardIdAndIsArchivedTrueOrderByPositionAsc(boardId)
+                .stream().map(this::toListResponse).toList();
+    }
+
     // ─── Helpers ────────────────────────────────────────
 
     private Board findBoardOrThrow(Long id) {

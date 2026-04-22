@@ -36,4 +36,10 @@ public interface CardService {
     // Member assignment
     void assignMember(Long cardId, Long userId, UserPrincipal currentUser);
     void unassignMember(Long cardId, Long userId, UserPrincipal currentUser);
+
+    CardResponse archiveCard(Long cardId, UserPrincipal currentUser);
+
+    CardResponse restoreCard(Long cardId, UserPrincipal currentUser);
+
+    Page<CardResponse> getArchivedCards(Long boardId, int page, int size, UserPrincipal currentUser);
 }

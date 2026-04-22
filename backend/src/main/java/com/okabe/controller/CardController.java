@@ -172,4 +172,33 @@ public class CardController {
         cardService.unassignMember(cardId, userId, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Member unassigned"));
     }
+
+    @PutMapping("/api/v1/cards/{id}/archive")
+    @Operation(summary = "Archive a card")
+    public ResponseEntity<ApiResponse<CardResponse>> archiveCard(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                cardService.archiveCard(id, currentUser), "Card archived"));
+    }
+
+    @PutMapping("/api/v1/cards/{id}/restore")
+    @Operation(summary = "Restore a card")
+    public ResponseEntity<ApiResponse<CardResponse>> restoreCard(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                cardService.restoreCard(id, currentUser), "Card restored"));
+    }
+
+    @GetMapping("/api/v1/boards/{boardId}/cards/archived")
+    @Operation(summary = "Get archived cards in a board")
+    public ResponseEntity<ApiResponse<Page<CardResponse>>> getArchivedCards(
+            @PathVariable Long boardId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                cardService.getArchivedCards(boardId, page, size, currentUser)));
+    }
 }
