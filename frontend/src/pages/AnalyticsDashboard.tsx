@@ -41,7 +41,7 @@ const AnalyticsDashboard: React.FC = () => {
     const headers = ['Mục', 'Tổng cộng', 'Quá hạn', 'Hoàn thành tuần này'];
     const rows = stats.cardsByStatus.map(s => [s.listName, s.total, s.overdue, s.completedThisWeek]);
     
-    let csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8," 
       + headers.join(",") + "\n"
       + rows.map(e => e.join(",")).join("\n");
 

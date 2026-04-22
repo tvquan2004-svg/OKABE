@@ -11,6 +11,19 @@ const AcceptInvitationPage: React.FC = () => {
   const [acceptInvitation, { isLoading }] = useAcceptInvitationMutation();
   const [error, setError] = useState<string | null>(null);
 
+  const handleAccept = React.useCallback(async () => {
+    console.log('Attempting to accept invitation with token:', token);
+    try {
+      await acceptInvitation(token!).unwrap();
+      console.log('Invitation accepted successfully!');
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error('Failed to accept invitation:', err);
+      const msg = err.data?.message || 'Failed to accept invitation. It may have expired or is invalid.';
+      setError(msg);
+    }
+  }, [token, acceptInvitation, navigate]);
+
   useEffect(() => {
     if (!token) {
       setError('Invalid or missing invitation token.');
@@ -25,20 +38,7 @@ const AcceptInvitationPage: React.FC = () => {
     }
 
     handleAccept();
-  }, [token, isAuthenticated, navigate]);
-
-  const handleAccept = async () => {
-    console.log('Attempting to accept invitation with token:', token);
-    try {
-      await acceptInvitation(token!).unwrap();
-      console.log('Invitation accepted successfully!');
-      navigate('/dashboard');
-    } catch (err: any) {
-      console.error('Failed to accept invitation:', err);
-      const msg = err.data?.message || 'Failed to accept invitation. It may have expired or is invalid.';
-      setError(msg);
-    }
-  };
+  }, [token, isAuthenticated, navigate, handleAccept]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
