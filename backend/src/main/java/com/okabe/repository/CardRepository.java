@@ -28,4 +28,6 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
     List<Card> findByIsArchivedFalseAndDueDateBeforeAndNotificationSentFalse(LocalDateTime now);
 
     List<Card> findByIsArchivedFalseAndDueDateBetweenAndNotificationSentFalse(LocalDateTime start, LocalDateTime end);
+
+    List<Card> findByTaskListBoardIdAndIsArchivedFalse(Long boardId);
 }

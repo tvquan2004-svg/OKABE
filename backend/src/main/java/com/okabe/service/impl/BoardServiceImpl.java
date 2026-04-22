@@ -392,6 +392,7 @@ public class BoardServiceImpl implements BoardService {
                 .description(card.getDescription())
                 .position(card.getPosition())
                 .dueDate(card.getDueDate())
+                .startDate(card.getStartDate())
                 .priority(card.getPriority().name())
                 .isArchived(card.getIsArchived())
                 .createdById(card.getCreatedBy().getId())

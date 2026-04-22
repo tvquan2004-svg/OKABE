@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface ActivityRepository extends JpaRepository<Activity, Long> {
     List<Activity> findByCardIdOrderByCreatedAtDesc(Long cardId, Pageable pageable);
+
+    List<Activity> findByCardTaskListBoardIdOrderByCreatedAtDesc(Long boardId);
 }
