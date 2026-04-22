@@ -1,164 +1,89 @@
-# OKABE - Task Manager
+# ⚡ OKABE - Modern Task Management & Collaboration Platform
 
-Trello / Notion-style task management app built with Spring Boot, React, MySQL, and Redis.
+> Nền tảng quản trị công việc toàn diện, kết hợp giữa hiệu năng mạnh mẽ của Spring Boot và trải nghiệm người dùng tinh tế của React.
 
-## Tech Stack
+OKABE là một ứng dụng quản lý tác vụ theo phong cách Kanban (tương tự Trello/Notion), được thiết kế để tối ưu hóa quy trình làm việc của đội nhóm thông qua giao diện trực quan, tính năng cộng tác thời gian thực và hệ thống phân quyền chặt chẽ.
 
-| Layer    | Technology                                     |
-| -------- | ---------------------------------------------- |
-| Backend  | Java 21, Spring Boot 3.4, Spring Security, JWT |
-| Frontend | React, TypeScript, Vite, Redux Toolkit         |
-| Database | MySQL 8, Redis 7                               |
-| Infra    | Docker, Docker Compose, Nginx                  |
+---
 
-## Prerequisites
+## ✨ Tính năng nổi bật (Key Features)
 
-Make sure these tools are installed:
+*   **⚡ Trải nghiệm Premium**: Giao diện Dark Mode hiện đại, hiệu ứng mượt mà và tốc độ phản hồi tức thì.
+*   **🔐 Bảo mật đa lớp**: Xác thực JWT, xác thực Email và Google OAuth 2.0 tích hợp thông minh.
+*   **📂 Quản lý Workspace**: Hỗ trợ nhiều không gian làm việc với hệ thống phân quyền OWNER/ADMIN/MEMBER.
+*   **📋 Bảng Kanban thông minh**: Kéo thả Board/List/Card linh hoạt, tùy chỉnh hình nền Board và gắn sao bảng quan trọng.
+*   **💬 Cộng tác Real-time**: Bình luận, nhắc tên (@mention) và nhận thông báo tức thời qua WebSocket.
+*   **📊 Dashboard Thống kê**: Theo dõi tổng quan tiến độ và hoạt động của tất cả các dự án.
 
-- Java JDK 21+
-- Maven 3.9+
-- Node.js 20+ and npm
-- Docker Desktop
+---
 
-## Run The Project
+## 🛠️ Hệ sinh thái Công nghệ (Tech Stack)
 
-### Option 1: Run each part locally
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Java 17+, Spring Boot 3.4, Spring Security, Spring Data JPA, WebSocket, MySQL, Redis |
+| **Frontend** | React 18, TypeScript, Vite, Redux Toolkit, RTK Query, CSS Modules, dnd-kit |
+| **Infrastructure** | Docker & Docker Compose, Flyway (DB Migration), Cloudinary (Image Hosting), MailHog |
 
-1. Start MySQL and Redis:
+---
 
-```bash
-admin_findme@test.comdocker compose up mysql redis -d
-docker compose ps
-```
+## 🚀 Hướng dẫn cài đặt (Prerequisites)
 
-2. Run backend:
+Yêu cầu các công cụ sau đã được cài đặt:
+- **Java JDK 21+**
+- **Maven 3.9+**
+- **Node.js 20+**
+- **Docker Desktop**
 
-```bash
-cd backend
-mvn spring-boot:run
-```
+---
 
-Backend URLs:
+## 💻 Cách chạy dự án (Run the Project)
 
-- API: `http://localhost:8080`
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- Health check: `http://localhost:8080/api/v1/health`
+### Cách 1: Chạy từng phần cục bộ (Local Development)
 
-Note:
+1. **Khởi động Database (MySQL & Redis)**:
+   ```bash
+   docker compose up mysql redis -d
+   ```
 
-- The project now defaults to the `dev` profile, so `mvn spring-boot:run` is enough.
-- If MySQL or Redis is not running, backend startup will fail.
+2. **Chạy Backend**:
+   ```bash
+   cd backend
+   mvn spring-boot:run
+   ```
+   *   API: `http://localhost:8080`
+   *   Swagger UI: `http://localhost:8080/swagger-ui.html`
 
-3. Run frontend:
+3. **Chạy Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   *   App: `http://localhost:5173`
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend URL:
-
-- App: `http://localhost:5173`
-
-### Option 2: Run everything with Docker Compose
+### Cách 2: Chạy toàn bộ với Docker Compose
 
 ```bash
 docker compose up --build -d
-docker compose logs -f
 ```
+*   Frontend: `http://localhost:3000`
+*   Backend: `http://localhost:8080`
 
-Docker URLs:
+---
 
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8080`
-- MySQL: `localhost:3306`
-- Redis: `localhost:6379`
-
-## Stop The Project
-
-```bash
-docker compose down
-```
-
-Reset database volumes:
-
-```bash
-docker compose down -v
-```
-
-## Useful Commands
-
-### Backend
-
-```bash
-cd backend
-
-# Run app
-mvn spring-boot:run
-
-# Build jar without tests
-mvn package -DskipTests
-
-# Run tests
-mvn test -Dspring.profiles.active=test
-
-# Clean build
-mvn clean install
-```
-
-### Frontend
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run dev server
-npm run dev
-
-# Build production bundle
-npm run build
-
-# Run tests
-npm run test
-
-# Run lint
-npm run lint
-```
-
-### Docker
-
-```bash
-# Start only database services
-docker compose up mysql redis -d
-
-# Rebuild one service
-docker compose up --build backend -d
-
-# View backend logs
-docker compose logs -f backend
-
-# Open MySQL shell
-docker exec -it okabe-mysql mysql -u okabe -p123456 okabe_db
-
-# Open Redis shell
-docker exec -it okabe-redis redis-cli
-```
-
-## Project Structure
+## 📂 Cấu trúc dự án (Structure)
 
 ```text
 okabe/
-|-- backend/
-|-- frontend/
+|-- backend/          # Spring Boot Source
+|-- frontend/         # React + Vite Source
 |-- docker-compose.yml
-|-- .env
-|-- .env.example
+|-- .env              # Environment Variables
 `-- README.md
 ```
 
-## License
+---
 
-MIT Copyright 2026 OKABE
+## 📜 License
+MIT Copyright 2026 **OKABE Team** - *Đưa quản lý dự án lên tầm cao mới.*
