@@ -127,6 +127,25 @@
   letter-spacing: 0.05em;
 }
 
+.prioritySelect {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.prioritySelect option {
+  background-color: #1e293b; /* Dark background for options */
+  color: #f8fafc; /* Light text for options */
+  padding: 8px;
+}
+
 .actionBtn {
   width: 100%;
   display: flex;

@@ -89,10 +89,8 @@ public class CardServiceImpl implements CardService {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        LocalDateTime dueDate = null;
-        if (request.dueDate() != null && !request.dueDate().isBlank()) {
-            dueDate = LocalDateTime.parse(request.dueDate());
-        }
+        LocalDateTime dueDate = parseDateTime(request.dueDate());
+        LocalDateTime startDate = parseDateTime(request.startDate());
 
         Card card = Card.builder()
                 .taskList(taskList)
@@ -101,6 +99,7 @@ public class CardServiceImpl implements CardService {
                 .position(nextPosition)
                 .priority(priority)
                 .dueDate(dueDate)
+                .startDate(startDate)
                 .createdBy(creator)
                 .build();
 
@@ -111,6 +110,19 @@ public class CardServiceImpl implements CardService {
         webSocketService.broadcastToBoard(taskList.getBoard().getId(), "CARD_CREATED", response, currentUser.getId());
         
         return response;
+    }
+
+    private LocalDateTime parseDateTime(String dateTimeStr) {
+        if (dateTimeStr == null || dateTimeStr.isBlank()) return null;
+        try {
+            if (dateTimeStr.length() == 16) {
+                return LocalDateTime.parse(dateTimeStr + ":00");
+            }
+            return LocalDateTime.parse(dateTimeStr);
+        } catch (Exception e) {
+            log.error("Failed to parse date time: {}", dateTimeStr);
+            return null;
+        }
     }
 
     @Override
@@ -143,10 +155,17 @@ public class CardServiceImpl implements CardService {
             } catch (IllegalArgumentException ignored) {}
         }
         if (request.dueDate() != null) {
-            LocalDateTime newDueDate = request.dueDate().isBlank() ? null : LocalDateTime.parse(request.dueDate());
-            if (newDueDate != card.getDueDate()) {
+            LocalDateTime newDueDate = parseDateTime(request.dueDate());
+            if (!java.util.Objects.equals(newDueDate, card.getDueDate())) {
                 activityService.logActivity(card, user, "UPDATE_CARD", "updated due date");
                 card.setDueDate(newDueDate);
+            }
+        }
+        if (request.startDate() != null) {
+            LocalDateTime newStartDate = parseDateTime(request.startDate());
+            if (!java.util.Objects.equals(newStartDate, card.getStartDate())) {
+                activityService.logActivity(card, user, "UPDATE_CARD", "updated start date");
+                card.setStartDate(newStartDate);
             }
         }
 
@@ -612,6 +631,7 @@ public class CardServiceImpl implements CardService {
                 .description(card.getDescription())
                 .position(card.getPosition())
                 .dueDate(card.getDueDate())
+                .startDate(card.getStartDate())
                 .priority(card.getPriority().name())
                 .isArchived(card.getIsArchived())
                 .createdById(card.getCreatedBy().getId())

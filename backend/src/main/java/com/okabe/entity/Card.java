@@ -39,6 +39,9 @@ public class Card extends BaseEntity {
     @Column(name = "due_date")
     private LocalDateTime dueDate;
 
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

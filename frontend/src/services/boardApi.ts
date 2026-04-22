@@ -49,6 +49,7 @@ export interface CardItem {
   description: string | null;
   position: number;
   dueDate: string | null;
+  startDate: string | null;
   priority: string;
   isArchived: boolean;
   createdById: number;

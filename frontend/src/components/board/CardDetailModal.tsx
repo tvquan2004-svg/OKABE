@@ -58,6 +58,8 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 }) => {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || '');
+  const [startDate, setStartDate] = useState(card.startDate ? card.startDate.slice(0, 16) : '');
+  const [dueDate, setDueDate] = useState(card.dueDate ? card.dueDate.slice(0, 16) : '');
   const [newItemContent, setNewItemContent] = useState<{ [key: number]: string }>({});
   const [showMemberPicker, setShowMemberPicker] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -93,6 +95,8 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   useEffect(() => {
     setTitle(card.title);
     setDescription(card.description || '');
+    setStartDate(card.startDate ? card.startDate.slice(0, 16) : '');
+    setDueDate(card.dueDate ? card.dueDate.slice(0, 16) : '');
   }, [card]);
 
   const handleUpdateCard = async (body: Partial<CardItem>) => {
@@ -481,14 +485,29 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 <option value="CRITICAL">Khẩn cấp</option>
               </select>
             </div>
+            <div className={styles.sidebarGroup}>
+              <h3 className={styles.sidebarLabel}>Ngày bắt đầu</h3>
+              <input
+                type="datetime-local"
+                className={styles.datePicker}
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  handleUpdateCard({ startDate: e.target.value });
+                }}
+              />
+            </div>
 
             <div className={styles.sidebarGroup}>
               <h3 className={styles.sidebarLabel}>Hạn chót</h3>
               <input
                 type="datetime-local"
                 className={styles.datePicker}
-                value={card.dueDate ? card.dueDate.slice(0, 16) : ''}
-                onChange={(e) => handleUpdateCard({ dueDate: e.target.value })}
+                value={dueDate}
+                onChange={(e) => {
+                  setDueDate(e.target.value);
+                  handleUpdateCard({ dueDate: e.target.value });
+                }}
               />
             </div>
 

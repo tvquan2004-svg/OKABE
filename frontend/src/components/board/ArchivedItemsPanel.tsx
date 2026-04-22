@@ -75,7 +75,7 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
     <div className={styles.panelOverlay} onClick={onClose}>
       <div className={styles.panel} onClick={e => e.stopPropagation()}>
         <div className={styles.header}>
-          <h2>Archived Items</h2>
+          <h2>Mục đã lưu trữ</h2>
           <button className={styles.closeBtn} onClick={onClose}><FiX /></button>
         </div>
 
@@ -84,13 +84,13 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
             className={`${styles.tab} ${activeTab === 'lists' ? styles.active : ''}`}
             onClick={() => setActiveTab('lists')}
           >
-            Lists
+            Danh sách
           </button>
           <button 
             className={`${styles.tab} ${activeTab === 'cards' ? styles.active : ''}`}
             onClick={() => setActiveTab('cards')}
           >
-            Cards
+            Thẻ
           </button>
         </div>
 
@@ -98,9 +98,9 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
           {activeTab === 'lists' ? (
             <div className={styles.listContainer}>
               {loadingLists ? (
-                <div className={styles.loading}>Loading archived lists...</div>
+                <div className={styles.loading}>Đang tải danh sách...</div>
               ) : archivedListsRes?.data.length === 0 ? (
-                <div className={styles.empty}>No archived lists</div>
+                <div className={styles.empty}>Không có danh sách nào bị lưu trữ</div>
               ) : (
                 archivedListsRes?.data.map(list => (
                   <div key={list.id} className={styles.item}>
@@ -109,14 +109,14 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
                       <button 
                         className={styles.actionBtn} 
                         onClick={() => handleRestoreList(list.id)}
-                        title="Restore"
+                        title="Khôi phục"
                       >
-                        <FiRefreshCw /> Restore
+                        <FiRefreshCw /> Khôi phục
                       </button>
                       <button 
                         className={`${styles.actionBtn} ${styles.danger}`} 
                         onClick={() => handleDeleteList(list.id)}
-                        title="Delete permanently"
+                        title="Xóa vĩnh viễn"
                       >
                         <FiTrash2 />
                       </button>
@@ -128,9 +128,9 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
           ) : (
             <div className={styles.listContainer}>
               {loadingCards ? (
-                <div className={styles.loading}>Loading archived cards...</div>
+                <div className={styles.loading}>Đang tải thẻ...</div>
               ) : archivedCardsRes?.data.content.length === 0 ? (
-                <div className={styles.empty}>No archived cards</div>
+                <div className={styles.empty}>Không có thẻ nào bị lưu trữ</div>
               ) : (
                 <>
                   {archivedCardsRes?.data.content.map(card => (
@@ -142,14 +142,14 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
                         <button 
                           className={styles.actionBtn} 
                           onClick={() => handleRestoreCard(card.id)}
-                          title="Restore"
+                          title="Khôi phục"
                         >
-                          <FiRefreshCw /> Restore
+                          <FiRefreshCw /> Khôi phục
                         </button>
                         <button 
                           className={`${styles.actionBtn} ${styles.danger}`} 
                           onClick={() => handleDeleteCard(card.id)}
-                          title="Delete permanently"
+                          title="Xóa vĩnh viễn"
                         >
                           <FiTrash2 />
                         </button>
@@ -162,14 +162,14 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
                         disabled={cardPage === 0} 
                         onClick={() => setCardPage(p => p - 1)}
                       >
-                        Prev
+                        Trước
                       </button>
-                      <span>Page {cardPage + 1} of {archivedCardsRes.data.totalPages}</span>
+                      <span>Trang {cardPage + 1} / {archivedCardsRes.data.totalPages}</span>
                       <button 
                         disabled={cardPage >= archivedCardsRes.data.totalPages - 1} 
                         onClick={() => setCardPage(p => p + 1)}
                       >
-                        Next
+                        Sau
                       </button>
                     </div>
                   )}

@@ -19,6 +19,7 @@ public class CardResponse {
     private String description;
     private Integer position;
     private LocalDateTime dueDate;
+    private LocalDateTime startDate;
     private String priority;
     private Boolean isArchived;
     private Long createdById;
