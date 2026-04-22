@@ -14,6 +14,10 @@ public class AuthResponse {
     private String refreshToken;
     private String tokenType;
     private UserInfo user;
+    private boolean needsRegistration;
+    private String email;
+    private String avatarUrl;
+    private String googleName;
 
     @Getter
     @Builder

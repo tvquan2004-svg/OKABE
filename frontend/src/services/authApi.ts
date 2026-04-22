@@ -1,5 +1,29 @@
 import { apiSlice } from './apiSlice';
 
+export interface UserInfo {
+  id: number;
+  email: string;
+  username: string;
+  avatarUrl: string | null;
+}
+
+export interface AuthResponse {
+  accessToken?: string;
+  refreshToken?: string;
+  tokenType?: string;
+  user?: UserInfo;
+  needsRegistration?: boolean;
+  email?: string;
+  avatarUrl?: string;
+  googleName?: string;
+}
+
+export interface ApiResponseWrapper<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
 interface LoginRequest {
   email: string;
   password: string;
@@ -9,26 +33,6 @@ interface RegisterRequest {
   username: string;
   email: string;
   password: string;
-}
-
-interface UserInfo {
-  id: number;
-  email: string;
-  username: string;
-  avatarUrl: string | null;
-}
-
-interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: string;
-  user: UserInfo;
-}
-
-interface ApiResponseWrapper<T> {
-  success: boolean;
-  data: T;
-  message: string;
 }
 
 export const authApi = apiSlice.injectEndpoints({
@@ -58,7 +62,7 @@ export const authApi = apiSlice.injectEndpoints({
         body,
       }),
     }),
-    googleLogin: builder.mutation<ApiResponseWrapper<AuthResponse>, { idToken: string }>({
+    googleLogin: builder.mutation<ApiResponseWrapper<AuthResponse>, { idToken?: string; accessToken?: string; username?: string }>({
       query: (body) => ({
         url: '/auth/google',
         method: 'POST',

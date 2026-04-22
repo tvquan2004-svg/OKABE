@@ -1,8 +1,7 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { apiSlice } from '../../services/apiSlice';
-import Navbar from './Navbar';
 import MainLayout from './MainLayout';
 
 function ProtectedRoute() {

@@ -6,7 +6,6 @@ import {
   useCreateWorkspaceMutation,
   useDeleteWorkspaceMutation,
 } from '../services/workspaceApi';
-import { useGetArchivedBoardsQuery } from '../services/boardApi';
 import type { Workspace } from '../services/workspaceApi';
 import { FiPlus, FiBriefcase, FiUsers, FiTrash2, FiSearch, FiArchive, FiPieChart } from 'react-icons/fi';
 import styles from './DashboardPage.module.css';

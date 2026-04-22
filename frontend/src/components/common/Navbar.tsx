@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FiBell, FiLogOut, FiSettings, FiSearch } from 'react-icons/fi';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FiBell, FiLogOut, FiSearch } from 'react-icons/fi';
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
 import { logout } from '../../features/auth/authSlice';
 import { apiSlice } from '../../services/apiSlice';

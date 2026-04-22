@@ -1,10 +1,7 @@
 import React from 'react';
-import { NavLink, useParams } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { 
   FiGrid, 
-  FiLayers, 
-  FiPlus, 
-  FiArchive, 
   FiSettings, 
   FiChevronLeft, 
   FiChevronRight 
@@ -18,7 +15,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
-  const { workspaceId } = useParams<{ workspaceId: string }>();
   const { data: workspacesRes } = useGetWorkspacesQuery();
   const workspaces = workspacesRes?.data ?? [];
 
