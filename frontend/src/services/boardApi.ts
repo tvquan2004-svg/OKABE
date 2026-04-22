@@ -125,7 +125,7 @@ export const boardApi = apiSlice.injectEndpoints({
       query: (id) => `/boards/${id}`,
       providesTags: (_r, _e, id) => [{ type: 'Board', id }],
     }),
-    createBoard: builder.mutation<ApiRes<Board>, { workspaceId: number; name: string; description?: string; background?: string }>({
+    createBoard: builder.mutation<ApiRes<Board>, { workspaceId: number; name: string; description?: string; background?: string; templateId?: number }>({
       query: ({ workspaceId, ...body }) => ({ url: `/workspaces/${workspaceId}/boards`, method: 'POST', body }),
       invalidatesTags: ['Board'],
     }),

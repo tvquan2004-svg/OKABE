@@ -22,7 +22,8 @@ import {
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy } from 'react-icons/fi';
+import { useSaveAsTemplateMutation } from '../services/templateApi';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
 import { useEffect } from 'react';
@@ -62,6 +63,7 @@ function BoardPage() {
   const [deleteList] = useDeleteListMutation();
   const [deleteCard] = useDeleteCardMutation();
   const [moveCard] = useMoveCardMutation();
+  const [saveAsTemplate, { isLoading: isSavingAsTemplate }] = useSaveAsTemplateMutation();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -90,6 +92,9 @@ function BoardPage() {
   const [boardName, setBoardName] = useState('');
   const [boardDescription, setBoardDescription] = useState('');
   const [isEditBoardModalOpen, setIsEditBoardModalOpen] = useState(false);
+  const [isSaveAsTemplateModalOpen, setIsSaveAsTemplateModalOpen] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateDescription, setTemplateDescription] = useState('');
   const [editingList, setEditingList] = useState<TaskList | null>(null);
   const [listName, setListName] = useState('');
   
@@ -136,6 +141,21 @@ function BoardPage() {
       },
     }).unwrap();
     setIsEditBoardModalOpen(false);
+  };
+
+  const handleSaveAsTemplate = async () => {
+    if (!templateName.trim()) return;
+    try {
+      await saveAsTemplate({
+        boardId: id,
+        name: templateName.trim(),
+        description: templateDescription.trim() || undefined,
+      }).unwrap();
+      setIsSaveAsTemplateModalOpen(false);
+      alert('Board saved as template successfully!');
+    } catch (err: any) {
+      alert(err.data?.message || 'Failed to save as template');
+    }
   };
 
   const handleOpenEditList = (list: TaskList) => {
@@ -242,11 +262,14 @@ function BoardPage() {
   const isImageUrl = board.background?.startsWith('http') || board.background?.startsWith('/api/v1/files/');
 
   const containerStyle: React.CSSProperties = {
-    backgroundImage: isImageUrl ? `url(${board.background})` : 'none',
+    backgroundImage: isImageUrl 
+      ? `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${board.background})` 
+      : 'none',
     backgroundColor: board.background?.startsWith('#') ? board.background : undefined,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed',
   };
 
   return (
@@ -279,6 +302,17 @@ function BoardPage() {
               )}
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={openBoardEditModal}>
                 <FiSettings /> Edit
+              </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} 
+                onClick={() => {
+                  setTemplateName(`${board.name} Template`);
+                  setTemplateDescription(board.description ?? '');
+                  setIsSaveAsTemplateModalOpen(true);
+                }}
+              >
+                <FiCopy /> Save as Template
               </button>
             </div>
           ) : null}
@@ -378,6 +412,22 @@ function BoardPage() {
           workspaceId={board.workspaceId}
           onClose={() => setSelectedCard(null)}
           priorityColor={priorityColor}
+        />
+      ) : null}
+
+      {isSaveAsTemplateModalOpen ? (
+        <EntityModal
+          title="Save as Template"
+          nameLabel="Template Name"
+          nameValue={templateName}
+          namePlaceholder="e.g. Software Development Template"
+          descriptionValue={templateDescription}
+          onNameChange={setTemplateName}
+          onDescriptionChange={setTemplateDescription}
+          onClose={() => setIsSaveAsTemplateModalOpen(false)}
+          onSubmit={() => void handleSaveAsTemplate()}
+          submitLabel="Save Template"
+          isSubmitting={isSavingAsTemplate}
         />
       ) : null}
     </div>

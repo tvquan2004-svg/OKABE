@@ -43,6 +43,7 @@ public class BoardServiceImpl implements BoardService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final EmailNotificationService emailNotificationService;
+    private final BoardTemplateRepository boardTemplateRepository;
 
     @Override
     public List<BoardResponse> getBoardsByWorkspace(Long workspaceId, UserPrincipal currentUser) {
@@ -78,8 +79,36 @@ public class BoardServiceImpl implements BoardService {
                 .build();
 
         board = boardRepository.save(board);
+
+        if (request.templateId() != null) {
+            com.okabe.entity.BoardTemplate template = boardTemplateRepository.findById(request.templateId())
+                    .orElseThrow(() -> new ResourceNotFoundException("BoardTemplate", request.templateId()));
+
+            User creator = userRepository.findById(currentUser.getId()).orElseThrow();
+
+            for (com.okabe.entity.TemplateList templateList : template.getLists()) {
+                TaskList taskList = TaskList.builder()
+                        .board(board)
+                        .name(templateList.getName())
+                        .position(templateList.getPosition())
+                        .build();
+                taskList = taskListRepository.save(taskList);
+
+                for (com.okabe.entity.TemplateCard templateCard : templateList.getCards()) {
+                    Card card = Card.builder()
+                            .taskList(taskList)
+                            .title(templateCard.getTitle())
+                            .description(templateCard.getDescription())
+                            .position(templateCard.getPosition())
+                            .createdBy(creator)
+                            .build();
+                    cardRepository.save(card);
+                }
+            }
+        }
+
         log.info("Board created: {} in workspace {}", board.getName(), workspaceId);
-        return toBoardResponse(board, false);
+        return toBoardResponse(board, request.templateId() != null);
     }
 
     @Override

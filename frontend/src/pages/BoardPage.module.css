@@ -28,8 +28,8 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-xl);
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   position: relative;
@@ -59,12 +59,14 @@
 
 .boardName {
   font-size: var(--font-size-xl);
-  font-weight: 700;
+  font-weight: 800;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .boardDesc {
   font-size: var(--font-size-sm);
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
 }
 
 /* Kanban Board */
@@ -81,8 +83,8 @@
 .column {
   flex-shrink: 0;
   width: 340px;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -101,9 +103,11 @@
 .columnHeader h3 {
   flex: 1;
   font-size: var(--font-size-sm);
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .cardCount {
@@ -242,9 +246,10 @@
 
 .cardTitle {
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
   margin-bottom: 4px;
+  color: white;
 }
 
 .cardDesc {
@@ -270,13 +275,14 @@
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
+  font-weight: 600;
   text-align: left;
   transition: all var(--transition-fast);
 }
 
 .addCardBtn:hover {
-  background: var(--color-bg-elevated);
-  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .addCardForm {
@@ -317,8 +323,8 @@
 .addListBtn {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   padding: var(--spacing-md);
   border-radius: var(--radius-lg);
@@ -350,8 +356,9 @@
 }
 
 .addListForm {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   padding: var(--spacing-md);
   display: flex;

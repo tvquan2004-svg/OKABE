@@ -17,6 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import EntityModal from '../components/common/EntityModal';
 import MemberModal from '../components/workspace/MemberModal';
 import SortableBoardCard from '../components/workspace/SortableBoardCard';
+import CreateBoardModal from '../components/workspace/CreateBoardModal';
 import {
   type Board,
   useCreateBoardMutation,
@@ -105,31 +106,31 @@ function WorkspacePage() {
     setBoardDescription(board.description ?? '');
   };
 
-  const handleSaveBoard = async () => {
-    if (!boardName.trim()) {
-      return;
-    }
-
-    if (editingBoard) {
-      await updateBoard({
-        id: editingBoard.id,
-        body: {
-          name: boardName.trim(),
-          description: boardDescription.trim() || null,
-        },
-      }).unwrap();
-      setEditingBoard(null);
-      return;
-    }
-
+  const handleSaveBoard = async (data: { name: string; description?: string; templateId?: number }) => {
     const background = bgColors[Math.floor(Math.random() * bgColors.length)];
     await createBoard({
       workspaceId: id,
-      name: boardName.trim(),
-      description: boardDescription.trim() || undefined,
+      name: data.name,
+      description: data.description,
       background,
+      templateId: data.templateId,
     }).unwrap();
     setIsCreateBoardModalOpen(false);
+  };
+
+  const handleUpdateBoard = async () => {
+    if (!boardName.trim() || !editingBoard) {
+      return;
+    }
+
+    await updateBoard({
+      id: editingBoard.id,
+      body: {
+        name: boardName.trim(),
+        description: boardDescription.trim() || null,
+      },
+    }).unwrap();
+    setEditingBoard(null);
   };
 
   const handleSaveWorkspace = async () => {
@@ -261,18 +262,12 @@ function WorkspacePage() {
       </main>
 
       {isCreateBoardModalOpen ? (
-        <EntityModal
-          title="Create board"
-          nameLabel="Board name"
-          nameValue={boardName}
-          namePlaceholder="My board"
-          descriptionValue={boardDescription}
-          onNameChange={setBoardName}
-          onDescriptionChange={setBoardDescription}
-          onClose={() => setIsCreateBoardModalOpen(false)}
-          onSubmit={() => void handleSaveBoard()}
-          submitLabel="Create"
+        <CreateBoardModal
+          workspaceId={id}
+          isOpen={isCreateBoardModalOpen}
           isSubmitting={isCreatingBoard}
+          onClose={() => setIsCreateBoardModalOpen(false)}
+          onSubmit={handleSaveBoard}
         />
       ) : null}
 
@@ -286,7 +281,7 @@ function WorkspacePage() {
           onNameChange={setBoardName}
           onDescriptionChange={setBoardDescription}
           onClose={() => setEditingBoard(null)}
-          onSubmit={() => void handleSaveBoard()}
+          onSubmit={() => void handleUpdateBoard()}
           submitLabel="Save changes"
           isSubmitting={isUpdatingBoard}
         />
