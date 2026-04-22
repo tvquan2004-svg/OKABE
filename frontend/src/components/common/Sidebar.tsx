@@ -28,7 +28,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
       ${isMobileOpen ? styles.mobileOpen : ''}
     `}>
       <div className={styles.header}>
-        <span className={styles.logo}>OKABE</span>
+        <div className={styles.logoContainer}>
+          <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
+          {!isCollapsed && <span className={styles.logoText}>OKABE</span>}
+        </div>
         <div className={styles.headerActions}>
           <button className={styles.toggleBtn} onClick={onToggle}>
             {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}

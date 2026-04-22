@@ -104,7 +104,7 @@ function LoginPage() {
         <div className={styles.formWrapper}>
           <div className={styles.header}>
             <div className={styles.logo}>
-              <span className={styles.logoIcon}>⚡</span>
+              <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
               <span className={styles.logoText}>OKABE</span>
             </div>
             <h1 className={styles.title}>Bước cuối cùng</h1>
@@ -157,7 +157,7 @@ function LoginPage() {
       <div className={styles.formWrapper}>
         <div className={styles.header}>
           <Link to="/" className={styles.logo}>
-            <span className={styles.logoIcon}>⚡</span>
+            <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
             <span className={styles.logoText}>OKABE</span>
           </Link>
           <h1 className={styles.title}>Chào mừng trở lại</h1>

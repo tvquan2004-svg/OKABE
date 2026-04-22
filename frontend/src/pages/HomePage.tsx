@@ -8,7 +8,7 @@ function HomePage() {
     <div className={styles.container}>
       <nav className={styles.nav}>
         <div className={styles.logo}>
-          <span className={styles.logoIcon}>OK</span>
+          <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
           <span className={styles.logoText}>OKABE</span>
         </div>
         <div className={styles.navLinks}>
