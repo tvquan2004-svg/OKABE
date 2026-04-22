@@ -85,7 +85,7 @@ public class CommentServiceImpl implements CommentService {
                         "MENTIONED",
                         "CARD",
                         card.getId(),
-                        author.getUsername() + " mentioned you in a comment on card: " + card.getTitle()
+                        author.getUsername() + " đã nhắc tên bạn trong một bình luận tại thẻ: " + card.getTitle()
                 );
 
                 emailNotificationService.sendMentionedEmail(
@@ -147,7 +147,7 @@ public class CommentServiceImpl implements CommentService {
                         "MENTIONED",
                         "CARD",
                         comment.getCard().getId(),
-                        author.getUsername() + " mentioned you in an edited comment on card: " + comment.getCard().getTitle()
+                        author.getUsername() + " đã nhắc tên bạn trong một bình luận đã chỉnh sửa tại thẻ: " + comment.getCard().getTitle()
                 );
 
                 emailNotificationService.sendMentionedEmail(

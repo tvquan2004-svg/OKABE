@@ -46,7 +46,7 @@ public class ScheduledNotificationService {
                         "CARD_DUE_SOON",
                         "CARD",
                         card.getId(),
-                        String.format("Reminder: The card \"%s\" is due tomorrow (%s)", 
+                        String.format("Nhắc nhở: Thẻ \"%s\" sắp đến hạn vào ngày mai (%s)", 
                                 card.getTitle(), card.getDueDate())
                 );
 

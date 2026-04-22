@@ -237,7 +237,7 @@ public class BoardServiceImpl implements BoardService {
                 "BOARD_INVITATION",
                 "BOARD",
                 boardId,
-                String.format("%s invited you to collaborate on the board: %s", actor.getUsername(), board.getName())
+                String.format("%s đã mời bạn cùng cộng tác tại bảng: %s", actor.getUsername(), board.getName())
         );
 
         emailNotificationService.sendBoardInvitationEmail(actor, recipient, board.getName(), boardId);

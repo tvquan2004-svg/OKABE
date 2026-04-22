@@ -18,13 +18,13 @@
             <h1>OKABE</h1>
         </div>
         <div class="content">
-            <p>Hi <span th:text="${recipientName}">User</span>,</p>
-            <p>You have been invited to join the workspace <strong><span th:text="${workspaceName}">Workspace</span></strong> by <span th:text="${inviterName}">Someone</span>.</p>
-            <p>Click the button below to view your invitations and get started.</p>
-            <a th:href="${invitationUrl}" class="btn">View Invitation</a>
+            <p>Xin chào <span th:text="${recipientName}">User</span>,</p>
+            <p>Bạn đã được <span th:text="${inviterName}">Someone</span> mời tham gia vào không gian làm việc <strong><span th:text="${workspaceName}">Workspace</span></strong>.</p>
+            <p>Nhấn vào nút bên dưới để xem lời mời và bắt đầu làm việc.</p>
+            <a th:href="${invitationUrl}" class="btn">Xem lời mời</a>
         </div>
         <div class="footer">
-            <p>You received this because you were invited to an OKABE workspace.</p>
+            <p>Bạn nhận được email này vì được mời vào một không gian làm việc trên OKABE.</p>
         </div>
     </div>
 </body>

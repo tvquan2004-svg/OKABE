@@ -19,15 +19,15 @@
             <h1>OKABE</h1>
         </div>
         <div class="content">
-            <p>Hi <span th:text="${recipientName}">User</span>,</p>
-            <p><strong th:text="${actorName}">Someone</strong> mentioned you in a comment on <strong><span th:text="${cardTitle}">Card Title</span></strong>.</p>
+            <p>Xin chào <span th:text="${recipientName}">User</span>,</p>
+            <p><strong th:text="${actorName}">Someone</strong> đã nhắc tên bạn trong một bình luận tại thẻ: <strong><span th:text="${cardTitle}">Card Title</span></strong>.</p>
             <div class="comment-box">
                 "<span th:text="${commentContent}">Comment snippet...</span>"
             </div>
-            <a th:href="${cardUrl}" class="btn">Reply to Comment</a>
+            <a th:href="${cardUrl}" class="btn">Phản hồi bình luận</a>
         </div>
         <div class="footer">
-            <p>You received this because you were mentioned in a comment.</p>
+            <p>Bạn nhận được email này vì đã được nhắc tên trong một bình luận.</p>
         </div>
     </div>
 </body>

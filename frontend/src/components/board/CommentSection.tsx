@@ -105,7 +105,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   };
 
   const handleDeleteComment = async (id: number) => {
-    if (window.confirm('Delete this comment?')) {
+    if (window.confirm('Xóa bình luận này?')) {
       await deleteComment({ id, cardId }).unwrap();
     }
   };
@@ -129,7 +129,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   return (
     <div className={styles.commentSection} style={{ marginTop: '1rem' }}>
       <h3 className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>
-        <MdComment /> Comments
+        <MdComment /> Bình luận
       </h3>
 
       <div className={styles.commentInputWrapper} style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', position: 'relative' }}>
@@ -140,7 +140,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
           <textarea
             className={styles.descriptionBox}
             style={{ minHeight: '80px', width: '100%', fontSize: '0.9rem' }}
-            placeholder="Write a comment... (use @username to mention)"
+            placeholder="Viết bình luận... (sử dụng @tênngườidùng để nhắc tên)"
             value={newComment}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
@@ -151,11 +151,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
               className={styles.popover} 
               style={{ 
                 position: 'absolute', 
-                top: 'calc(100% - 40px)', // Đặt ngay dưới textarea
+                top: 'calc(100% - 40px)', 
                 left: 0, 
                 width: '100%', 
                 zIndex: 1000,
-                background: '#1e293b', // Đảm bảo nền đặc, không trong suốt
+                background: '#1e293b', 
                 boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                 border: '1px solid #334155'
               }}
@@ -190,7 +190,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
               onClick={handlePostComment}
               disabled={!newComment.trim()}
             >
-              <MdSend /> Lưu
+              <MdSend /> Gửi
             </button>
           </div>
         </div>
@@ -198,7 +198,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
 
       <div className={styles.activityList}>
         {isLoading ? (
-          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Loading comments...</div>
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Đang tải bình luận...</div>
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className={styles.activityItem} style={{ marginBottom: '1.5rem', alignItems: 'flex-start' }}>

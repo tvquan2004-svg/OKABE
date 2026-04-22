@@ -40,7 +40,7 @@ function LoginPage() {
       }
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
-      setError(error.data?.message ?? 'Login failed. Please try again.');
+      setError(error.data?.message ?? 'Đăng nhập thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -68,10 +68,10 @@ function LoginPage() {
         }
       } catch (err: unknown) {
         const error = err as { data?: { message?: string } };
-        setError(error.data?.message ?? 'Google Login failed. Please try again.');
+        setError(error.data?.message ?? 'Đăng nhập Google thất bại. Vui lòng thử lại.');
       }
     },
-    onError: () => setError('Google Login Failed'),
+    onError: () => setError('Đăng nhập Google thất bại'),
   });
 
   const handleConfirmRegistration = async () => {
@@ -94,7 +94,7 @@ function LoginPage() {
       }
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
-      setError(error.data?.message ?? 'Registration failed. Please try again.');
+      setError(error.data?.message ?? 'Đăng ký thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -107,8 +107,8 @@ function LoginPage() {
               <span className={styles.logoIcon}>⚡</span>
               <span className={styles.logoText}>OKABE</span>
             </div>
-            <h1 className={styles.title}>Final Step</h1>
-            <p className={styles.subtitle}>Confirm your username to create your account</p>
+            <h1 className={styles.title}>Bước cuối cùng</h1>
+            <p className={styles.subtitle}>Xác nhận tên người dùng để tạo tài khoản</p>
           </div>
 
           <div className={styles.confirmBox}>
@@ -121,13 +121,13 @@ function LoginPage() {
             </div>
 
             <div className={styles.field} style={{ marginTop: '20px' }}>
-              <label className={styles.label}>Choose Username</label>
+              <label className={styles.label}>Chọn tên người dùng</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className={styles.input}
-                placeholder="Enter username"
+                placeholder="Nhập tên người dùng"
                 required
               />
             </div>
@@ -136,7 +136,7 @@ function LoginPage() {
               className={`btn btn-primary ${styles.submitBtn}`}
               onClick={handleConfirmRegistration}
             >
-              Verify & Create Account
+              Xác nhận & Tạo tài khoản
             </button>
             
             <button 
@@ -144,7 +144,7 @@ function LoginPage() {
               style={{ width: '100%', marginTop: '10px' }}
               onClick={() => setNeedsRegistration(false)}
             >
-              Cancel
+              Hủy bỏ
             </button>
           </div>
         </div>
@@ -160,8 +160,8 @@ function LoginPage() {
             <span className={styles.logoIcon}>⚡</span>
             <span className={styles.logoText}>OKABE</span>
           </Link>
-          <h1 className={styles.title}>Welcome back</h1>
-          <p className={styles.subtitle}>Sign in to your account to continue</p>
+          <h1 className={styles.title}>Chào mừng trở lại</h1>
+          <p className={styles.subtitle}>Đăng nhập vào tài khoản để tiếp tục</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -182,7 +182,7 @@ function LoginPage() {
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="password" className={styles.label}>Password</label>
+            <label htmlFor="password" className={styles.label}>Mật khẩu</label>
             <input
               id="password"
               type="password"
@@ -200,24 +200,24 @@ function LoginPage() {
             className={`btn btn-primary ${styles.submitBtn}`}
             disabled={isLoading}
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
 
         <div className={styles.divider}>
-          <span>OR</span>
+          <span>HOẶC</span>
         </div>
 
         <div className={styles.googleLoginWrapper}>
           <button className={styles.googleBtn} onClick={() => handleGoogleLogin()}>
             <span className={styles.googleIcon}><FcGoogle /></span>
-            Sign in with Google
+            Đăng nhập với Google
           </button>
         </div>
 
         <p className={styles.footer}>
-          Don't have an account?{' '}
-          <Link to="/register" className={styles.link}>Create one</Link>
+          Chưa có tài khoản?{' '}
+          <Link to="/register" className={styles.link}>Tạo tài khoản mới</Link>
         </p>
       </div>
     </div>

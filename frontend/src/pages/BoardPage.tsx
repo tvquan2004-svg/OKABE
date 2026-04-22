@@ -161,9 +161,9 @@ function BoardPage() {
         description: templateDescription.trim() || undefined,
       }).unwrap();
       setIsSaveAsTemplateModalOpen(false);
-      alert('Board saved as template successfully!');
+      alert('Đã lưu bảng thành bản mẫu thành công!');
     } catch (err: any) {
-      alert(err.data?.message || 'Failed to save as template');
+      alert(err.data?.message || 'Không thể lưu bản mẫu');
     }
   };
 
@@ -187,7 +187,7 @@ function BoardPage() {
   };
 
   const handleDeleteList = async (listId: number) => {
-    if (confirm('Delete this list and all its cards?')) {
+    if (confirm('Xóa danh sách này và tất cả thẻ bên trong?')) {
       await deleteList({ id: listId, boardId: id }).unwrap();
     }
   };
@@ -198,7 +198,7 @@ function BoardPage() {
 
   const handleArchiveBoard = async () => {
     if (!board) return;
-    if (confirm('Archive this board? It will be moved to archived boards.')) {
+    if (confirm('Lưu trữ bảng này? Bảng sẽ được chuyển vào mục lưu trữ.')) {
       await archiveBoard(id).unwrap();
       navigate(`/workspace/${board.workspaceId}`);
     }
@@ -272,8 +272,8 @@ function BoardPage() {
     return () => window.removeEventListener('click', handleClickOutside);
   }, [showBackgroundPicker]);
 
-  if (isLoading) return <div className={styles.loading}>Loading board...</div>;
-  if (!board) return <div className={styles.loading}>Board not found</div>;
+  if (isLoading) return <div className={styles.loading}>Đang tải bảng...</div>;
+  if (!board) return <div className={styles.loading}>Không tìm thấy bảng</div>;
 
   // Update selectedCard if board data changes (to keep modal in sync)
   const currentCard = selectedCard 
@@ -296,7 +296,7 @@ function BoardPage() {
   return (
     <div className={styles.container} style={containerStyle}>
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate(-1)}>Back</button>
+        <button className={styles.backBtn} onClick={() => navigate(-1)}>Quay lại</button>
         <div className={styles.boardMeta}>
           <h1 className={styles.boardName}>{board.name}</h1>
           {board.description ? <span className={styles.boardDesc}>{board.description}</span> : null}
@@ -311,7 +311,7 @@ function BoardPage() {
                   setShowBackgroundPicker(!showBackgroundPicker);
                 }}
               >
-                <FiImage /> Background
+                <FiImage /> Hình nền
               </button>
               {showBackgroundPicker && (
                 <div className={styles.backgroundPickerWrapper} onClick={(e) => e.stopPropagation()}>
@@ -322,32 +322,32 @@ function BoardPage() {
                 </div>
               )}
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={openBoardEditModal}>
-                <FiSettings /> Edit
+                <FiSettings /> Sửa bảng
               </button>
               <button 
                 className="btn btn-outline" 
                 style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} 
                 onClick={() => {
-                  setTemplateName(`${board.name} Template`);
+                  setTemplateName(`${board.name} Bản mẫu`);
                   setTemplateDescription(board.description ?? '');
                   setIsSaveAsTemplateModalOpen(true);
                 }}
               >
-                <FiCopy /> Save as Template
+                <FiCopy /> Lưu bản mẫu
               </button>
               <button 
                 className="btn btn-outline" 
                 style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} 
                 onClick={() => setShowArchivedPanel(true)}
               >
-                <FiArchive /> Archived Items
+                <FiArchive /> Đã lưu trữ
               </button>
               <button 
                 className="btn btn-outline" 
                 style={{ color: '#ff4d4f', borderColor: 'rgba(255,77,79,0.3)' }} 
                 onClick={handleArchiveBoard}
               >
-                <FiArchive /> Archive Board
+                <FiArchive /> Lưu trữ bảng
               </button>
             </div>
           ) : null}
@@ -393,18 +393,18 @@ function BoardPage() {
                   type="text"
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
-                  placeholder="Enter list name..."
+                  placeholder="Nhập tên danh sách..."
                   className={styles.addListInput}
                   autoFocus
                   onKeyDown={(e) => e.key === 'Enter' && void handleAddList()}
                 />
                 <div className={styles.addCardActions}>
-                  <button className="btn btn-primary" onClick={() => void handleAddList()}>Add</button>
-                  <button className="btn btn-outline" onClick={() => setShowAddList(false)}>Cancel</button>
+                  <button className="btn btn-primary" onClick={() => void handleAddList()}>Thêm</button>
+                  <button className="btn btn-outline" onClick={() => setShowAddList(false)}>Hủy</button>
                 </div>
               </div>
             ) : (
-              <button className={styles.addListBtn} onClick={() => setShowAddList(true)}>+ Add another list</button>
+              <button className={styles.addListBtn} onClick={() => setShowAddList(true)}>+ Thêm danh sách</button>
             )}
           </div>
         </div>
@@ -412,30 +412,30 @@ function BoardPage() {
 
       {isEditBoardModalOpen ? (
         <EntityModal
-          title="Edit board"
-          nameLabel="Board name"
+          title="Chỉnh sửa bảng"
+          nameLabel="Tên bảng"
           nameValue={boardName}
-          namePlaceholder="Board name"
+          namePlaceholder="Nhập tên bảng"
           descriptionValue={boardDescription}
           onNameChange={setBoardName}
           onDescriptionChange={setBoardDescription}
           onClose={() => setIsEditBoardModalOpen(false)}
           onSubmit={() => void handleSaveBoard()}
-          submitLabel="Save changes"
+          submitLabel="Lưu thay đổi"
           isSubmitting={isUpdatingBoard}
         />
       ) : null}
 
       {editingList ? (
         <EntityModal
-          title="Edit list"
-          nameLabel="List name"
+          title="Chỉnh sửa danh sách"
+          nameLabel="Tên danh sách"
           nameValue={listName}
-          namePlaceholder="List name"
+          namePlaceholder="Nhập tên danh sách"
           onNameChange={setListName}
           onClose={() => setEditingList(null)}
           onSubmit={() => void handleSaveList()}
-          submitLabel="Save changes"
+          submitLabel="Lưu thay đổi"
           isSubmitting={isUpdatingList}
           showDescription={false}
         />
@@ -453,16 +453,16 @@ function BoardPage() {
 
       {isSaveAsTemplateModalOpen ? (
         <EntityModal
-          title="Save as Template"
-          nameLabel="Template Name"
+          title="Lưu thành bản mẫu"
+          nameLabel="Tên bản mẫu"
           nameValue={templateName}
-          namePlaceholder="e.g. Software Development Template"
+          namePlaceholder="vd: Bản mẫu phát triển phần mềm"
           descriptionValue={templateDescription}
           onNameChange={setTemplateName}
           onDescriptionChange={setTemplateDescription}
           onClose={() => setIsSaveAsTemplateModalOpen(false)}
           onSubmit={() => void handleSaveAsTemplate()}
-          submitLabel="Save Template"
+          submitLabel="Lưu bản mẫu"
           isSubmitting={isSavingAsTemplate}
         />
       ) : null}

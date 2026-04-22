@@ -43,7 +43,7 @@ function DashboardPage() {
   };
 
   const handleDelete = async (ws: Workspace) => {
-    if (confirm(`Delete workspace "${ws.name}"? This cannot be undone.`)) {
+    if (confirm(`Xóa không gian làm việc "${ws.name}"? Hành động này không thể hoàn tác.`)) {
       await deleteWorkspace(ws.id).unwrap();
     }
   };
@@ -52,8 +52,8 @@ function DashboardPage() {
     <div className={styles.pageContent}>
       <header className={styles.hero}>
         <div className={styles.welcome}>
-          <h1>Welcome back, <span className={styles.gradient}>{user?.username}</span> 👋</h1>
-          <p>Here's what's happening with your projects today.</p>
+          <h1>Chào mừng trở lại, <span className={styles.gradient}>{user?.username}</span> 👋</h1>
+          <p>Dưới đây là tổng quan về các dự án của bạn hôm nay.</p>
         </div>
         
         <div className={styles.statsBar}>
@@ -62,7 +62,7 @@ function DashboardPage() {
               <FiBriefcase />
             </div>
             <div className={styles.statInfo}>
-              <span className={styles.statLabel}>Workspaces</span>
+              <span className={styles.statLabel}>Không gian làm việc</span>
               <span className={styles.statValue}>{workspaces.length}</span>
             </div>
           </div>
@@ -71,7 +71,7 @@ function DashboardPage() {
               <FiUsers />
             </div>
             <div className={styles.statInfo}>
-              <span className={styles.statLabel}>Total Members</span>
+              <span className={styles.statLabel}>Tổng thành viên</span>
               <span className={styles.statValue}>
                 {workspaces.reduce((acc, ws) => acc + ws.memberCount, 0)}
               </span>
@@ -82,7 +82,7 @@ function DashboardPage() {
               <FiPieChart />
             </div>
             <div className={styles.statInfo}>
-              <span className={styles.statLabel}>Active Boards</span>
+              <span className={styles.statLabel}>Bảng đang hoạt động</span>
               <span className={styles.statValue}>
                 {workspaces.reduce((acc, ws) => acc + (ws.boardCount || 0), 0)}
               </span>
@@ -96,19 +96,19 @@ function DashboardPage() {
           <FiSearch className={styles.searchIcon} />
           <input 
             type="text" 
-            placeholder="Search workspaces..." 
+            placeholder="Tìm kiếm không gian làm việc..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <FiPlus /> New Workspace
+          <FiPlus /> Không gian mới
         </button>
       </div>
 
       <section className={styles.workspaceSection}>
         <div className={styles.sectionHeader}>
-          <h2>Your Workspaces</h2>
+          <h2>Không gian làm việc của bạn</h2>
         </div>
 
         {isLoading ? (
@@ -118,15 +118,15 @@ function DashboardPage() {
         ) : filteredWorkspaces.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>📂</div>
-            <h2>{searchQuery ? 'No results found' : 'No workspaces yet'}</h2>
+            <h2>{searchQuery ? 'Không tìm thấy kết quả' : 'Chưa có không gian làm việc'}</h2>
             <p>
               {searchQuery 
-                ? `We couldn't find any workspace matching "${searchQuery}"` 
-                : 'Create your first workspace to start organizing tasks.'}
+                ? `Chúng tôi không tìm thấy không gian làm việc nào khớp với "${searchQuery}"` 
+                : 'Tạo không gian làm việc đầu tiên của bạn để bắt đầu sắp xếp công việc.'}
             </p>
             {!searchQuery && (
               <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                + Create Workspace
+                + Tạo không gian làm việc
               </button>
             )}
           </div>
@@ -141,7 +141,10 @@ function DashboardPage() {
                   <div className={styles.wsContent}>
                     <div className={styles.wsHeader}>
                       <h3>{ws.name}</h3>
-                      <span className={styles.wsRole}>{ws.currentUserRole}</span>
+                      <span className={styles.wsRole}>
+                        {ws.currentUserRole === 'OWNER' ? 'Chủ sở hữu' : 
+                         ws.currentUserRole === 'ADMIN' ? 'Quản trị viên' : 'Thành viên'}
+                      </span>
                     </div>
                     <span className={styles.wsSlug}>okabe.io/{ws.slug}</span>
                     {ws.description && (
@@ -151,15 +154,15 @@ function DashboardPage() {
                 </div>
                 <div className={styles.wsFooter}>
                   <div className={styles.wsMeta}>
-                    <FiUsers /> <span>{ws.memberCount}</span>
+                    <FiUsers /> <span>{ws.memberCount} thành viên</span>
                     <span className={styles.separator}>•</span>
-                    <FiArchive /> <span>{ws.boardCount || 0} boards</span>
+                    <FiArchive /> <span>{ws.boardCount || 0} bảng</span>
                   </div>
                   {ws.currentUserRole === 'OWNER' && (
                     <button
                       className={styles.deleteBtn}
                       onClick={(e) => { e.stopPropagation(); handleDelete(ws); }}
-                      title="Delete workspace"
+                      title="Xóa không gian làm việc"
                     >
                       <FiTrash2 />
                     </button>
@@ -175,40 +178,40 @@ function DashboardPage() {
         <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2>Create Workspace</h2>
-              <p>Workspaces are where your team collaborators and projects live.</p>
+              <h2>Tạo không gian làm việc</h2>
+              <p>Không gian làm việc là nơi bạn cộng tác với nhóm và quản lý dự án.</p>
             </div>
             <div className={styles.modalField}>
-              <label>Workspace Name *</label>
+              <label>Tên không gian làm việc *</label>
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. Engineering Team"
+                placeholder="vd: Đội ngũ Kỹ thuật"
                 className={styles.modalInput}
                 autoFocus
               />
             </div>
             <div className={styles.modalField}>
-              <label>Description (Optional)</label>
+              <label>Mô tả (Tùy chọn)</label>
               <textarea
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="What is this workspace about?"
+                placeholder="Không gian này dùng để làm gì?"
                 className={styles.modalTextarea}
                 rows={3}
               />
             </div>
             <div className={styles.modalActions}>
               <button className="btn btn-outline" onClick={() => setShowModal(false)}>
-                Cancel
+                Hủy
               </button>
               <button
                 className="btn btn-primary"
                 onClick={handleCreate}
                 disabled={isCreating || !newName.trim()}
               >
-                {isCreating ? 'Creating...' : 'Create Workspace'}
+                {isCreating ? 'Đang tạo...' : 'Tạo không gian'}
               </button>
             </div>
           </div>

@@ -41,21 +41,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
 
       <nav className={styles.nav}>
         <div className={styles.section}>
-          {!isCollapsed && <span className={styles.sectionTitle}>General</span>}
+          {!isCollapsed && <span className={styles.sectionTitle}>Chung</span>}
           <NavLink 
             to="/dashboard" 
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
             onClick={onCloseMobile}
-            title="Dashboard"
+            title="Bảng điều khiển"
           >
             <FiGrid />
-            {!isCollapsed && <span>Dashboard</span>}
+            {!isCollapsed && <span>Bảng điều khiển</span>}
           </NavLink>
         </div>
 
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            {!isCollapsed && <span className={styles.sectionTitle}>Workspaces</span>}
+            {!isCollapsed && <span className={styles.sectionTitle}>Không gian làm việc</span>}
           </div>
           {workspaces.map(ws => (
             <NavLink 
@@ -72,15 +72,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
         </div>
 
         <div className={styles.section}>
-          {!isCollapsed && <span className={styles.sectionTitle}>Other</span>}
+          {!isCollapsed && <span className={styles.sectionTitle}>Khác</span>}
           <NavLink 
             to="/settings" 
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
             onClick={onCloseMobile}
-            title="Settings"
+            title="Cài đặt"
           >
             <FiSettings />
-            {!isCollapsed && <span>Settings</span>}
+            {!isCollapsed && <span>Cài đặt</span>}
           </NavLink>
         </div>
       </nav>
@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
       <div className={styles.footer}>
         {!isCollapsed && (
           <div className={styles.footerInfo}>
-            <p className={styles.version}>v1.0.0</p>
+            <p className={styles.version}>phiên bản v1.0.0</p>
           </div>
         )}
       </div>

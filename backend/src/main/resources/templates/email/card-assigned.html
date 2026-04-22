@@ -18,13 +18,13 @@
             <h1>OKABE</h1>
         </div>
         <div class="content">
-            <p>Hi <span th:text="${recipientName}">User</span>,</p>
-            <p><strong th:text="${actorName}">Someone</strong> assigned you to a new card: <strong><span th:text="${cardTitle}">Card Title</span></strong>.</p>
-            <p>Board: <span th:text="${boardName}">Board Name</span></p>
-            <a th:href="${cardUrl}" class="btn">View Card</a>
+            <p>Xin chào <span th:text="${recipientName}">User</span>,</p>
+            <p><strong th:text="${actorName}">Someone</strong> đã giao cho bạn một thẻ công việc mới: <strong><span th:text="${cardTitle}">Card Title</span></strong>.</p>
+            <p>Bảng công việc: <span th:text="${boardName}">Board Name</span></p>
+            <a th:href="${cardUrl}" class="btn">Xem thẻ công việc</a>
         </div>
         <div class="footer">
-            <p>You received this because you are a member of the workspace.</p>
+            <p>Bạn nhận được email này vì bạn là thành viên của không gian làm việc.</p>
         </div>
     </div>
 </body>
