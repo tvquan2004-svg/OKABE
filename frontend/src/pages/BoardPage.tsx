@@ -22,7 +22,7 @@ import {
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy, FiArchive } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
 import { 
   useArchiveBoardMutation,
@@ -324,6 +324,9 @@ function BoardPage() {
         <div className={styles.boardActions}>
           {canManageBoard ? (
             <div style={{ position: 'relative', display: 'flex', gap: '8px' }}>
+              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={() => navigate(`/board/${id}/calendar`)}>
+                <FiCalendar /> Lịch
+              </button>
               <button 
                 className={styles.settingsBtn} 
                 onClick={(e) => {
