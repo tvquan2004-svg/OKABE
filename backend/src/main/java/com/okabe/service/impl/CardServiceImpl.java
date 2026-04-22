@@ -454,7 +454,7 @@ public class CardServiceImpl implements CardService {
     @Transactional
     public CardResponse archiveCard(Long cardId, UserPrincipal currentUser) {
         Card card = findCardOrThrow(cardId);
-        validateWriteAccess(card, currentUser.getId());
+        validateCardManagementAccess(card, currentUser.getId());
         User actor = findUserOrThrow(currentUser.getId());
 
         card.setIsArchived(true);
@@ -472,7 +472,7 @@ public class CardServiceImpl implements CardService {
     @Transactional
     public CardResponse restoreCard(Long cardId, UserPrincipal currentUser) {
         Card card = findCardOrThrow(cardId);
-        validateWriteAccess(card, currentUser.getId());
+        validateCardManagementAccess(card, currentUser.getId());
         User actor = findUserOrThrow(currentUser.getId());
 
         // Reset position to end of list
@@ -537,6 +537,19 @@ public class CardServiceImpl implements CardService {
                 workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
         if (!hasAccess) {
             throw new UnauthorizedException("You do not have permission to perform this action");
+        }
+    }
+
+    private void validateCardManagementAccess(Card card, Long userId) {
+        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
+        com.okabe.entity.WorkspaceMember member = memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
+                .orElseThrow(() -> new UnauthorizedException("You are not a member of this workspace"));
+        
+        boolean isOwnerOrAdmin = member.getRole() == com.okabe.entity.enums.Role.OWNER || member.getRole() == com.okabe.entity.enums.Role.ADMIN;
+        boolean isCreator = card.getCreatedBy().getId().equals(userId);
+
+        if (!isOwnerOrAdmin && !isCreator) {
+            throw new UnauthorizedException("You can only archive/restore your own cards");
         }
     }
 

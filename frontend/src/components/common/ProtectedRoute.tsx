@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { apiSlice } from '../../services/apiSlice';
 import Navbar from './Navbar';
+import MainLayout from './MainLayout';
 
 function ProtectedRoute() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -21,12 +22,7 @@ function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <>
-      <Navbar />
-      <Outlet />
-    </>
-  );
+  return <MainLayout />;
 }
 
 export default ProtectedRoute;

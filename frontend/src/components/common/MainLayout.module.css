@@ -1,0 +1,21 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.mainWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Prevent flex children from overflowing */
+}
+
+.content {
+  flex: 1;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}

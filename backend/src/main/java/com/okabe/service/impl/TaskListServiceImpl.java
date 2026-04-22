@@ -111,7 +111,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public ListResponse archiveList(Long listId, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+        validateAdminAccess(taskList.getBoard(), currentUser.getId());
 
         taskList.setIsArchived(true);
         taskList = taskListRepository.save(taskList);
@@ -133,7 +133,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public ListResponse restoreList(Long listId, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+        validateAdminAccess(taskList.getBoard(), currentUser.getId());
 
         // Reset position to end
         TaskList lastList = taskListRepository.findTopByBoardIdAndIsArchivedFalseOrderByPositionDesc(taskList.getBoard().getId());
@@ -187,6 +187,14 @@ public class TaskListServiceImpl implements TaskListService {
                 board.getWorkspace().getId(), userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
         if (!hasAccess) {
             throw new UnauthorizedException("You do not have permission to perform this action");
+        }
+    }
+
+    private void validateAdminAccess(Board board, Long userId) {
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+                board.getWorkspace().getId(), userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN));
+        if (!hasAccess) {
+            throw new UnauthorizedException("Only OWNER or ADMIN can perform this action");
         }
     }
 
