@@ -10,5 +10,7 @@ public record CreateBoardRequest(
 
         String description,
 
-        String background
+        String background,
+
+        Long templateId
 ) {}

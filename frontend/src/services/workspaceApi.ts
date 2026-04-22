@@ -15,6 +15,7 @@ export interface Workspace {
   owner: WorkspaceOwner;
   currentUserRole: string;
   memberCount: number;
+  boardCount: number;
   createdAt: string;
 }
 

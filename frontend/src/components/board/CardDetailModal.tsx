@@ -14,6 +14,7 @@ import {
   useUploadAttachmentMutation,
   useDeleteAttachmentMutation,
   useGetCardActivitiesQuery,
+  useArchiveCardMutation,
 } from '../../services/boardApi';
 import {
   MdAttachFile,
@@ -31,6 +32,7 @@ import {
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
+import { FiArchive } from 'react-icons/fi';
 import CommentSection from './CommentSection';
 import styles from './CardDetailModal.module.css';
 
@@ -71,8 +73,16 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [unassignMember] = useUnassignMemberMutation();
   const [uploadAttachment] = useUploadAttachmentMutation();
   const [deleteAttachment] = useDeleteAttachmentMutation();
+  const [archiveCard] = useArchiveCardMutation();
   const { data: activitiesRes } = useGetCardActivitiesQuery(card.id);
   const activities = activitiesRes?.data || [];
+  
+  const handleArchiveCard = async () => {
+    if (confirm('Archive this card?')) {
+      await archiveCard({ id: card.id, boardId }).unwrap();
+      onClose();
+    }
+  };
   
   const { data: labelsData } = useGetBoardLabelsQuery(boardId);
   const boardLabels = labelsData?.data || [];
@@ -482,6 +492,13 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 value={card.dueDate ? card.dueDate.slice(0, 16) : ''}
                 onChange={(e) => handleUpdateCard({ dueDate: e.target.value })}
               />
+            </div>
+
+            <div className={styles.sidebarGroup}>
+              <h3 className={styles.sidebarLabel}>Actions</h3>
+              <button className={styles.actionBtn} onClick={handleArchiveCard}>
+                <FiArchive /> Archive
+              </button>
             </div>
 
             <hr style={{ margin: '2rem 0', border: 'none', borderTop: '2px solid #334155' }} />

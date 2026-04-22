@@ -450,6 +450,58 @@ public class CardServiceImpl implements CardService {
         log.info("User {} unassigned from card {}", userId, cardId);
     }
 
+    @Override
+    @Transactional
+    public CardResponse archiveCard(Long cardId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateCardManagementAccess(card, currentUser.getId());
+        User actor = findUserOrThrow(currentUser.getId());
+
+        card.setIsArchived(true);
+        card = cardRepository.save(card);
+
+        activityService.logActivity(card, actor, "ARCHIVE_CARD", null);
+        log.info("Card archived: {}", cardId);
+
+        CardResponse response = toCardResponse(card);
+        webSocketService.broadcastToBoard(card.getTaskList().getBoard().getId(), "CARD_ARCHIVED", cardId, currentUser.getId());
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public CardResponse restoreCard(Long cardId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateCardManagementAccess(card, currentUser.getId());
+        User actor = findUserOrThrow(currentUser.getId());
+
+        // Reset position to end of list
+        Card lastCard = cardRepository.findTopByTaskListIdAndIsArchivedFalseOrderByPositionDesc(card.getTaskList().getId());
+        int nextPosition = lastCard == null ? 0 : lastCard.getPosition() + 1;
+
+        card.setIsArchived(false);
+        card.setPosition(nextPosition);
+        card = cardRepository.save(card);
+
+        activityService.logActivity(card, actor, "RESTORE_CARD", null);
+        log.info("Card restored: {}", cardId);
+
+        CardResponse response = toCardResponse(card);
+        webSocketService.broadcastToBoard(card.getTaskList().getBoard().getId(), "CARD_RESTORED", response, currentUser.getId());
+        return response;
+    }
+
+    @Override
+    public Page<CardResponse> getArchivedCards(Long boardId, int page, int size, UserPrincipal currentUser) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board", boardId));
+        validateMembership(board.getWorkspace().getId(), currentUser.getId());
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return cardRepository.findByTaskListBoardIdAndIsArchivedTrueOrderByUpdatedAtDesc(boardId, pageRequest)
+                .map(this::toCardResponse);
+    }
+
     // ─── Helpers ────────────────────────────────────────
 
     private Card findCardOrThrow(Long id) {
@@ -485,6 +537,19 @@ public class CardServiceImpl implements CardService {
                 workspaceId, userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
         if (!hasAccess) {
             throw new UnauthorizedException("You do not have permission to perform this action");
+        }
+    }
+
+    private void validateCardManagementAccess(Card card, Long userId) {
+        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
+        com.okabe.entity.WorkspaceMember member = memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
+                .orElseThrow(() -> new UnauthorizedException("You are not a member of this workspace"));
+        
+        boolean isOwnerOrAdmin = member.getRole() == com.okabe.entity.enums.Role.OWNER || member.getRole() == com.okabe.entity.enums.Role.ADMIN;
+        boolean isCreator = card.getCreatedBy().getId().equals(userId);
+
+        if (!isOwnerOrAdmin && !isCreator) {
+            throw new UnauthorizedException("You can only archive/restore your own cards");
         }
     }
 

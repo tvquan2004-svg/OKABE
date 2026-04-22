@@ -11,6 +11,7 @@ import SortableCard from './SortableCard';
 interface BoardListColumnProps {
   list: TaskList;
   onEditList: (list: TaskList) => void;
+  onArchiveList: (listId: number) => void;
   onDeleteList: (listId: number) => void;
   onDeleteCard: (cardId: number) => void;
   onAddCard: (listId: number, title: string) => Promise<void>;
@@ -22,6 +23,7 @@ interface BoardListColumnProps {
 function BoardListColumn({
   list,
   onEditList,
+  onArchiveList,
   onDeleteList,
   onDeleteCard,
   onAddCard,
@@ -54,6 +56,13 @@ function BoardListColumn({
         <h3>{list.name}</h3>
         <span className={styles.cardCount}>{list.cards.length}</span>
         <div style={{ display: 'flex', gap: '4px' }}>
+          <button
+            className={styles.secondaryActionBtn}
+            onClick={() => onArchiveList(list.id)}
+            title="Archive list"
+          >
+            Archive
+          </button>
           <button
             className={styles.secondaryActionBtn}
             onClick={() => onEditList(list)}

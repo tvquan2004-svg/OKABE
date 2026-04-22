@@ -3,14 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useRegisterMutation, useGoogleLoginMutation } from '../services/authApi';
 import { setCredentials } from '../features/auth/authSlice';
 import { useAppDispatch } from '../hooks/useRedux';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
+import { FcGoogle } from 'react-icons/fc';
 import styles from './AuthPage.module.css';
 
 function RegisterPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [register, { isLoading }] = useRegisterMutation();
-  const [googleLogin] = useGoogleLoginMutation();
+  const [googleLoginMutation] = useGoogleLoginMutation();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -18,6 +19,10 @@ function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Google registration state
+  const [needsRegistration, setNeedsRegistration] = useState(false);
+  const [regData, setRegData] = useState<{ email: string; avatarUrl: string; googleName: string; accessToken: string } | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -31,6 +36,61 @@ function RegisterPage() {
     try {
       await register({ username, email, password }).unwrap();
       setSuccess(true);
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      setError(error.data?.message ?? 'Registration failed. Please try again.');
+    }
+  };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const result = await googleLoginMutation({ accessToken: tokenResponse.access_token }).unwrap();
+        
+        if (result.data.needsRegistration) {
+          setNeedsRegistration(true);
+          setRegData({
+            email: result.data.email || '',
+            avatarUrl: result.data.avatarUrl || '',
+            googleName: result.data.googleName || '',
+            accessToken: tokenResponse.access_token
+          });
+          setUsername(result.data.googleName || '');
+        } else if (result.data.accessToken && result.data.refreshToken && result.data.user) {
+          // Already registered, just log in
+          dispatch(setCredentials({
+            accessToken: result.data.accessToken,
+            refreshToken: result.data.refreshToken,
+            user: result.data.user,
+          }));
+          navigate('/dashboard');
+        }
+      } catch (err: unknown) {
+        const error = err as { data?: { message?: string } };
+        setError(error.data?.message ?? 'Google Login failed. Please try again.');
+      }
+    },
+    onError: () => setError('Google Login Failed'),
+  });
+
+  const handleConfirmGoogleRegistration = async () => {
+    if (!regData || !username.trim()) return;
+    setError('');
+
+    try {
+      const result = await googleLoginMutation({ 
+        accessToken: regData.accessToken,
+        username: username.trim()
+      }).unwrap();
+
+      if (result.data.accessToken && result.data.refreshToken && result.data.user) {
+        dispatch(setCredentials({
+          accessToken: result.data.accessToken,
+          refreshToken: result.data.refreshToken,
+          user: result.data.user,
+        }));
+        navigate('/dashboard');
+      }
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       setError(error.data?.message ?? 'Registration failed. Please try again.');
@@ -55,6 +115,60 @@ function RegisterPage() {
           <Link to="/login" className="btn btn-primary" style={{ marginTop: '20px', display: 'inline-block', textDecoration: 'none' }}>
             Go to Login
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (needsRegistration && regData) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.formWrapper}>
+          <div className={styles.header}>
+            <div className={styles.logo}>
+              <span className={styles.logoIcon}>⚡</span>
+              <span className={styles.logoText}>OKABE</span>
+            </div>
+            <h1 className={styles.title}>Confirm Registration</h1>
+            <p className={styles.subtitle}>Last step to create your account with Google</p>
+          </div>
+
+          <div className={styles.confirmBox}>
+            <div className={styles.googleUserBadge}>
+              <img src={regData.avatarUrl} alt="Google Avatar" className={styles.googleAvatar} />
+              <div className={styles.googleUserInfo}>
+                <strong>{regData.googleName}</strong>
+                <span>{regData.email}</span>
+              </div>
+            </div>
+
+            <div className={styles.field} style={{ marginTop: '20px' }}>
+              <label className={styles.label}>Choose Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={styles.input}
+                placeholder="Enter username"
+                required
+              />
+            </div>
+
+            <button 
+              className={`btn btn-primary ${styles.submitBtn}`}
+              onClick={handleConfirmGoogleRegistration}
+            >
+              Confirm & Register
+            </button>
+            
+            <button 
+              className="btn btn-outline" 
+              style={{ width: '100%', marginTop: '10px' }}
+              onClick={() => setNeedsRegistration(false)}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -148,27 +262,10 @@ function RegisterPage() {
         </div>
 
         <div className={styles.googleLoginWrapper}>
-          <GoogleLogin
-            onSuccess={async (credentialResponse) => {
-              if (credentialResponse.credential) {
-                try {
-                  const result = await googleLogin({ idToken: credentialResponse.credential }).unwrap();
-                  dispatch(setCredentials({
-                    accessToken: result.data.accessToken,
-                    refreshToken: result.data.refreshToken,
-                    user: result.data.user,
-                  }));
-                  navigate('/dashboard');
-                } catch (err: unknown) {
-                  const error = err as { data?: { message?: string } };
-                  setError(error.data?.message ?? 'Google Login failed. Please try again.');
-                }
-              }
-            }}
-            onError={() => {
-              setError('Google Login Failed');
-            }}
-          />
+          <button className={styles.googleBtn} onClick={() => handleGoogleLogin()}>
+            <span className={styles.googleIcon}><FcGoogle /></span>
+            Sign up with Google
+          </button>
         </div>
 
         <p className={styles.footer}>

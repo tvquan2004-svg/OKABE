@@ -29,9 +29,12 @@ public class BoardController {
     @Operation(summary = "Get all boards in a workspace")
     public ResponseEntity<ApiResponse<List<BoardResponse>>> getBoardsByWorkspace(
             @PathVariable Long workspaceId,
+            @RequestParam(required = false, defaultValue = "false") boolean archived,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(
-                boardService.getBoardsByWorkspace(workspaceId, currentUser)));
+        List<BoardResponse> boards = archived 
+                ? boardService.getArchivedBoards(workspaceId, currentUser)
+                : boardService.getBoardsByWorkspace(workspaceId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(boards));
     }
 
     @GetMapping("/api/v1/boards/{id}")
@@ -110,5 +113,23 @@ public class BoardController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         boardService.inviteMember(id, email, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation sent"));
+    }
+
+    @PutMapping("/api/v1/boards/{id}/archive")
+    @Operation(summary = "Archive a board")
+    public ResponseEntity<ApiResponse<BoardResponse>> archiveBoard(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                boardService.archiveBoard(id, currentUser), "Board archived"));
+    }
+
+    @PutMapping("/api/v1/boards/{id}/restore")
+    @Operation(summary = "Restore a board")
+    public ResponseEntity<ApiResponse<BoardResponse>> restoreBoard(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                boardService.restoreBoard(id, currentUser), "Board restored"));
     }
 }

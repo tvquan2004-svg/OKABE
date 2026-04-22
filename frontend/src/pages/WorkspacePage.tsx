@@ -17,13 +17,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import EntityModal from '../components/common/EntityModal';
 import MemberModal from '../components/workspace/MemberModal';
 import SortableBoardCard from '../components/workspace/SortableBoardCard';
+import CreateBoardModal from '../components/workspace/CreateBoardModal';
 import {
   type Board,
   useCreateBoardMutation,
   useDeleteBoardMutation,
   useGetBoardsQuery,
+  useGetArchivedBoardsQuery,
   useReorderBoardsMutation,
   useUpdateBoardMutation,
+  useRestoreBoardMutation,
 } from '../services/boardApi';
 import {
   useGetWorkspaceQuery,
@@ -38,13 +41,16 @@ function WorkspacePage() {
 
   const { data: workspaceData } = useGetWorkspaceQuery(id);
   const { data: boardsData, isLoading } = useGetBoardsQuery(id);
+  const { data: archivedBoardsData } = useGetArchivedBoardsQuery(id);
   const [createBoard, { isLoading: isCreatingBoard }] = useCreateBoardMutation();
   const [updateBoard, { isLoading: isUpdatingBoard }] = useUpdateBoardMutation();
   const [reorderBoards] = useReorderBoardsMutation();
   const [deleteBoard] = useDeleteBoardMutation();
+  const [restoreBoard] = useRestoreBoardMutation();
   const [updateWorkspace, { isLoading: isUpdatingWorkspace }] = useUpdateWorkspaceMutation();
 
   const [orderedBoards, setOrderedBoards] = useState<Board[]>([]);
+  const [showArchivedBoards, setShowArchivedBoards] = useState(false);
   const [isCreateBoardModalOpen, setIsCreateBoardModalOpen] = useState(false);
   const [isEditWorkspaceModalOpen, setIsEditWorkspaceModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
@@ -105,31 +111,31 @@ function WorkspacePage() {
     setBoardDescription(board.description ?? '');
   };
 
-  const handleSaveBoard = async () => {
-    if (!boardName.trim()) {
-      return;
-    }
-
-    if (editingBoard) {
-      await updateBoard({
-        id: editingBoard.id,
-        body: {
-          name: boardName.trim(),
-          description: boardDescription.trim() || null,
-        },
-      }).unwrap();
-      setEditingBoard(null);
-      return;
-    }
-
+  const handleSaveBoard = async (data: { name: string; description?: string; templateId?: number }) => {
     const background = bgColors[Math.floor(Math.random() * bgColors.length)];
     await createBoard({
       workspaceId: id,
-      name: boardName.trim(),
-      description: boardDescription.trim() || undefined,
+      name: data.name,
+      description: data.description,
       background,
+      templateId: data.templateId,
     }).unwrap();
     setIsCreateBoardModalOpen(false);
+  };
+
+  const handleUpdateBoard = async () => {
+    if (!boardName.trim() || !editingBoard) {
+      return;
+    }
+
+    await updateBoard({
+      id: editingBoard.id,
+      body: {
+        name: boardName.trim(),
+        description: boardDescription.trim() || null,
+      },
+    }).unwrap();
+    setEditingBoard(null);
   };
 
   const handleSaveWorkspace = async () => {
@@ -153,9 +159,14 @@ function WorkspacePage() {
 
   const handleDeleteBoard = async (boardId: number, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    if (confirm('Delete this board?')) {
+    if (confirm('Delete this board permanently? This cannot be undone.')) {
       await deleteBoard(boardId).unwrap();
     }
+  };
+
+  const handleRestoreBoard = async (boardId: number, event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    await restoreBoard(boardId).unwrap();
   };
 
   const handleEditBoard = (board: Board, event: MouseEvent<HTMLButtonElement>) => {
@@ -258,21 +269,62 @@ function WorkspacePage() {
             </SortableContext>
           </DndContext>
         )}
+
+        <div className={styles.archivedSection}>
+          <button 
+            className={styles.toggleArchivedBtn}
+            onClick={() => setShowArchivedBoards(!showArchivedBoards)}
+          >
+            {showArchivedBoards ? 'Hide' : 'Show'} Archived Boards ({archivedBoardsData?.data.length ?? 0})
+          </button>
+
+          {showArchivedBoards && (
+            <div className={styles.boardGrid} style={{ marginTop: '1rem', opacity: 0.7 }}>
+              {archivedBoardsData?.data.length === 0 ? (
+                <p className={styles.muted}>No archived boards.</p>
+              ) : (
+                archivedBoardsData?.data.map((board) => (
+                  <div 
+                    key={board.id} 
+                    className={styles.archivedBoardCard}
+                    style={{ 
+                      backgroundImage: board.background?.startsWith('http') ? `url(${board.background})` : 'none',
+                      backgroundColor: board.background?.startsWith('#') ? board.background : '#334155'
+                    }}
+                  >
+                    <div className={styles.archivedBoardOverlay}>
+                      <h3>{board.name}</h3>
+                      <div className={styles.archivedActions}>
+                        <button 
+                          className="btn btn-primary btn-sm" 
+                          onClick={(e) => handleRestoreBoard(board.id, e)}
+                        >
+                          Restore
+                        </button>
+                        <button 
+                          className="btn btn-outline btn-sm" 
+                          style={{ color: '#ff4d4f', borderColor: '#ff4d4f' }}
+                          onClick={(e) => handleDeleteBoard(board.id, e)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </main>
 
       {isCreateBoardModalOpen ? (
-        <EntityModal
-          title="Create board"
-          nameLabel="Board name"
-          nameValue={boardName}
-          namePlaceholder="My board"
-          descriptionValue={boardDescription}
-          onNameChange={setBoardName}
-          onDescriptionChange={setBoardDescription}
-          onClose={() => setIsCreateBoardModalOpen(false)}
-          onSubmit={() => void handleSaveBoard()}
-          submitLabel="Create"
+        <CreateBoardModal
+          workspaceId={id}
+          isOpen={isCreateBoardModalOpen}
           isSubmitting={isCreatingBoard}
+          onClose={() => setIsCreateBoardModalOpen(false)}
+          onSubmit={handleSaveBoard}
         />
       ) : null}
 
@@ -286,7 +338,7 @@ function WorkspacePage() {
           onNameChange={setBoardName}
           onDescriptionChange={setBoardDescription}
           onClose={() => setEditingBoard(null)}
-          onSubmit={() => void handleSaveBoard()}
+          onSubmit={() => void handleUpdateBoard()}
           submitLabel="Save changes"
           isSubmitting={isUpdatingBoard}
         />

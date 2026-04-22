@@ -38,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final EmailVerificationTokenRepository tokenRepository;
     private final EmailNotificationService emailNotificationService;
+    private final org.springframework.web.client.RestTemplate restTemplate;
 
     public AuthServiceImpl(
             UserRepository userRepository,
@@ -45,13 +46,15 @@ public class AuthServiceImpl implements AuthService {
             JwtTokenProvider jwtTokenProvider,
             @Lazy AuthenticationManager authenticationManager,
             EmailVerificationTokenRepository tokenRepository,
-            @Lazy EmailNotificationService emailNotificationService) {
+            @Lazy EmailNotificationService emailNotificationService,
+            org.springframework.web.client.RestTemplate restTemplate) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.tokenRepository = tokenRepository;
         this.emailNotificationService = emailNotificationService;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -118,48 +121,74 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse googleLogin(com.okabe.dto.request.GoogleLoginRequest request) {
         try {
-            com.google.api.client.http.HttpTransport transport = new com.google.api.client.http.javanet.NetHttpTransport();
-            com.google.api.client.json.JsonFactory jsonFactory = new com.google.api.client.json.gson.GsonFactory();
+            String email;
+            String name;
+            String pictureUrl;
 
-            com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier =
-                    new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-                            .setAudience(java.util.Collections.singletonList(googleClientId))
-                            .build();
+            if (request.idToken() != null && !request.idToken().isBlank()) {
+                com.google.api.client.http.HttpTransport transport = new com.google.api.client.http.javanet.NetHttpTransport();
+                com.google.api.client.json.JsonFactory jsonFactory = new com.google.api.client.json.gson.GsonFactory();
 
-            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken idToken = verifier.verify(request.idToken());
-            if (idToken != null) {
-                com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = idToken.getPayload();
+                com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier =
+                        new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+                                .setAudience(java.util.Collections.singletonList(googleClientId))
+                                .build();
 
-                String email = payload.getEmail();
-                String name = (String) payload.get("name");
-                String pictureUrl = (String) payload.get("picture");
-
-                User user = userRepository.findByEmail(email).orElse(null);
+                com.google.api.client.googleapis.auth.oauth2.GoogleIdToken idToken = verifier.verify(request.idToken());
+                if (idToken == null) throw new IllegalArgumentException("Invalid Google ID token");
                 
-                if (user == null) {
+                com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = idToken.getPayload();
+                email = payload.getEmail();
+                name = (String) payload.get("name");
+                pictureUrl = (String) payload.get("picture");
+            } else if (request.accessToken() != null && !request.accessToken().isBlank()) {
+                // Fetch from userinfo endpoint
+                String url = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + request.accessToken();
+                java.util.Map<String, Object> userInfo = restTemplate.getForObject(url, java.util.Map.class);
+                if (userInfo == null) throw new IllegalArgumentException("Invalid Google access token");
+                
+                email = (String) userInfo.get("email");
+                name = (String) userInfo.get("name");
+                pictureUrl = (String) userInfo.get("picture");
+            } else {
+                throw new IllegalArgumentException("Either idToken or accessToken is required");
+            }
+
+            User user = userRepository.findByEmail(email).orElse(null);
+            
+            if (user == null) {
+                // Check if it's a registration call (username provided)
+                if (request.username() != null && !request.username().isBlank()) {
                     user = User.builder()
                             .email(email)
-                            .username(name != null ? name : email.split("@")[0])
+                            .username(request.username())
                             .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                             .avatarUrl(pictureUrl)
                             .provider("GOOGLE")
                             .isActive(true)
                             .build();
                     user = userRepository.save(user);
-                    log.info("New Google user registered: {}", email);
+                    log.info("New Google user registered via confirmation: {}", email);
                 } else {
-                    if (user.getAvatarUrl() == null && pictureUrl != null) {
-                        user.setAvatarUrl(pictureUrl);
-                        user = userRepository.save(user);
-                    }
-                    log.info("Google user logged in: {}", email);
+                    // Don't save yet, ask for confirmation/username
+                    return AuthResponse.builder()
+                            .needsRegistration(true)
+                            .email(email)
+                            .avatarUrl(pictureUrl)
+                            .googleName(name)
+                            .build();
                 }
-
-                UserPrincipal userPrincipal = UserPrincipal.from(user);
-                return buildAuthResponse(userPrincipal, user);
             } else {
-                throw new IllegalArgumentException("Invalid Google ID token");
+                // User exists, log them in
+                if (user.getAvatarUrl() == null && pictureUrl != null) {
+                    user.setAvatarUrl(pictureUrl);
+                    user = userRepository.save(user);
+                }
+                log.info("Google user logged in: {}", email);
             }
+
+            UserPrincipal userPrincipal = UserPrincipal.from(user);
+            return buildAuthResponse(userPrincipal, user);
         } catch (Exception e) {
             log.error("Google login failed", e);
             throw new IllegalArgumentException("Google login failed: " + e.getMessage());

@@ -29,9 +29,12 @@ public class TaskListController {
     @Operation(summary = "Get all lists in a board")
     public ResponseEntity<ApiResponse<List<ListResponse>>> getListsByBoard(
             @PathVariable Long boardId,
+            @RequestParam(required = false, defaultValue = "false") boolean archived,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(
-                taskListService.getListsByBoard(boardId, currentUser)));
+        List<ListResponse> lists = archived 
+                ? taskListService.getArchivedLists(boardId, currentUser)
+                : taskListService.getListsByBoard(boardId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(lists));
     }
 
     @PostMapping("/api/v1/boards/{boardId}/lists")
@@ -72,5 +75,23 @@ public class TaskListController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         taskListService.deleteList(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "List deleted"));
+    }
+
+    @PutMapping("/api/v1/lists/{id}/archive")
+    @Operation(summary = "Archive a list")
+    public ResponseEntity<ApiResponse<ListResponse>> archiveList(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                taskListService.archiveList(id, currentUser), "List archived"));
+    }
+
+    @PutMapping("/api/v1/lists/{id}/restore")
+    @Operation(summary = "Restore a list")
+    public ResponseEntity<ApiResponse<ListResponse>> restoreList(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                taskListService.restoreList(id, currentUser), "List restored"));
     }
 }

@@ -1,148 +1,151 @@
 .navbar {
+  height: 64px;
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 60px;
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
+  padding: 0 var(--spacing-xl);
   position: sticky;
   top: 0;
-  z-index: 2000;
+  z-index: 90;
 }
 
 .leftSection {
   display: flex;
   align-items: center;
-  gap: 20px;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.logoIcon {
-  font-size: 1.5rem;
-}
-
-.logoText {
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.pageTitle {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.2px;
 }
 
 .rightSection {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-lg);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  gap: 8px;
+  width: 240px;
+  color: var(--color-text-muted);
+}
+
+.searchBox input {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  outline: none;
+  width: 100%;
 }
 
 .navItem {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .iconBtn {
   background: none;
-  border: none;
   color: var(--color-text-secondary);
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
+  font-size: 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  position: relative;
 }
 
 .iconBtn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-bg-elevated);
   color: var(--color-text);
 }
 
 .badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  background: var(--color-error);
+  top: 0;
+  right: 0;
+  background-color: var(--color-error);
   color: white;
   font-size: 10px;
   font-weight: 700;
   min-width: 16px;
   height: 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
   border: 2px solid var(--color-bg-secondary);
 }
 
-.userProfile {
+.userSection {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-left: 16px;
-  border-left: 1px solid var(--color-border);
+  gap: var(--spacing-md);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 4px 4px 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--color-primary);
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .username {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
-.settingsLink {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4b5563;
-  font-size: 1.2rem;
-  margin: 0 12px;
-  transition: color 0.2s;
-  cursor: pointer;
-}
-
-.settingsLink:hover {
-  color: #6366f1;
+.divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--color-border);
 }
 
 .logoutBtn {
   background: none;
-  border: 1px solid var(--color-border);
   color: var(--color-text-muted);
-  font-size: 0.8rem;
-  padding: 4px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-size: 18px;
+  display: flex;
+  padding: 6px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
 }
 
 .logoutBtn:hover {
-  border-color: var(--color-error);
   color: var(--color-error);
-  background: rgba(239, 68, 68, 0.05);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 768px) {
+  .searchBox {
+    display: none;
+  }
 }

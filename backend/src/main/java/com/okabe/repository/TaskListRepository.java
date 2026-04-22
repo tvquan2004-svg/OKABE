@@ -11,5 +11,9 @@ public interface TaskListRepository extends JpaRepository<TaskList, Long> {
 
     List<TaskList> findByBoardIdAndIsArchivedFalseOrderByPositionAsc(Long boardId);
 
+    List<TaskList> findByBoardIdAndIsArchivedTrueOrderByPositionAsc(Long boardId);
+
     int countByBoardIdAndIsArchivedFalse(Long boardId);
+
+    TaskList findTopByBoardIdAndIsArchivedFalseOrderByPositionDesc(Long boardId);
 }

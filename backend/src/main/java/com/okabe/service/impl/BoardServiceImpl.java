@@ -43,6 +43,7 @@ public class BoardServiceImpl implements BoardService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final EmailNotificationService emailNotificationService;
+    private final BoardTemplateRepository boardTemplateRepository;
 
     @Override
     public List<BoardResponse> getBoardsByWorkspace(Long workspaceId, UserPrincipal currentUser) {
@@ -78,8 +79,36 @@ public class BoardServiceImpl implements BoardService {
                 .build();
 
         board = boardRepository.save(board);
+
+        if (request.templateId() != null) {
+            com.okabe.entity.BoardTemplate template = boardTemplateRepository.findById(request.templateId())
+                    .orElseThrow(() -> new ResourceNotFoundException("BoardTemplate", request.templateId()));
+
+            User creator = userRepository.findById(currentUser.getId()).orElseThrow();
+
+            for (com.okabe.entity.TemplateList templateList : template.getLists()) {
+                TaskList taskList = TaskList.builder()
+                        .board(board)
+                        .name(templateList.getName())
+                        .position(templateList.getPosition())
+                        .build();
+                taskList = taskListRepository.save(taskList);
+
+                for (com.okabe.entity.TemplateCard templateCard : templateList.getCards()) {
+                    Card card = Card.builder()
+                            .taskList(taskList)
+                            .title(templateCard.getTitle())
+                            .description(templateCard.getDescription())
+                            .position(templateCard.getPosition())
+                            .createdBy(creator)
+                            .build();
+                    cardRepository.save(card);
+                }
+            }
+        }
+
         log.info("Board created: {} in workspace {}", board.getName(), workspaceId);
-        return toBoardResponse(board, false);
+        return toBoardResponse(board, request.templateId() != null);
     }
 
     @Override
@@ -213,6 +242,41 @@ public class BoardServiceImpl implements BoardService {
 
         emailNotificationService.sendBoardInvitationEmail(actor, recipient, board.getName(), boardId);
         log.info("Board invitation sent to {} for board {}", email, boardId);
+    }
+
+    @Override
+    @Transactional
+    public BoardResponse archiveBoard(Long boardId, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceAdmin(board.getWorkspace().getId(), currentUser.getId());
+        board.setIsArchived(true);
+        board = boardRepository.save(board);
+        log.info("Board archived: {}", boardId);
+        return toBoardResponse(board, false);
+    }
+
+    @Override
+    @Transactional
+    public BoardResponse restoreBoard(Long boardId, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceAdmin(board.getWorkspace().getId(), currentUser.getId());
+
+        // Reset position to end
+        Board lastBoard = boardRepository.findTopByWorkspaceIdAndIsArchivedFalseOrderByPositionDesc(board.getWorkspace().getId());
+        int nextPosition = lastBoard == null ? 0 : lastBoard.getPosition() + 1;
+
+        board.setIsArchived(false);
+        board.setPosition(nextPosition);
+        board = boardRepository.save(board);
+        log.info("Board restored: {}", boardId);
+        return toBoardResponse(board, false);
+    }
+
+    @Override
+    public List<BoardResponse> getArchivedBoards(Long workspaceId, UserPrincipal currentUser) {
+        validateWorkspaceMembership(workspaceId, currentUser.getId());
+        List<Board> boards = boardRepository.findByWorkspaceIdAndIsArchivedTrueOrderByPositionAscCreatedAtAsc(workspaceId);
+        return boards.stream().map(b -> toBoardResponse(b, false)).toList();
     }
 
     // ─── Helpers ────────────────────────────────────────
