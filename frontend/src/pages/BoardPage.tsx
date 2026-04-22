@@ -327,6 +327,9 @@ function BoardPage() {
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={() => navigate(`/board/${id}/calendar`)}>
                 <FiCalendar /> Lịch
               </button>
+              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={() => navigate(`/board/${id}/timeline`)}>
+                <FiCalendar /> Dòng thời gian
+              </button>
               <button 
                 className={styles.settingsBtn} 
                 onClick={(e) => {

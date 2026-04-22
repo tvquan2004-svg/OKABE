@@ -10,6 +10,7 @@ import SettingsPage from './pages/SettingsPage';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import CalendarView from './pages/CalendarView';
+import TimelineView from './pages/TimelineView';
 
 function LoginRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [searchParams] = useSearchParams();
@@ -40,6 +41,7 @@ function App() {
         <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
         <Route path="/board/:boardId" element={<BoardPage />} />
         <Route path="/board/:boardId/calendar" element={<CalendarView />} />
+        <Route path="/board/:boardId/timeline" element={<TimelineView />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="/invitations/accept" element={<AcceptInvitationPage />} />

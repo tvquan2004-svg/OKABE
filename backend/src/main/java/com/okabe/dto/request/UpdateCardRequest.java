@@ -5,5 +5,6 @@ public record UpdateCardRequest(
         String description,
         String priority,
         String dueDate,
+        String startDate,
         Boolean isArchived
 ) {}

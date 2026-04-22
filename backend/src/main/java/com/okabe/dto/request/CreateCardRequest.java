@@ -12,5 +12,7 @@ public record CreateCardRequest(
 
         String priority,
 
-        String dueDate
+        String dueDate,
+
+        String startDate
 ) {}
