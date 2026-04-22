@@ -421,7 +421,8 @@ public class CardServiceImpl implements CardService {
             "ASSIGNED_TO_CARD", 
             "CARD", 
             card.getId(), 
-            String.format("%s assigned you to the card \"%s\"", actor.getUsername(), card.getTitle())
+            card.getTaskList().getBoard().getId(),
+            String.format("%s đã giao cho bạn thẻ \"%s\"", actor.getUsername(), card.getTitle())
         );
 
         emailNotificationService.sendCardAssignedEmail(

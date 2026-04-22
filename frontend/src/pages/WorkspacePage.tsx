@@ -153,13 +153,13 @@ function WorkspacePage() {
       }).unwrap();
       setIsEditWorkspaceModalOpen(false);
     } catch (err: any) {
-      alert(err.data?.message || 'Failed to update workspace');
+      alert(err.data?.message || 'Không thể cập nhật không gian làm việc');
     }
   };
 
   const handleDeleteBoard = async (boardId: number, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    if (confirm('Delete this board permanently? This cannot be undone.')) {
+    if (confirm('Xóa bảng này vĩnh viễn? Hành động này không thể hoàn tác.')) {
       await deleteBoard(boardId).unwrap();
     }
   };
@@ -204,20 +204,20 @@ function WorkspacePage() {
       <header className={styles.header}>
         <div className={styles.wsHeaderMain}>
           <button className={styles.backBtn} onClick={() => navigate('/dashboard')}>
-            Back to dashboard
+            Quay lại bảng điều khiển
           </button>
           <div className={styles.wsInfo}>
-            <h1>{workspace?.name ?? 'Workspace'}</h1>
+            <h1>{workspace?.name ?? 'Không gian làm việc'}</h1>
             {workspace?.description ? <p>{workspace.description}</p> : null}
           </div>
         </div>
         <div className={styles.headerActions}>
           <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
-            Members ({workspace?.memberCount ?? 0})
+            Thành viên ({workspace?.memberCount ?? 0})
           </button>
           {canManageWorkspace ? (
             <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
-              Edit workspace
+              Sửa không gian
             </button>
           ) : null}
         </div>
@@ -226,25 +226,25 @@ function WorkspacePage() {
       <main className={styles.main}>
         <div className={styles.sectionHeader}>
           <div>
-            <h2>Boards</h2>
+            <h2>Các bảng công việc</h2>
             {canEditBoards ? (
-              <p className={styles.muted}>Drag boards to reorder them.</p>
+              <p className={styles.muted}>Kéo thả các bảng để thay đổi thứ tự.</p>
             ) : null}
           </div>
           <button className="btn btn-primary" onClick={openCreateBoardModal}>
-            + New Board
+            + Bảng mới
           </button>
         </div>
 
         {isLoading ? (
-          <p className={styles.muted}>Loading boards...</p>
+          <p className={styles.muted}>Đang tải danh sách bảng...</p>
         ) : orderedBoards.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>Boards</div>
-            <h3>No boards yet</h3>
-            <p>Create your first board to start organizing tasks.</p>
+            <div className={styles.emptyIcon}>Bảng</div>
+            <h3>Chưa có bảng nào</h3>
+            <p>Tạo bảng công việc đầu tiên của bạn để bắt đầu sắp xếp công việc.</p>
             <button className="btn btn-primary" onClick={openCreateBoardModal}>
-              + Create Board
+              + Tạo bảng mới
             </button>
           </div>
         ) : (
@@ -275,13 +275,13 @@ function WorkspacePage() {
             className={styles.toggleArchivedBtn}
             onClick={() => setShowArchivedBoards(!showArchivedBoards)}
           >
-            {showArchivedBoards ? 'Hide' : 'Show'} Archived Boards ({archivedBoardsData?.data.length ?? 0})
+            {showArchivedBoards ? 'Ẩn' : 'Hiện'} bảng đã lưu trữ ({archivedBoardsData?.data.length ?? 0})
           </button>
 
           {showArchivedBoards && (
             <div className={styles.boardGrid} style={{ marginTop: '1rem', opacity: 0.7 }}>
               {archivedBoardsData?.data.length === 0 ? (
-                <p className={styles.muted}>No archived boards.</p>
+                <p className={styles.muted}>Không có bảng nào được lưu trữ.</p>
               ) : (
                 archivedBoardsData?.data.map((board) => (
                   <div 
@@ -299,14 +299,14 @@ function WorkspacePage() {
                           className="btn btn-primary btn-sm" 
                           onClick={(e) => handleRestoreBoard(board.id, e)}
                         >
-                          Restore
+                          Khôi phục
                         </button>
                         <button 
                           className="btn btn-outline btn-sm" 
                           style={{ color: '#ff4d4f', borderColor: '#ff4d4f' }}
                           onClick={(e) => handleDeleteBoard(board.id, e)}
                         >
-                          Delete
+                          Xóa
                         </button>
                       </div>
                     </div>
@@ -330,32 +330,32 @@ function WorkspacePage() {
 
       {editingBoard ? (
         <EntityModal
-          title="Edit board"
-          nameLabel="Board name"
+          title="Chỉnh sửa bảng"
+          nameLabel="Tên bảng"
           nameValue={boardName}
-          namePlaceholder="My board"
+          namePlaceholder="vd: Dự án của tôi"
           descriptionValue={boardDescription}
           onNameChange={setBoardName}
           onDescriptionChange={setBoardDescription}
           onClose={() => setEditingBoard(null)}
           onSubmit={() => void handleUpdateBoard()}
-          submitLabel="Save changes"
+          submitLabel="Lưu thay đổi"
           isSubmitting={isUpdatingBoard}
         />
       ) : null}
 
       {isEditWorkspaceModalOpen ? (
         <EntityModal
-          title="Edit workspace"
-          nameLabel="Workspace name"
+          title="Chỉnh sửa không gian"
+          nameLabel="Tên không gian làm việc"
           nameValue={workspaceName}
-          namePlaceholder="Workspace name"
+          namePlaceholder="Tên không gian"
           descriptionValue={workspaceDescription}
           onNameChange={setWorkspaceName}
           onDescriptionChange={setWorkspaceDescription}
           onClose={() => setIsEditWorkspaceModalOpen(false)}
           onSubmit={() => void handleSaveWorkspace()}
-          submitLabel="Save changes"
+          submitLabel="Lưu thay đổi"
           isSubmitting={isUpdatingWorkspace}
         />
       ) : null}

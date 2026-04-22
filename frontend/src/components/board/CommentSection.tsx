@@ -6,6 +6,7 @@ import {
   useDeleteCommentMutation,
 } from '../../services/boardApi';
 import { useGetWorkspaceMembersQuery } from '../../services/workspaceApi';
+import { useAppSelector } from '../../hooks/useRedux';
 import { MdComment, MdSend, MdEdit, MdDelete } from 'react-icons/md';
 import styles from './CardDetailModal.module.css';
 
@@ -30,12 +31,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   const { data: membersRes } = useGetWorkspaceMembersQuery(workspaceId);
   const members = membersRes?.data || [];
 
+  const currentUser = useAppSelector(state => state.auth.user);
+
   const [createComment] = useCreateCommentMutation();
   const [updateComment] = useUpdateCommentMutation();
   const [deleteComment] = useDeleteCommentMutation();
 
   const filteredMembers = mentionSearch !== null
-    ? members.filter(m => m.username.toLowerCase().includes(mentionSearch.toLowerCase()))
+    ? members.filter(m => 
+        m.username.toLowerCase().includes(mentionSearch.toLowerCase()) && 
+        m.userId !== currentUser?.id
+      )
     : [];
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -105,7 +111,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   };
 
   const handleDeleteComment = async (id: number) => {
-    if (window.confirm('Delete this comment?')) {
+    if (window.confirm('Xóa bình luận này?')) {
       await deleteComment({ id, cardId }).unwrap();
     }
   };
@@ -129,18 +135,22 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   return (
     <div className={styles.commentSection} style={{ marginTop: '1rem' }}>
       <h3 className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>
-        <MdComment /> Comments
+        <MdComment /> Bình luận
       </h3>
 
       <div className={styles.commentInputWrapper} style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', position: 'relative' }}>
         <div className={styles.activityAvatar} style={{ width: '32px', height: '32px' }}>
-          U
+          {currentUser?.avatarUrl ? (
+            <img src={currentUser.avatarUrl} alt={currentUser.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            currentUser?.username?.charAt(0).toUpperCase() || 'U'
+          )}
         </div>
         <div style={{ flex: 1, position: 'relative' }}>
           <textarea
             className={styles.descriptionBox}
             style={{ minHeight: '80px', width: '100%', fontSize: '0.9rem' }}
-            placeholder="Write a comment... (use @username to mention)"
+            placeholder="Viết bình luận... (sử dụng @tênngườidùng để nhắc tên)"
             value={newComment}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
@@ -151,11 +161,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
               className={styles.popover} 
               style={{ 
                 position: 'absolute', 
-                top: 'calc(100% - 40px)', // Đặt ngay dưới textarea
+                top: 'calc(100% - 40px)', 
                 left: 0, 
                 width: '100%', 
                 zIndex: 1000,
-                background: '#1e293b', // Đảm bảo nền đặc, không trong suốt
+                background: '#1e293b', 
                 boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                 border: '1px solid #334155'
               }}
@@ -190,7 +200,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
               onClick={handlePostComment}
               disabled={!newComment.trim()}
             >
-              <MdSend /> Lưu
+              <MdSend /> Gửi
             </button>
           </div>
         </div>
@@ -198,7 +208,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
 
       <div className={styles.activityList}>
         {isLoading ? (
-          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Loading comments...</div>
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Đang tải bình luận...</div>
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className={styles.activityItem} style={{ marginBottom: '1.5rem', alignItems: 'flex-start' }}>

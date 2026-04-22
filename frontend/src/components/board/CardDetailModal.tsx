@@ -78,7 +78,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const activities = activitiesRes?.data || [];
   
   const handleArchiveCard = async () => {
-    if (confirm('Archive this card?')) {
+    if (confirm('Lưu trữ thẻ này?')) {
       await archiveCard({ id: card.id, boardId }).unwrap();
       onClose();
     }
@@ -100,7 +100,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   };
 
   const handleCreateChecklist = async () => {
-    const name = prompt('Enter checklist name:');
+    const name = prompt('Nhập tên danh sách kiểm tra:');
     if (name?.trim()) {
       await createChecklist({ cardId: card.id, boardId, name: name.trim() }).unwrap();
     }
@@ -129,7 +129,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   };
 
   const handleCreateAndAddLabel = async (color: string) => {
-    const name = prompt('Enter label name (optional):');
+    const name = prompt('Nhập tên nhãn (không bắt buộc):');
     const res = await createLabel({ boardId, color, name: name || '' }).unwrap();
     if (res.success) {
       await addLabelToCard({ cardId: card.id, labelId: res.data.id, boardId }).unwrap();
@@ -158,18 +158,16 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       try {
-        console.log('Uploading file:', file.name);
         await uploadAttachment({ cardId: card.id, boardId, file }).unwrap();
         if (fileInputRef.current) fileInputRef.current.value = '';
       } catch (err: any) {
-        console.error('Upload error:', err);
         alert(`Tải lên thất bại: ${err?.data?.message || err?.message || 'Lỗi kết nối'}`);
       }
     }
   };
 
   const handleDeleteAttachment = async (attachmentId: number) => {
-    if (window.confirm('Are you sure you want to delete this attachment?')) {
+    if (window.confirm('Bạn có chắc chắn muốn xóa tệp đính kèm này?')) {
       await deleteAttachment({ attachmentId, boardId, cardId: card.id }).unwrap();
     }
   };
@@ -202,7 +200,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               onBlur={() => title !== card.title && handleUpdateCard({ title })}
             />
             <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-              in list <span style={{ textDecoration: 'underline' }}>TaskList</span>
+              trong danh sách công việc
             </div>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>
@@ -214,7 +212,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
               {card.labels.length > 0 && (
                 <div className={styles.section} style={{ flex: 1, minWidth: '150px' }}>
-                  <h3 className={styles.sidebarLabel}>Labels</h3>
+                  <h3 className={styles.sidebarLabel}>Nhãn</h3>
                   <div className={styles.labelsList}>
                     {card.labels.map(label => (
                       <div
@@ -222,7 +220,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                         className={styles.labelItem}
                         style={{ background: label.color }}
                         onClick={() => handleRemoveLabel(label.id)}
-                        title="Click to remove"
+                        title="Nhấn để xóa"
                       >
                         {label.name}
                       </div>
@@ -233,13 +231,13 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
               {card.members.length > 0 && (
                 <div className={styles.section} style={{ flex: 1, minWidth: '150px' }}>
-                  <h3 className={styles.sidebarLabel}>Members</h3>
+                  <h3 className={styles.sidebarLabel}>Thành viên</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                     {card.members.map(member => (
                       <div 
                         key={member.id} 
                         className={styles.avatarCircle} 
-                        title={`${member.username} (Click to unassign)`}
+                        title={`${member.username} (Nhấn để gỡ bỏ)`}
                         onClick={() => handleUnassignMember(member.id)}
                       >
                         {member.avatarUrl ? (
@@ -258,11 +256,11 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             {/* Description Section */}
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>
-                <span>📝</span> Description
+                <span>📝</span> Mô tả
               </h3>
               <textarea
                 className={styles.descriptionBox}
-                placeholder="Add a more detailed description..."
+                placeholder="Thêm mô tả chi tiết hơn..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={() => description !== (card.description || '') && handleUpdateCard({ description })}
@@ -307,7 +305,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                     ))}
                     <input
                       className={styles.addItemInput}
-                      placeholder="Add an item..."
+                      placeholder="Thêm một mục..."
                       value={newItemContent[checklist.id] || ''}
                       onChange={(e) => setNewItemContent({ ...newItemContent, [checklist.id]: e.target.value })}
                       onKeyDown={(e) => e.key === 'Enter' && handleAddItem(checklist.id)}
@@ -319,7 +317,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             {/* Attachments Section */}
             <div className={styles.section} style={{ marginTop: '1rem' }}>
               <h3 className={styles.sectionTitle}>
-                <MdAttachFile /> Attachments
+                <MdAttachFile /> Tệp đính kèm
               </h3>
               <div className={styles.attachmentsList}>
                 {card.attachments?.map((attachment) => (
@@ -345,13 +343,13 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                         {attachment.filename}
                       </a>
                       <div className={styles.fileMeta}>
-                        {formatFileSize(attachment.fileSize)} • Added {new Date(attachment.createdAt).toLocaleDateString()}
+                        {formatFileSize(attachment.fileSize)} • Đã thêm {new Date(attachment.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                     <button 
                       className={styles.deleteFileBtn}
                       onClick={() => handleDeleteAttachment(attachment.id)}
-                      title="Delete attachment"
+                      title="Xóa tệp đính kèm"
                     >
                       <MdDelete size={18} />
                     </button>
@@ -361,7 +359,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 <div className={styles.uploadZone} onClick={() => fileInputRef.current?.click()} style={{ cursor: 'pointer' }}>
                   <div className={styles.uploadLabel}>
                     <MdCloudUpload size={20} />
-                    <span>Upload a file...</span>
+                    <span>Tải tệp lên...</span>
                     <input 
                       type="file" 
                       ref={fileInputRef}
@@ -375,7 +373,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             {/* Activity Section */}
             <div className={styles.section} style={{ marginTop: '2rem' }}>
               <h3 className={styles.sectionTitle}>
-                <MdList /> Activity
+                <MdList /> Hoạt động
               </h3>
               <div className={styles.activityList}>
                 {activities.map((activity) => (
@@ -407,15 +405,15 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
           <aside className={styles.sidebar}>
             <div className={styles.sidebarGroup}>
-              <h3 className={styles.sidebarLabel}>Add to card</h3>
+              <h3 className={styles.sidebarLabel}>Thêm vào thẻ</h3>
               <div style={{ position: 'relative' }}>
                 <button className={styles.actionBtn} onClick={() => setShowMemberPicker(!showMemberPicker)}>
-                  <span>👤</span> Members
+                  <span>👤</span> Thành viên
                 </button>
                 {showMemberPicker && (
                   <div className={styles.popover}>
                     <div className={styles.popoverHeader}>
-                      <span>Members</span>
+                      <span>Thành viên</span>
                       <button onClick={() => setShowMemberPicker(false)}>&times;</button>
                     </div>
                     <div className={styles.popoverBody}>
@@ -442,7 +440,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             </div>
 
             <div className={styles.sidebarGroup}>
-              <h3 className={styles.sidebarLabel}>Labels (Quick Add)</h3>
+              <h3 className={styles.sidebarLabel}>Nhãn (Thêm nhanh)</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 {PRESET_COLORS.map(color => (
                   <div
@@ -454,7 +452,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               </div>
               {boardLabels.length > 0 && (
                 <div style={{ marginTop: '8px' }}>
-                   <h3 className={styles.sidebarLabel} style={{ fontSize: '0.65rem' }}>Board Labels</h3>
+                   <h3 className={styles.sidebarLabel} style={{ fontSize: '0.65rem' }}>Nhãn của bảng</h3>
                    <div className={styles.labelsList}>
                     {boardLabels.map(l => (
                       <div 
@@ -470,22 +468,22 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             </div>
 
             <div className={styles.sidebarGroup}>
-              <h3 className={styles.sidebarLabel}>Priority</h3>
+              <h3 className={styles.sidebarLabel}>Độ ưu tiên</h3>
               <select
                 className={styles.prioritySelect}
                 value={card.priority}
                 onChange={(e) => handleUpdateCard({ priority: e.target.value })}
                 style={{ borderLeft: `4px solid ${priorityColor(card.priority)}` }}
               >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="CRITICAL">Critical</option>
+                <option value="LOW">Thấp</option>
+                <option value="MEDIUM">Trung bình</option>
+                <option value="HIGH">Cao</option>
+                <option value="CRITICAL">Khẩn cấp</option>
               </select>
             </div>
 
             <div className={styles.sidebarGroup}>
-              <h3 className={styles.sidebarLabel}>Due Date</h3>
+              <h3 className={styles.sidebarLabel}>Hạn chót</h3>
               <input
                 type="datetime-local"
                 className={styles.datePicker}
@@ -495,9 +493,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             </div>
 
             <div className={styles.sidebarGroup}>
-              <h3 className={styles.sidebarLabel}>Actions</h3>
+              <h3 className={styles.sidebarLabel}>Thao tác</h3>
               <button className={styles.actionBtn} onClick={handleArchiveCard}>
-                <FiArchive /> Archive
+                <FiArchive /> Lưu trữ
               </button>
             </div>
 

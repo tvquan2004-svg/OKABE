@@ -173,7 +173,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             "WORKSPACE_JOINED",
             "WORKSPACE",
             workspaceId,
-            String.format("%s added you to the workspace: %s", actor.getUsername(), workspace.getName())
+            workspaceId,
+            String.format("%s đã thêm bạn vào không gian làm việc: %s", actor.getUsername(), workspace.getName())
         );
 
         log.info("User {} added directly to workspace {} by {}", request.email(), workspaceId, currentUser.getEmail());

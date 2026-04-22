@@ -42,7 +42,7 @@ public class EmailNotificationService {
         vars.put("workspaceName", workspaceName);
         vars.put("invitationUrl", appUrl + "/invitations/accept?token=" + token);
 
-        sendEmail(recipientEmail, "You've been invited to join workspace: " + workspaceName, "workspace-invitation", vars);
+        sendEmail(recipientEmail, "Lời mời tham gia không gian làm việc: " + workspaceName, "workspace-invitation", vars);
         log.info("Invitation email sent to queue for {}", recipientEmail);
     }
 
@@ -57,7 +57,7 @@ public class EmailNotificationService {
         vars.put("boardName", boardName);
         vars.put("boardUrl", appUrl + "/board/" + boardId);
 
-        sendEmail(recipient.getEmail(), "You've been added to board: " + boardName, "board-invitation", vars);
+        sendEmail(recipient.getEmail(), "Bạn đã được thêm vào bảng: " + boardName, "board-invitation", vars);
     }
 
     @Async
@@ -72,7 +72,7 @@ public class EmailNotificationService {
         vars.put("boardName", boardName);
         vars.put("cardUrl", String.format("%s/board/%d?card=%d", appUrl, boardId, cardId));
 
-        sendEmail(recipient.getEmail(), String.format("%s assigned you to %s", actor.getUsername(), cardTitle), "card-assigned", vars);
+        sendEmail(recipient.getEmail(), String.format("%s đã giao cho bạn thẻ: %s", actor.getUsername(), cardTitle), "card-assigned", vars);
     }
 
     @Async
@@ -87,7 +87,7 @@ public class EmailNotificationService {
         vars.put("commentContent", commentSnippet);
         vars.put("cardUrl", String.format("%s/board/%d?card=%d", appUrl, boardId, cardId));
 
-        sendEmail(recipient.getEmail(), String.format("%s mentioned you in %s", actor.getUsername(), cardTitle), "mentioned", vars);
+        sendEmail(recipient.getEmail(), String.format("%s đã nhắc tên bạn trong %s", actor.getUsername(), cardTitle), "mentioned", vars);
     }
 
     @Async
@@ -98,10 +98,10 @@ public class EmailNotificationService {
         Map<String, Object> vars = new HashMap<>();
         vars.put("recipientName", recipient.getUsername());
         vars.put("cardTitle", cardTitle);
-        vars.put("dueDate", dueDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));
+        vars.put("dueDate", dueDate.format(DateTimeFormatter.ofPattern("HH:mm, dd/MM/yyyy")));
         vars.put("cardUrl", String.format("%s/board/%d?card=%d", appUrl, boardId, cardId));
 
-        sendEmail(recipient.getEmail(), "Reminder: " + cardTitle + " is due soon", "due-soon", vars);
+        sendEmail(recipient.getEmail(), "Nhắc nhở: Thẻ " + cardTitle + " sắp đến hạn", "due-soon", vars);
     }
 
     @Async
@@ -111,7 +111,7 @@ public class EmailNotificationService {
         vars.put("recipientName", user.getUsername());
         vars.put("verificationUrl", appUrl + "/verify-email?token=" + token);
 
-        sendEmail(user.getEmail(), "Verify your email address - OKABE", "email-verification", vars);
+        sendEmail(user.getEmail(), "Xác thực địa chỉ email của bạn - OKABE", "email-verification", vars);
     }
 
     private void sendEmail(String to, String subject, String templateName, Map<String, Object> variables) {

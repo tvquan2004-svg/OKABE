@@ -15,16 +15,16 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Reminder</h1>
+            <h1>Nhắc nhở</h1>
         </div>
         <div class="content">
-            <p>Hi <span th:text="${recipientName}">User</span>,</p>
-            <p>This is a reminder that the card <strong><span th:text="${cardTitle}">Card Title</span></strong> is due soon.</p>
-            <p>Due Date: <strong th:text="${dueDate}">Tomorrow</strong></p>
-            <a th:href="${cardUrl}" class="btn">View Task</a>
+            <p>Xin chào <span th:text="${recipientName}">User</span>,</p>
+            <p>Đây là thông báo nhắc nhở rằng thẻ công việc <strong><span th:text="${cardTitle}">Card Title</span></strong> của bạn sắp đến hạn chót.</p>
+            <p>Hạn chót: <strong th:text="${dueDate}">Tomorrow</strong></p>
+            <a th:href="${cardUrl}" class="btn">Xem công việc</a>
         </div>
         <div class="footer">
-            <p>You received this because you are assigned to this task.</p>
+            <p>Bạn nhận được email này vì bạn được giao thực hiện công việc này.</p>
         </div>
     </div>
 </body>

@@ -6,7 +6,7 @@ const NotificationSettings: React.FC = () => {
   const { data: preferences, isLoading } = useGetNotificationPreferencesQuery();
   const [updatePreferences, { isLoading: isUpdating }] = useUpdateNotificationPreferencesMutation();
 
-  if (isLoading) return <div>Loading preferences...</div>;
+  if (isLoading) return <div>Đang tải cài đặt...</div>;
 
   const handleToggle = async (key: keyof typeof preferences) => {
     if (!preferences) return;
@@ -26,34 +26,34 @@ const NotificationSettings: React.FC = () => {
   const settings = [
     {
       id: 'emailAssigned',
-      title: 'Card Assignments',
-      description: 'Receive an email when someone assigns you to a card.',
+      title: 'Giao việc cho bạn',
+      description: 'Nhận email khi có ai đó giao thẻ công việc cho bạn.',
       icon: '👤',
     },
     {
       id: 'emailMentioned',
-      title: 'Mentions',
-      description: 'Receive an email when someone mentions you in a comment.',
+      title: 'Nhắc tên bạn',
+      description: 'Nhận email khi có ai đó nhắc tên bạn trong bình luận.',
       icon: '💬',
     },
     {
       id: 'emailDueSoon',
-      title: 'Due Soon Reminders',
-      description: 'Receive a reminder email 24 hours before a card is due.',
+      title: 'Nhắc nhở hạn chót',
+      description: 'Nhận email nhắc nhở trước 24 giờ khi thẻ sắp đến hạn.',
       icon: '⏰',
     },
     {
       id: 'emailInvited',
-      title: 'Workspace Invitations',
-      description: 'Receive an email when you are invited to a new workspace.',
+      title: 'Lời mời vào Không gian',
+      description: 'Nhận email khi bạn được mời vào một không gian làm việc mới.',
       icon: '📩',
     },
   ];
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Email Notifications</h2>
-      <p className={styles.subtitle}>Choose which events you want to be notified about via email.</p>
+      <h2 className={styles.title}>Thông báo qua Email</h2>
+      <p className={styles.subtitle}>Chọn các sự kiện bạn muốn nhận thông báo qua email.</p>
       
       <div className={styles.settingsList}>
         {settings.map((item) => (

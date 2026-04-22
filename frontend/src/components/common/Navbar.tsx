@@ -40,10 +40,10 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   }, [showNotifications]);
 
   const getPageTitle = () => {
-    if (location.pathname === '/dashboard') return 'Dashboard';
-    if (location.pathname.startsWith('/workspace/')) return 'Workspace';
-    if (location.pathname.startsWith('/board/')) return 'Board View';
-    if (location.pathname === '/settings') return 'Settings';
+    if (location.pathname === '/dashboard') return 'Bảng điều khiển';
+    if (location.pathname.startsWith('/workspace/')) return 'Không gian làm việc';
+    if (location.pathname.startsWith('/board/')) return 'Bảng công việc';
+    if (location.pathname === '/settings') return 'Cài đặt';
     return 'OKABE';
   };
 
@@ -79,7 +79,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
             <span className={styles.username}>{user?.username}</span>
           </div>
           <div className={styles.divider}></div>
-          <button onClick={handleLogout} className={styles.logoutBtn} title="Logout">
+          <button onClick={handleLogout} className={styles.logoutBtn} title="Đăng xuất">
             <FiLogOut />
           </button>
         </div>

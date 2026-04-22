@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   useGetNotificationsQuery, 
   useMarkAsReadMutation, 
-  useMarkAllAsReadMutation 
+  useMarkAllAsReadMutation,
+  type Notification 
 } from '../../services/notificationApi';
 import styles from './NotificationDropdown.module.css';
 
@@ -22,16 +23,19 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) 
 
   const notifications = notificationsRes?.data.content ?? [];
 
-  const handleNotificationClick = async (n: any) => {
+  const handleNotificationClick = async (n: Notification) => {
     if (!n.isRead) {
       await markAsRead(n.id);
     }
     
-    // Navigate based on entity type
+    // Navigate based on entity type and context
     if (n.entityType === 'CARD') {
-      // For now just navigate to board if we had boardId, but we only have entityId (cardId)
-      // Ideally we'd have a route like /card/:id or include boardId in notification
-      // navigate(`/board/${n.boardId}?cardId=${n.entityId}`);
+      // extraId stores boardId, entityId stores cardId
+      if (n.extraId) {
+        navigate(`/board/${n.extraId}?cardId=${n.entityId}`);
+      }
+    } else if (n.entityType === 'BOARD') {
+      navigate(`/board/${n.entityId}`);
     } else if (n.entityType === 'WORKSPACE') {
       navigate(`/workspace/${n.entityId}`);
     }
@@ -45,33 +49,33 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) 
     const diff = now.getTime() - date.getTime();
     
     const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 1) return 'Vừa xong';
+    if (minutes < 60) return `${minutes} phút trước`;
     
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) return `${hours} giờ trước`;
     
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('vi-VN');
   };
 
   return (
     <div className={styles.dropdownContainer} onClick={(e) => e.stopPropagation()}>
       <div className={styles.header}>
-        <h3>Notifications</h3>
+        <h3>Thông báo</h3>
         {notifications.length > 0 && (
           <button className={styles.markAllBtn} onClick={() => markAllAsRead()}>
-            Mark all as read
+            Đánh dấu tất cả là đã đọc
           </button>
         )}
       </div>
 
       <div className={styles.list}>
         {isLoading ? (
-          <div className={styles.empty}>Loading...</div>
+          <div className={styles.empty}>Đang tải...</div>
         ) : notifications.length === 0 ? (
           <div className={styles.empty}>
             <span className={styles.emptyIcon}>🔔</span>
-            <p>No notifications yet</p>
+            <p>Chưa có thông báo nào</p>
           </div>
         ) : (
           notifications.map((n) => (
@@ -100,7 +104,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) 
       {notifications.length > 0 && (
         <div className={styles.footer}>
           <button className={styles.viewAllBtn} onClick={onClose}>
-            Close
+            Đóng
           </button>
         </div>
       )}

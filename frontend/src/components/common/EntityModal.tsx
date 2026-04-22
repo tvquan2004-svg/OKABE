@@ -28,9 +28,9 @@ function EntityModal({
   onClose,
   onSubmit,
   showDescription = true,
-  descriptionLabel = 'Description',
+  descriptionLabel = 'Mô tả',
   descriptionValue = '',
-  descriptionPlaceholder = 'Optional description...',
+  descriptionPlaceholder = 'Mô tả không bắt buộc...',
   onDescriptionChange,
 }: EntityModalProps) {
   const isSubmitDisabled = isSubmitting || !nameValue.trim();
@@ -68,14 +68,14 @@ function EntityModal({
 
         <div className={styles.actions}>
           <button className="btn btn-outline" onClick={onClose}>
-            Cancel
+            Hủy
           </button>
           <button
             className="btn btn-primary"
             onClick={onSubmit}
             disabled={isSubmitDisabled}
           >
-            {isSubmitting ? 'Saving...' : submitLabel}
+            {isSubmitting ? 'Đang lưu...' : submitLabel}
           </button>
         </div>
       </div>

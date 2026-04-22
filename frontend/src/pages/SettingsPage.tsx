@@ -7,16 +7,16 @@ const SettingsPage: React.FC = () => {
     <div className={styles.pageContainer}>
       <main className={styles.mainContent}>
         <div className={styles.sidebar}>
-          <h2 className={styles.sidebarTitle}>User Settings</h2>
+          <h2 className={styles.sidebarTitle}>Cài đặt người dùng</h2>
           <nav className={styles.sideNav}>
             <button className={`${styles.navItem} ${styles.active}`}>
-              <span>🔔</span> Notifications
+              <span>🔔</span> Thông báo
             </button>
             <button className={styles.navItem} disabled>
-              <span>👤</span> Profile (Coming Soon)
+              <span>👤</span> Hồ sơ (Sắp ra mắt)
             </button>
             <button className={styles.navItem} disabled>
-              <span>🔒</span> Security (Coming Soon)
+              <span>🔒</span> Bảo mật (Sắp ra mắt)
             </button>
           </nav>
         </div>

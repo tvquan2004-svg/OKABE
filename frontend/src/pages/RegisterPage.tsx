@@ -29,7 +29,7 @@ function RegisterPage() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Mật khẩu không khớp');
       return;
     }
 
@@ -38,7 +38,7 @@ function RegisterPage() {
       setSuccess(true);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
-      setError(error.data?.message ?? 'Registration failed. Please try again.');
+      setError(error.data?.message ?? 'Đăng ký thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -57,7 +57,6 @@ function RegisterPage() {
           });
           setUsername(result.data.googleName || '');
         } else if (result.data.accessToken && result.data.refreshToken && result.data.user) {
-          // Already registered, just log in
           dispatch(setCredentials({
             accessToken: result.data.accessToken,
             refreshToken: result.data.refreshToken,
@@ -67,10 +66,10 @@ function RegisterPage() {
         }
       } catch (err: unknown) {
         const error = err as { data?: { message?: string } };
-        setError(error.data?.message ?? 'Google Login failed. Please try again.');
+        setError(error.data?.message ?? 'Đăng nhập Google thất bại. Vui lòng thử lại.');
       }
     },
-    onError: () => setError('Google Login Failed'),
+    onError: () => setError('Đăng nhập Google thất bại'),
   });
 
   const handleConfirmGoogleRegistration = async () => {
@@ -93,7 +92,7 @@ function RegisterPage() {
       }
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
-      setError(error.data?.message ?? 'Registration failed. Please try again.');
+      setError(error.data?.message ?? 'Đăng ký thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -106,14 +105,14 @@ function RegisterPage() {
               <span className={styles.logoIcon}>⚡</span>
               <span className={styles.logoText}>OKABE</span>
             </div>
-            <h1 className={styles.title}>Check your email</h1>
+            <h1 className={styles.title}>Kiểm tra email của bạn</h1>
             <p className={styles.subtitle}>
-              We've sent a verification link to <strong>{email}</strong>.
-              Please check your inbox and click the link to activate your account.
+              Chúng tôi đã gửi link xác thực đến <strong>{email}</strong>.
+              Vui lòng kiểm tra hộp thư đến và nhấn vào link để kích hoạt tài khoản của bạn.
             </p>
           </div>
           <Link to="/login" className="btn btn-primary" style={{ marginTop: '20px', display: 'inline-block', textDecoration: 'none' }}>
-            Go to Login
+            Đi đến Đăng nhập
           </Link>
         </div>
       </div>
@@ -129,8 +128,8 @@ function RegisterPage() {
               <span className={styles.logoIcon}>⚡</span>
               <span className={styles.logoText}>OKABE</span>
             </div>
-            <h1 className={styles.title}>Confirm Registration</h1>
-            <p className={styles.subtitle}>Last step to create your account with Google</p>
+            <h1 className={styles.title}>Xác nhận đăng ký</h1>
+            <p className={styles.subtitle}>Bước cuối cùng để tạo tài khoản với Google</p>
           </div>
 
           <div className={styles.confirmBox}>
@@ -143,13 +142,13 @@ function RegisterPage() {
             </div>
 
             <div className={styles.field} style={{ marginTop: '20px' }}>
-              <label className={styles.label}>Choose Username</label>
+              <label className={styles.label}>Chọn tên người dùng</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className={styles.input}
-                placeholder="Enter username"
+                placeholder="Nhập tên người dùng"
                 required
               />
             </div>
@@ -158,7 +157,7 @@ function RegisterPage() {
               className={`btn btn-primary ${styles.submitBtn}`}
               onClick={handleConfirmGoogleRegistration}
             >
-              Confirm & Register
+              Xác nhận & Đăng ký
             </button>
             
             <button 
@@ -166,7 +165,7 @@ function RegisterPage() {
               style={{ width: '100%', marginTop: '10px' }}
               onClick={() => setNeedsRegistration(false)}
             >
-              Cancel
+              Hủy bỏ
             </button>
           </div>
         </div>
@@ -182,21 +181,21 @@ function RegisterPage() {
             <span className={styles.logoIcon}>⚡</span>
             <span className={styles.logoText}>OKABE</span>
           </Link>
-          <h1 className={styles.title}>Create your account</h1>
-          <p className={styles.subtitle}>Start managing your tasks in seconds</p>
+          <h1 className={styles.title}>Tạo tài khoản</h1>
+          <p className={styles.subtitle}>Bắt đầu quản lý công việc trong vài giây</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {error && <div className={styles.error}>{error}</div>}
 
           <div className={styles.field}>
-            <label htmlFor="username" className={styles.label}>Username</label>
+            <label htmlFor="username" className={styles.label}>Tên người dùng</label>
             <input
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="johndoe"
+              placeholder="ví dụ: johndoe"
               className={styles.input}
               required
               minLength={3}
@@ -219,7 +218,7 @@ function RegisterPage() {
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="password" className={styles.label}>Password</label>
+            <label htmlFor="password" className={styles.label}>Mật khẩu</label>
             <input
               id="password"
               type="password"
@@ -234,7 +233,7 @@ function RegisterPage() {
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="confirmPassword" className={styles.label}>Confirm Password</label>
+            <label htmlFor="confirmPassword" className={styles.label}>Xác nhận mật khẩu</label>
             <input
               id="confirmPassword"
               type="password"
@@ -253,24 +252,24 @@ function RegisterPage() {
             className={`btn btn-primary ${styles.submitBtn}`}
             disabled={isLoading}
           >
-            {isLoading ? 'Creating account...' : 'Create Account'}
+            {isLoading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
           </button>
         </form>
 
         <div className={styles.divider}>
-          <span>OR</span>
+          <span>HOẶC</span>
         </div>
 
         <div className={styles.googleLoginWrapper}>
           <button className={styles.googleBtn} onClick={() => handleGoogleLogin()}>
             <span className={styles.googleIcon}><FcGoogle /></span>
-            Sign up with Google
+            Đăng ký với Google
           </button>
         </div>
 
         <p className={styles.footer}>
-          Already have an account?{' '}
-          <Link to="/login" className={styles.link}>Sign in</Link>
+          Đã có tài khoản?{' '}
+          <Link to="/login" className={styles.link}>Đăng nhập</Link>
         </p>
       </div>
     </div>

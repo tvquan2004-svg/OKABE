@@ -59,21 +59,21 @@ function BoardListColumn({
           <button
             className={styles.secondaryActionBtn}
             onClick={() => onArchiveList(list.id)}
-            title="Archive list"
+            title="Lưu trữ danh sách"
           >
-            Archive
+            Lưu trữ
           </button>
           <button
             className={styles.secondaryActionBtn}
             onClick={() => onEditList(list)}
-            title="Edit list"
+            title="Sửa danh sách"
           >
-            Edit
+            Sửa
           </button>
           <button
             className={styles.deleteListBtn}
             onClick={() => onDeleteList(list.id)}
-            title="Delete list"
+            title="Xóa danh sách"
           >
             x
           </button>
@@ -99,7 +99,7 @@ function BoardListColumn({
             <textarea
               value={newCardTitle}
               onChange={(event) => setNewCardTitle(event.target.value)}
-              placeholder="Enter card title..."
+              placeholder="Nhập tiêu đề thẻ..."
               className={styles.addCardInput}
               autoFocus
               rows={2}
@@ -112,10 +112,10 @@ function BoardListColumn({
             />
             <div className={styles.addCardActions}>
               <button className="btn btn-primary" onClick={() => void handleAddCard()}>
-                Add
+                Thêm thẻ
               </button>
               <button className="btn btn-outline" onClick={() => setIsAddingCard(false)}>
-                Cancel
+                Hủy
               </button>
             </div>
           </div>
@@ -127,7 +127,7 @@ function BoardListColumn({
               setNewCardTitle('');
             }}
           >
-            + Add a card
+            + Thêm thẻ
           </button>
         )}
       </div>

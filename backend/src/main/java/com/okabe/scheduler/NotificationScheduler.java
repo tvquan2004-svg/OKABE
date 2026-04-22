@@ -50,14 +50,23 @@ public class NotificationScheduler {
     }
 
     private void notifyCardMembers(Card card, String type, String message) {
+        Long boardId = card.getTaskList().getBoard().getId();
+        String translatedMessage = message;
+        if (type.equals("CARD_OVERDUE")) {
+            translatedMessage = "Thẻ đã quá hạn: " + card.getTitle();
+        } else if (type.equals("CARD_DUE_SOON")) {
+            translatedMessage = "Thẻ sắp đến hạn (trong 24 giờ tới): " + card.getTitle();
+        }
+
+        final String finalMsg = translatedMessage;
         // Notify all assigned members
         card.getMembers().forEach(member -> {
-            notificationService.createNotification(member, null, type, "CARD", card.getId(), message);
+            notificationService.createNotification(member, null, type, "CARD", card.getId(), boardId, finalMsg);
         });
 
         // Also notify creator if not in members
-        if (card.getMembers().stream().noneMatch(m -> m.getId().equals(card.getCreatedBy().getId()))) {
-            notificationService.createNotification(card.getCreatedBy(), null, type, "CARD", card.getId(), message);
+        if (card.getCreatedBy() != null && card.getMembers().stream().noneMatch(m -> m.getId().equals(card.getCreatedBy().getId()))) {
+            notificationService.createNotification(card.getCreatedBy(), null, type, "CARD", card.getId(), boardId, finalMsg);
         }
     }
 }
