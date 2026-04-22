@@ -17,8 +17,12 @@ const addRefreshSubscriber = (callback: (token: string) => void) => {
 
 const getBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL as string;
-  if (!envUrl) return 'http://localhost:8080/api/v1';
-  return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
+  const baseUrl = !envUrl ? 'http://localhost:8080/api/v1' : (envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`);
+  
+  if (import.meta.env.DEV) {
+    console.log('API Base URL:', baseUrl);
+  }
+  return baseUrl;
 };
 
 const baseQuery = fetchBaseQuery({

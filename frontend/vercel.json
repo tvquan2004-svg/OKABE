@@ -1,16 +1,13 @@
 {
-  "rewrites": [
+  "headers": [
     {
-      "source": "/api/:path*",
-      "destination": "https://okabe.onrender.com/api/:path*"
-    },
-    {
-      "source": "/ws/:path*",
-      "destination": "https://okabe.onrender.com/ws/:path*"
-    },
-    {
-      "source": "/((?!api|ws).*)",
-      "destination": "/index.html"
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        }
+      ]
     }
   ]
 }
