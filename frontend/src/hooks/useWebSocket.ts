@@ -58,7 +58,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
       heartbeatOutgoing: 4000,
     });
 
-    client.onConnect = (frame: IFrame) => {
+    client.onConnect = (_frame: IFrame) => {
       if (import.meta.env.DEV) console.log('Connected to WebSocket');
       
       // Subscribe to personal notifications
