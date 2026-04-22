@@ -9,6 +9,7 @@ export interface Notification {
   type: string;
   entityType: string;
   entityId: number;
+  extraId: number | null;
   message: string;
   isRead: boolean;
   createdAt: string;

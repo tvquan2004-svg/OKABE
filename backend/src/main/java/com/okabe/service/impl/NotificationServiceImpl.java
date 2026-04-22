@@ -27,7 +27,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public void createNotification(User recipient, User actor, String type, String entityType, Long entityId, String message) {
+    public void createNotification(User recipient, User actor, String type, String entityType, Long entityId, Long extraId, String message) {
         // Don't notify the actor of their own action
         if (actor != null && recipient.getId().equals(actor.getId())) {
             return;
@@ -39,6 +39,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .type(type)
                 .entityType(entityType)
                 .entityId(entityId)
+                .extraId(extraId)
                 .message(message)
                 .build();
 
@@ -89,6 +90,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .type(n.getType())
                 .entityType(n.getEntityType())
                 .entityId(n.getEntityId())
+                .extraId(n.getExtraId())
                 .message(n.getMessage())
                 .isRead(n.getIsRead())
                 .createdAt(n.getCreatedAt())

@@ -173,6 +173,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             "WORKSPACE_JOINED",
             "WORKSPACE",
             workspaceId,
+            workspaceId,
             String.format("%s đã thêm bạn vào không gian làm việc: %s", actor.getUsername(), workspace.getName())
         );
 

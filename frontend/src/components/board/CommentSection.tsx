@@ -6,6 +6,7 @@ import {
   useDeleteCommentMutation,
 } from '../../services/boardApi';
 import { useGetWorkspaceMembersQuery } from '../../services/workspaceApi';
+import { useAppSelector } from '../../hooks/useRedux';
 import { MdComment, MdSend, MdEdit, MdDelete } from 'react-icons/md';
 import styles from './CardDetailModal.module.css';
 
@@ -30,12 +31,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   const { data: membersRes } = useGetWorkspaceMembersQuery(workspaceId);
   const members = membersRes?.data || [];
 
+  const currentUser = useAppSelector(state => state.auth.user);
+
   const [createComment] = useCreateCommentMutation();
   const [updateComment] = useUpdateCommentMutation();
   const [deleteComment] = useDeleteCommentMutation();
 
   const filteredMembers = mentionSearch !== null
-    ? members.filter(m => m.username.toLowerCase().includes(mentionSearch.toLowerCase()))
+    ? members.filter(m => 
+        m.username.toLowerCase().includes(mentionSearch.toLowerCase()) && 
+        m.userId !== currentUser?.id
+      )
     : [];
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -134,7 +140,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
 
       <div className={styles.commentInputWrapper} style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', position: 'relative' }}>
         <div className={styles.activityAvatar} style={{ width: '32px', height: '32px' }}>
-          U
+          {currentUser?.avatarUrl ? (
+            <img src={currentUser.avatarUrl} alt={currentUser.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            currentUser?.username?.charAt(0).toUpperCase() || 'U'
+          )}
         </div>
         <div style={{ flex: 1, position: 'relative' }}>
           <textarea

@@ -34,6 +34,9 @@ public class Notification {
     @Column(name = "entity_id", nullable = false)
     private Long entityId;
 
+    @Column(name = "extra_id")
+    private Long extraId;
+
     @Column(nullable = false, length = 500)
     private String message;
 

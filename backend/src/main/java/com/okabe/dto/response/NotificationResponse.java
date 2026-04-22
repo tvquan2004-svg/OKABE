@@ -12,6 +12,7 @@ public record NotificationResponse(
     String type,
     String entityType,
     Long entityId,
+    Long extraId,
     String message,
     Boolean isRead,
     LocalDateTime createdAt

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   useGetNotificationsQuery, 
   useMarkAsReadMutation, 
-  useMarkAllAsReadMutation 
+  useMarkAllAsReadMutation,
+  type Notification 
 } from '../../services/notificationApi';
 import styles from './NotificationDropdown.module.css';
 
@@ -22,14 +23,19 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) 
 
   const notifications = notificationsRes?.data.content ?? [];
 
-  const handleNotificationClick = async (n: any) => {
+  const handleNotificationClick = async (n: Notification) => {
     if (!n.isRead) {
       await markAsRead(n.id);
     }
     
-    // Navigate based on entity type
+    // Navigate based on entity type and context
     if (n.entityType === 'CARD') {
-      // Logic for card navigation
+      // extraId stores boardId, entityId stores cardId
+      if (n.extraId) {
+        navigate(`/board/${n.extraId}?cardId=${n.entityId}`);
+      }
+    } else if (n.entityType === 'BOARD') {
+      navigate(`/board/${n.entityId}`);
     } else if (n.entityType === 'WORKSPACE') {
       navigate(`/workspace/${n.entityId}`);
     }

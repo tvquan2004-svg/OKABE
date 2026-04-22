@@ -85,6 +85,7 @@ public class CommentServiceImpl implements CommentService {
                         "MENTIONED",
                         "CARD",
                         card.getId(),
+                        card.getTaskList().getBoard().getId(),
                         author.getUsername() + " đã nhắc tên bạn trong một bình luận tại thẻ: " + card.getTitle()
                 );
 
@@ -147,6 +148,7 @@ public class CommentServiceImpl implements CommentService {
                         "MENTIONED",
                         "CARD",
                         comment.getCard().getId(),
+                        comment.getCard().getTaskList().getBoard().getId(),
                         author.getUsername() + " đã nhắc tên bạn trong một bình luận đã chỉnh sửa tại thẻ: " + comment.getCard().getTitle()
                 );
 

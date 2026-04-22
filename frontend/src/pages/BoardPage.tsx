@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useRedux';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { apiSlice } from '../services/apiSlice';
@@ -31,7 +31,6 @@ import {
 import ArchivedItemsPanel from '../components/board/ArchivedItemsPanel';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
-import { useEffect } from 'react';
 import {
   DndContext,
   DragEndEvent,
@@ -43,9 +42,11 @@ import {
 
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const id = Number(boardId);
+  const cardIdFromUrl = searchParams.get('cardId');
 
   // Phase 3: WebSocket Real-time Updates
   useWebSocket({
@@ -109,6 +110,25 @@ function BoardPage() {
   
   // Phase 2: Card Detail Modal State
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+
+  // Effect to handle cardId from URL (for notifications)
+  useEffect(() => {
+    if (cardIdFromUrl && lists.length > 0) {
+      const card = lists.flatMap(l => l.cards).find(c => c.id === Number(cardIdFromUrl));
+      if (card) {
+        setSelectedCard(card);
+      }
+    }
+  }, [cardIdFromUrl, lists]);
+
+  const handleCloseCardModal = () => {
+    setSelectedCard(null);
+    if (searchParams.has('cardId')) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('cardId');
+      setSearchParams(newParams);
+    }
+  };
 
   // Phase 2: Background Picker State
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
@@ -446,7 +466,7 @@ function BoardPage() {
           card={currentCard}
           boardId={id}
           workspaceId={board.workspaceId}
-          onClose={() => setSelectedCard(null)}
+          onClose={handleCloseCardModal}
           priorityColor={priorityColor}
         />
       ) : null}

@@ -46,6 +46,7 @@ public class ScheduledNotificationService {
                         "CARD_DUE_SOON",
                         "CARD",
                         card.getId(),
+                        card.getTaskList().getBoard().getId(),
                         String.format("Nhắc nhở: Thẻ \"%s\" sắp đến hạn vào ngày mai (%s)", 
                                 card.getTitle(), card.getDueDate())
                 );
