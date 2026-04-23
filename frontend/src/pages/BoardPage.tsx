@@ -21,12 +21,13 @@ import {
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
 import { 
   useArchiveBoardMutation,
 } from '../services/boardApi';
 import ArchivedItemsPanel from '../components/board/ArchivedItemsPanel';
+import BoardActivitySidebar from '../components/board/BoardActivitySidebar';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
 import {
@@ -73,6 +74,7 @@ function BoardPage() {
   const [archiveBoard] = useArchiveBoardMutation();
 
   const [showArchivedPanel, setShowArchivedPanel] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -128,6 +130,14 @@ function BoardPage() {
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('cardId');
       setSearchParams(newParams);
+    }
+  };
+
+  const handleActivityCardClick = (cardId: number) => {
+    const card = lists.flatMap(l => l.cards).find(c => c.id === cardId);
+    if (card) {
+      setSelectedCard(card);
+      setShowActivitySidebar(false);
     }
   };
 
@@ -334,6 +344,13 @@ function BoardPage() {
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/timeline`)}>
                 <FiClock /> <span>Dòng thời gian</span>
               </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
+                onClick={() => setShowActivitySidebar(true)}
+              >
+                <FiActivity /> <span>Hoạt động</span>
+              </button>
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/analytics`)}>
                 <FiPieChart /> <span>Thống kê</span>
               </button>
@@ -527,6 +544,13 @@ function BoardPage() {
           onClose={() => setShowArchivedPanel(false)} 
         />
       )}
+
+      <BoardActivitySidebar 
+        boardId={id}
+        isOpen={showActivitySidebar}
+        onClose={() => setShowActivitySidebar(false)}
+        onCardClick={handleActivityCardClick}
+      />
     </div>
   );
 }

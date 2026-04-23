@@ -7,7 +7,7 @@ import {
 } from '../../services/boardApi';
 import { useGetWorkspaceMembersQuery } from '../../services/workspaceApi';
 import { useAppSelector } from '../../hooks/useRedux';
-import { MdComment, MdSend, MdEdit, MdDelete } from 'react-icons/md';
+import { MdSend, MdEdit, MdDelete } from 'react-icons/md';
 import styles from './CardDetailModal.module.css';
 
 interface CommentSectionProps {
@@ -19,6 +19,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [showAllComments, setShowAllComments] = useState(false);
 
   // Mention state
   const [mentionSearch, setMentionSearch] = useState<string | null>(null);
@@ -133,136 +134,111 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
   };
 
   return (
-    <div className={styles.commentSection} style={{ marginTop: '1rem' }}>
-      <h3 className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>
-        <MdComment /> Bình luận
-      </h3>
-
-      <div className={styles.commentInputWrapper} style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', position: 'relative' }}>
-        <div className={styles.activityAvatar} style={{ width: '32px', height: '32px' }}>
+    <div className={styles.commentSection}>
+      <div className={styles.commentInputWrapper}>
+        <div className={styles.activityAvatar}>
           {currentUser?.avatarUrl ? (
-            <img src={currentUser.avatarUrl} alt={currentUser.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={currentUser.avatarUrl} alt={currentUser.username} />
           ) : (
             currentUser?.username?.charAt(0).toUpperCase() || 'U'
           )}
         </div>
-        <div style={{ flex: 1, position: 'relative' }}>
+        <div className={styles.inputArea}>
           <textarea
-            className={styles.descriptionBox}
-            style={{ minHeight: '80px', width: '100%', fontSize: '0.9rem' }}
-            placeholder="Viết bình luận... (sử dụng @tênngườidùng để nhắc tên)"
+            className={styles.commentTextarea}
+            placeholder="Viết bình luận..."
             value={newComment}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
           />
 
           {mentionSearch !== null && filteredMembers.length > 0 && (
-            <div 
-              className={styles.popover} 
-              style={{ 
-                position: 'absolute', 
-                top: 'calc(100% - 40px)', 
-                left: 0, 
-                width: '100%', 
-                zIndex: 1000,
-                background: '#1e293b', 
-                boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                border: '1px solid #334155'
-              }}
-            >
-              <div className={styles.popoverHeader} style={{ fontSize: '0.7rem', padding: '8px 12px', borderBottom: '1px solid #334155' }}>Gợi ý thành viên</div>
-              <div className={styles.popoverBody} style={{ padding: '4px' }}>
-                {filteredMembers.map((member, index) => (
-                  <div
-                    key={member.userId}
-                    className={styles.popoverItem}
-                    style={{ 
-                      background: index === selectedIndex ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-                      padding: '8px 12px',
-                      borderRadius: '4px'
-                    }}
-                    onClick={() => insertMention(member.username)}
-                  >
-                    <div className={styles.avatarCircleSmall} style={{ width: '24px', height: '24px' }}>
-                      {member.avatarUrl ? <img src={member.avatarUrl} alt={member.username} /> : member.username.charAt(0).toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: '0.85rem', color: '#f1f5f9' }}>{member.username}</span>
+            <div className={styles.mentionPopover}>
+              {filteredMembers.map((member, index) => (
+                <div
+                  key={member.userId}
+                  className={`${styles.popoverItem} ${index === selectedIndex ? styles.active : ''}`}
+                  onClick={() => insertMention(member.username)}
+                >
+                  <div className={styles.avatarCircleSmall}>
+                    {member.avatarUrl ? <img src={member.avatarUrl} alt={member.username} /> : member.username.charAt(0).toUpperCase()}
                   </div>
-                ))}
-              </div>
+                  <span>{member.username}</span>
+                </div>
+              ))}
             </div>
           )}
 
-          <div style={{ marginTop: '0.75rem' }}>
+          <div className={styles.commentActions}>
             <button 
-              className={styles.saveBtn} 
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 1rem' }}
+              className={styles.sendBtn}
               onClick={handlePostComment}
               disabled={!newComment.trim()}
             >
-              <MdSend /> Gửi
+              <MdSend /> <span>Gửi</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className={styles.activityList}>
+      <div className={styles.commentsList}>
         {isLoading ? (
-          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Đang tải bình luận...</div>
+          <div className={styles.loadingText}>Đang tải bình luận...</div>
         ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className={styles.activityItem} style={{ marginBottom: '1.5rem', alignItems: 'flex-start' }}>
-              <div className={styles.activityAvatar} style={{ width: '32px', height: '32px' }}>
-                {comment.author.avatarUrl ? (
-                  <img src={comment.author.avatarUrl} alt={comment.author.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  comment.author.username.charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className={styles.activityContent} style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className={styles.activityHeader}>
-                  <span className={styles.activityUser} style={{ color: '#f1f5f9', fontWeight: 600 }}>{comment.author.username}</span>
-                  <span className={styles.activityTime} style={{ marginLeft: '0.5rem' }}>
-                    {new Date(comment.createdAt).toLocaleString()}
-                  </span>
+          <>
+            {(showAllComments ? comments : comments.slice(0, 3)).map((comment) => (
+              <div key={comment.id} className={styles.activityItem}>
+                <div className={styles.activityAvatar}>
+                  {comment.author.avatarUrl ? (
+                    <img src={comment.author.avatarUrl} alt={comment.author.username} />
+                  ) : (
+                    comment.author.username.charAt(0).toUpperCase()
+                  )}
                 </div>
-                
-                {editingId === comment.id ? (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <textarea
-                      className={styles.descriptionBox}
-                      style={{ minHeight: '60px', width: '100%', fontSize: '0.9rem' }}
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                    />
-                    <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
-                      <button className={styles.saveBtn} onClick={() => handleUpdateComment(comment.id)}>Cập nhật</button>
-                      <button className={styles.cancelBtn} style={{ background: 'transparent', color: '#94a3b8', border: 'none', cursor: 'pointer' }} onClick={() => setEditingId(null)}>Hủy</button>
+                <div className={styles.commentBubble}>
+                  <div className={styles.activityHeader}>
+                    <span className={styles.activityUser}>{comment.author.username}</span>
+                    <span className={styles.activityTime}>
+                      {new Date(comment.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  {editingId === comment.id ? (
+                    <div className={styles.editCommentBox}>
+                      <textarea
+                        className={styles.commentTextarea}
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                      />
+                      <div className={styles.editActions}>
+                        <button className={styles.saveBtn} onClick={() => handleUpdateComment(comment.id)}>Lưu</button>
+                        <button className={styles.cancelBtn} onClick={() => setEditingId(null)}>Hủy</button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div style={{ marginTop: '0.25rem', color: '#f1f5f9', lineHeight: 1.5 }}>
-                    {renderContent(comment.content as string, comment.mentions)}
-                  </div>
-                )}
+                  ) : (
+                    <div className={styles.commentContentText}>
+                      {renderContent(comment.content as string, comment.mentions)}
+                    </div>
+                  )}
 
-                <div style={{ marginTop: '0.5rem', display: 'flex', gap: '1rem' }}>
-                  <button 
-                    onClick={() => { setEditingId(comment.id); setEditContent(comment.content as string); }}
-                    style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                  >
-                    <MdEdit size={12} /> Sửa
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteComment(comment.id)}
-                    style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                  >
-                    <MdDelete size={12} /> Xóa
-                  </button>
+                  <div className={styles.commentMetaLinks}>
+                    <button onClick={() => { setEditingId(comment.id); setEditContent(comment.content as string); }}><MdEdit size={14} /> Sửa</button>
+                    <button onClick={() => handleDeleteComment(comment.id)}><MdDelete size={14} /> Xóa</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+            
+            {comments.length > 3 && (
+              <button 
+                className={styles.showMoreBtn}
+                onClick={() => setShowAllComments(!showAllComments)}
+                style={{ marginTop: '0.5rem' }}
+              >
+                {showAllComments ? 'Thu gọn bình luận' : `Xem thêm (${comments.length - 3} bình luận khác)`}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

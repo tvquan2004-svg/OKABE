@@ -24,8 +24,11 @@ public interface CardService {
 
     // Checklist methods
     ChecklistResponse createChecklist(Long cardId, CreateChecklistRequest request, UserPrincipal currentUser);
+    ChecklistResponse updateChecklist(Long checklistId, CreateChecklistRequest request, UserPrincipal currentUser);
+    void deleteChecklist(Long checklistId, UserPrincipal currentUser);
     ChecklistItemResponse createChecklistItem(Long checklistId, CreateChecklistItemRequest request, UserPrincipal currentUser);
     ChecklistItemResponse updateChecklistItem(Long itemId, UpdateChecklistItemRequest request, UserPrincipal currentUser);
+    void deleteChecklistItem(Long itemId, UserPrincipal currentUser);
     
     // Label methods
     LabelResponse createLabel(Long boardId, CreateLabelRequest request, UserPrincipal currentUser);

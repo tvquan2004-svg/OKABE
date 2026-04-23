@@ -92,6 +92,24 @@ public class CardController {
                 .body(ApiResponse.success(cardService.createChecklist(cardId, request, currentUser)));
     }
 
+    @PutMapping("/api/v1/checklists/{checklistId}")
+    @Operation(summary = "Update a checklist")
+    public ResponseEntity<ApiResponse<ChecklistResponse>> updateChecklist(
+            @PathVariable Long checklistId,
+            @Valid @RequestBody CreateChecklistRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(cardService.updateChecklist(checklistId, request, currentUser)));
+    }
+
+    @DeleteMapping("/api/v1/checklists/{checklistId}")
+    @Operation(summary = "Delete a checklist")
+    public ResponseEntity<ApiResponse<Void>> deleteChecklist(
+            @PathVariable Long checklistId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.deleteChecklist(checklistId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Checklist deleted"));
+    }
+
     @PostMapping("/api/v1/checklists/{checklistId}/items")
     @Operation(summary = "Add an item to a checklist")
     public ResponseEntity<ApiResponse<ChecklistItemResponse>> createChecklistItem(
@@ -109,6 +127,15 @@ public class CardController {
             @Valid @RequestBody UpdateChecklistItemRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(cardService.updateChecklistItem(itemId, request, currentUser)));
+    }
+
+    @DeleteMapping("/api/v1/checklists/items/{itemId}")
+    @Operation(summary = "Delete a checklist item")
+    public ResponseEntity<ApiResponse<Void>> deleteChecklistItem(
+            @PathVariable Long itemId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.deleteChecklistItem(itemId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Checklist item deleted"));
     }
 
     // ─── Label Endpoints ───────────────────────────────

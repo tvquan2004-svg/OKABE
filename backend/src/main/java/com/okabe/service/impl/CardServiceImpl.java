@@ -268,18 +268,63 @@ public class CardServiceImpl implements CardService {
                 .position(nextPosition)
                 .build();
         
-        checklist = checklistRepository.save(checklist);
+        Checklist savedChecklist = checklistRepository.save(checklist);
 
         User user = findUserOrThrow(currentUser.getId());
         activityService.logActivity(card, user, "ADD_CHECKLIST", "added checklist \"" + request.name() + "\"");
         
         return ChecklistResponse.builder()
-                .id(checklist.getId())
+                .id(savedChecklist.getId())
                 .cardId(card.getId())
-                .name(checklist.getName())
-                .position(checklist.getPosition())
+                .name(savedChecklist.getName())
+                .position(savedChecklist.getPosition())
                 .items(Collections.emptyList())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ChecklistResponse updateChecklist(Long checklistId, CreateChecklistRequest request, UserPrincipal currentUser) {
+        Checklist checklist = checklistRepository.findById(checklistId)
+                .orElseThrow(() -> new ResourceNotFoundException("Checklist", checklistId));
+        validateWriteAccess(checklist.getCard(), currentUser.getId());
+
+        String oldName = checklist.getName();
+        checklist.setName(request.name());
+        Checklist savedChecklist = checklistRepository.save(checklist);
+
+        User user = findUserOrThrow(currentUser.getId());
+        activityService.logActivity(checklist.getCard(), user, "UPDATE_CHECKLIST", 
+                "renamed checklist from \"" + oldName + "\" to \"" + request.name() + "\"");
+
+        return ChecklistResponse.builder()
+                .id(savedChecklist.getId())
+                .cardId(savedChecklist.getCard().getId())
+                .name(savedChecklist.getName())
+                .position(savedChecklist.getPosition())
+                .items(savedChecklist.getItems().stream()
+                        .map(i -> ChecklistItemResponse.builder()
+                                .id(i.getId())
+                                .checklistId(savedChecklist.getId())
+                                .content(i.getContent())
+                                .isCompleted(i.getIsCompleted())
+                                .position(i.getPosition())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteChecklist(Long checklistId, UserPrincipal currentUser) {
+        Checklist checklist = checklistRepository.findById(checklistId)
+                .orElseThrow(() -> new ResourceNotFoundException("Checklist", checklistId));
+        validateWriteAccess(checklist.getCard(), currentUser.getId());
+
+        User user = findUserOrThrow(currentUser.getId());
+        activityService.logActivity(checklist.getCard(), user, "DELETE_CHECKLIST", "removed checklist \"" + checklist.getName() + "\"");
+        
+        checklistRepository.delete(checklist);
     }
 
     @Override
@@ -296,17 +341,17 @@ public class CardServiceImpl implements CardService {
                 .position(nextPosition)
                 .build();
         
-        item = checklistItemRepository.save(item);
+        ChecklistItem savedItem = checklistItemRepository.save(item);
         
         User user = findUserOrThrow(currentUser.getId());
-        activityService.logActivity(checklist.getCard(), user, "ADD_CHECKLIST_ITEM", "added \"" + item.getContent() + "\" to " + checklist.getName());
+        activityService.logActivity(checklist.getCard(), user, "ADD_CHECKLIST_ITEM", "added \"" + savedItem.getContent() + "\" to " + checklist.getName());
         
         return ChecklistItemResponse.builder()
-                .id(item.getId())
+                .id(savedItem.getId())
                 .checklistId(checklist.getId())
-                .content(item.getContent())
-                .isCompleted(item.getIsCompleted())
-                .position(item.getPosition())
+                .content(savedItem.getContent())
+                .isCompleted(savedItem.getIsCompleted())
+                .position(savedItem.getPosition())
                 .build();
     }
 
@@ -321,15 +366,29 @@ public class CardServiceImpl implements CardService {
         if (request.isCompleted() != null) item.setIsCompleted(request.isCompleted());
         if (request.position() != null) item.setPosition(request.position());
 
-        item = checklistItemRepository.save(item);
+        ChecklistItem savedItem = checklistItemRepository.save(item);
 
         return ChecklistItemResponse.builder()
-                .id(item.getId())
-                .checklistId(item.getChecklist().getId())
-                .content(item.getContent())
-                .isCompleted(item.getIsCompleted())
-                .position(item.getPosition())
+                .id(savedItem.getId())
+                .checklistId(savedItem.getChecklist().getId())
+                .content(savedItem.getContent())
+                .isCompleted(savedItem.getIsCompleted())
+                .position(savedItem.getPosition())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteChecklistItem(Long itemId, UserPrincipal currentUser) {
+        ChecklistItem item = checklistItemRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("ChecklistItem", itemId));
+        validateWriteAccess(item.getChecklist().getCard(), currentUser.getId());
+
+        User user = findUserOrThrow(currentUser.getId());
+        activityService.logActivity(item.getChecklist().getCard(), user, "DELETE_CHECKLIST_ITEM", 
+                "removed \"" + item.getContent() + "\" from " + item.getChecklist().getName());
+        
+        checklistItemRepository.delete(item);
     }
 
     // ─── Label Management ───────────────────────────────

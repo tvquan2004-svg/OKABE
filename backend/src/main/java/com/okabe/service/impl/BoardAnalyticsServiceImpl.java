@@ -13,6 +13,7 @@ import com.okabe.repository.TaskListRepository;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.BoardAnalyticsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,7 @@ public class BoardAnalyticsServiceImpl implements BoardAnalyticsService {
 
         List<TaskList> lists = taskListRepository.findByBoardIdAndIsArchivedFalseOrderByPositionAsc(boardId);
         List<Card> allCards = cardRepository.findByTaskListBoardIdAndIsArchivedFalse(boardId);
-        List<Activity> allActivities = activityRepository.findByCardTaskListBoardIdOrderByCreatedAtDesc(boardId);
+        List<Activity> allActivities = activityRepository.findByCardTaskListBoardIdOrderByCreatedAtDesc(boardId, PageRequest.of(0, 1000));
 
         // Define completed lists
         Set<Long> completedListIds = lists.stream()

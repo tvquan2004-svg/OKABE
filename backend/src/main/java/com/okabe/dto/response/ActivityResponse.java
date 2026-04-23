@@ -11,5 +11,6 @@ public record ActivityResponse(
     String avatarUrl,
     String actionType,
     String description,
+    Long cardId,
     LocalDateTime createdAt
 ) {}
