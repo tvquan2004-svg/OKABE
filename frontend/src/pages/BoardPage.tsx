@@ -408,9 +408,7 @@ function BoardPage() {
               key={list.id}
               list={list}
               onEditList={handleOpenEditList}
-              onArchiveList={handleArchiveList}
               onDeleteList={(listId) => void handleDeleteList(listId)}
-              onDeleteCard={(cardId) => void handleDeleteCard(cardId)}
               onAddCard={handleAddCard}
               onCardClick={setSelectedCard}
               priorityColor={priorityColor}

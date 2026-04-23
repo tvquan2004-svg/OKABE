@@ -6,7 +6,6 @@ import styles from '../../pages/BoardPage.module.css';
 
 interface SortableCardProps {
   card: CardItem;
-  onDeleteCard: (cardId: number) => void;
   onCardClick: (card: CardItem) => void;
   priorityColor: (priority: string) => string;
   matchedCardIds: number[] | null;
@@ -14,7 +13,6 @@ interface SortableCardProps {
 
 const SortableCard: React.FC<SortableCardProps> = ({
   card,
-  onDeleteCard,
   onCardClick,
   priorityColor,
   matchedCardIds,

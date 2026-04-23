@@ -11,9 +11,7 @@ import SortableCard from './SortableCard';
 interface BoardListColumnProps {
   list: TaskList;
   onEditList: (list: TaskList) => void;
-  onArchiveList: (listId: number) => void;
   onDeleteList: (listId: number) => void;
-  onDeleteCard: (cardId: number) => void;
   onAddCard: (listId: number, title: string) => Promise<void>;
   onCardClick: (card: CardItem) => void;
   priorityColor: (priority: string) => string;
@@ -23,9 +21,7 @@ interface BoardListColumnProps {
 function BoardListColumn({
   list,
   onEditList,
-  onArchiveList,
   onDeleteList,
-  onDeleteCard,
   onAddCard,
   onCardClick,
   priorityColor,
@@ -79,7 +75,6 @@ function BoardListColumn({
             <SortableCard
               key={card.id}
               card={card}
-              onDeleteCard={onDeleteCard}
               onCardClick={onCardClick}
               priorityColor={priorityColor}
               matchedCardIds={matchedCardIds}
