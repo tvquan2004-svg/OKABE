@@ -196,8 +196,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
       try {
         await uploadAttachment({ cardId: card.id, boardId, file }).unwrap();
         if (fileInputRef.current) fileInputRef.current.value = '';
-      } catch (err: any) {
-        alert(`Tải lên thất bại: ${err?.data?.message || err?.message || 'Lỗi kết nối'}`);
+      } catch (err: unknown) {
+        const error = err as { data?: { message?: string }, message?: string };
+        alert(`Tải lên thất bại: ${error?.data?.message || error?.message || 'Lỗi kết nối'}`);
       }
     }
   };

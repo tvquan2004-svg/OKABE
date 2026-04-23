@@ -54,9 +54,10 @@ const BackgroundPicker: React.FC<BackgroundPickerProps> = ({ boardId, currentBac
 
     try {
       await updateBackground({ id: boardId, type: 'IMAGE', file }).unwrap();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to upload background image', err);
-      const message = err?.data?.message || 'Failed to upload image. Please check your internet or file size.';
+      const error = err as { data?: { message?: string } };
+      const message = error.data?.message || 'Failed to upload image. Please check your internet or file size.';
       alert(`Error: ${message}`);
     }
   };
