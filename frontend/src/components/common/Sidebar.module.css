@@ -156,22 +156,42 @@
 }
 
 .navItem.active {
-  background-color: var(--color-primary-light);
+  background: linear-gradient(90deg, var(--color-primary-light) 0%, transparent 100%);
   color: var(--color-primary);
-  border-right: 3px solid var(--color-primary);
+  border-left: 3px solid var(--color-primary);
+  font-weight: 700;
+}
+
+.collapsed .navItem.active {
+  border-left: none;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  margin: 0 var(--spacing-sm);
 }
 
 .wsIcon {
-  width: 24px;
-  height: 24px;
-  background-color: var(--color-bg-elevated);
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--color-bg-elevated), var(--color-border));
   color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
   font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.navItem:hover .wsIcon {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.navItem.active .wsIcon {
+  background: var(--color-primary);
+  color: white;
 }
 
 .collapsed .navItem {

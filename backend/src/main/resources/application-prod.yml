@@ -7,6 +7,13 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 30000
+      pool-name: OkabeHikariCP
 
   mail:
     host: ${SPRING_MAIL_HOST:smtp.gmail.com}
@@ -27,6 +34,16 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 25
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+        query:
+          fail_on_pagination_over_collection_fetch: true
 
 app:
   url: ${APP_URL}

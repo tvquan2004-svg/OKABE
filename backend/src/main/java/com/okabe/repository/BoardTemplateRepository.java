@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface BoardTemplateRepository extends JpaRepository<BoardTemplate, Long> {
     
-    @Query("SELECT t FROM BoardTemplate t WHERE t.isSystem = true OR (t.workspace IS NOT NULL AND t.workspace.id = :workspaceId)")
+    @Query("SELECT t FROM BoardTemplate t WHERE t.isSystem = true OR (:workspaceId IS NOT NULL AND t.workspace IS NOT NULL AND t.workspace.id = :workspaceId)")
     List<BoardTemplate> findAllSystemOrByWorkspace(@Param("workspaceId") Long workspaceId);
 
     List<BoardTemplate> findAllByIsSystemTrue();
