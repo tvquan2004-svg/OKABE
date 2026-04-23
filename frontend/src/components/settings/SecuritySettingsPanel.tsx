@@ -20,6 +20,10 @@ const SecuritySettingsPanel = () => {
   const [error, setError] = useState('');
   const [showDisableForm, setShowDisableForm] = useState(false);
 
+  if (!userData) {
+    return <div style={{ padding: '20px', textAlign: 'center' }}>Đang tải thông tin bảo mật...</div>;
+  }
+
   const handleStartSetup = async () => {
     try {
       const result = await setup2fa().unwrap();

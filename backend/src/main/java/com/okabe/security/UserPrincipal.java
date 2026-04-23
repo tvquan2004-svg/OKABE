@@ -27,8 +27,8 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getUsername(),
                 user.getPassword(),
-                user.getIsActive(),
-                user.getIs2faEnabled()
+                user.getIsActive() != null && user.getIsActive(),
+                user.getIs2faEnabled() != null && user.getIs2faEnabled()
         );
     }
 
