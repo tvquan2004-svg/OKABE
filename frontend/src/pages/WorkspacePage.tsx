@@ -165,13 +165,21 @@ function WorkspacePage() {
   const handleDeleteBoard = async (boardId: number, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     if (confirm('Xóa bảng này vĩnh viễn? Hành động này không thể hoàn tác.')) {
-      await deleteBoard(boardId).unwrap();
+      try {
+        await deleteBoard(boardId).unwrap();
+      } catch (err: any) {
+        alert(err.data?.message || 'Không thể xóa bảng. Có thể bạn không có quyền.');
+      }
     }
   };
 
   const handleRestoreBoard = async (boardId: number, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    await restoreBoard(boardId).unwrap();
+    try {
+      await restoreBoard(boardId).unwrap();
+    } catch (err: any) {
+      alert(err.data?.message || 'Không thể khôi phục bảng. Có thể bạn không có quyền.');
+    }
   };
 
   const handleEditBoard = (board: Board, event: MouseEvent<HTMLButtonElement>) => {

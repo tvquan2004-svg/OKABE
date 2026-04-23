@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { Client, IFrame, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useAppSelector } from './useRedux';
+import { getBaseUrl as getRootUrl } from '../utils/urlHelper';
 
 export interface WebSocketMessage {
   type: string;
@@ -22,16 +23,9 @@ const getWebSocketUrl = () => {
     return import.meta.env.VITE_WS_URL;
   }
   
-  // Nếu không có, suy luận từ VITE_API_BASE_URL
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL as string;
-  if (apiBaseUrl) {
-    // Thay thế /api/v1 (hoặc phần cuối của URL) bằng /ws
-    const baseUrl = apiBaseUrl.split('/api')[0];
-    return `${baseUrl}/ws`;
-  }
-  
-  // Mặc định cho môi trường phát triển local
-  return 'http://localhost:8080/ws';
+  // Nếu không có, suy luận từ getRootUrl
+  const rootUrl = getRootUrl();
+  return `${rootUrl}/ws`;
 };
 
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {

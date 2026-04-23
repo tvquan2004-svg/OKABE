@@ -15,24 +15,11 @@ const addRefreshSubscriber = (callback: (token: string | null) => void) => {
   refreshSubscribers.push(callback);
 };
 
+import { getBaseUrl as getRootUrl } from '../utils/urlHelper';
+
 const getBaseUrl = () => {
-  let envUrl = import.meta.env.VITE_API_BASE_URL as string;
-  
-  if (!envUrl) return 'http://localhost:8080/api/v1';
-  
-  // Xóa dấu gạch chéo cuối nếu có
-  if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
-  
-  // Đảm bảo có /api/v1
-  if (!envUrl.endsWith('/api/v1') && !envUrl.endsWith('/v1')) {
-    if (envUrl.endsWith('/api')) {
-      envUrl = `${envUrl}/v1`;
-    } else {
-      envUrl = `${envUrl}/api/v1`;
-    }
-  }
-  
-  return envUrl;
+  const rootUrl = getRootUrl();
+  return `${rootUrl}/api/v1`;
 };
 
 const baseQuery = fetchBaseQuery({

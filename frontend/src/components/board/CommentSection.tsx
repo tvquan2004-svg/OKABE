@@ -13,9 +13,10 @@ import styles from './CardDetailModal.module.css';
 interface CommentSectionProps {
   cardId: number;
   workspaceId: number;
+  readOnly?: boolean;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, readOnly = false }) => {
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState('');
@@ -135,51 +136,53 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
 
   return (
     <div className={styles.commentSection}>
-      <div className={styles.commentInputWrapper}>
-        <div className={styles.activityAvatar}>
-          {currentUser?.avatarUrl ? (
-            <img src={currentUser.avatarUrl} alt={currentUser.username} />
-          ) : (
-            currentUser?.username?.charAt(0).toUpperCase() || 'U'
-          )}
-        </div>
-        <div className={styles.inputArea}>
-          <textarea
-            className={styles.commentTextarea}
-            placeholder="Viết bình luận..."
-            value={newComment}
-            onChange={handleTextChange}
-            onKeyDown={handleKeyDown}
-          />
+      {!readOnly && (
+        <div className={styles.commentInputWrapper}>
+          <div className={styles.activityAvatar}>
+            {currentUser?.avatarUrl ? (
+              <img src={currentUser.avatarUrl} alt={currentUser.username} />
+            ) : (
+              currentUser?.username?.charAt(0).toUpperCase() || 'U'
+            )}
+          </div>
+          <div className={styles.inputArea}>
+            <textarea
+              className={styles.commentTextarea}
+              placeholder="Viết bình luận..."
+              value={newComment}
+              onChange={handleTextChange}
+              onKeyDown={handleKeyDown}
+            />
 
-          {mentionSearch !== null && filteredMembers.length > 0 && (
-            <div className={styles.mentionPopover}>
-              {filteredMembers.map((member, index) => (
-                <div
-                  key={member.userId}
-                  className={`${styles.popoverItem} ${index === selectedIndex ? styles.active : ''}`}
-                  onClick={() => insertMention(member.username)}
-                >
-                  <div className={styles.avatarCircleSmall}>
-                    {member.avatarUrl ? <img src={member.avatarUrl} alt={member.username} /> : member.username.charAt(0).toUpperCase()}
+            {mentionSearch !== null && filteredMembers.length > 0 && (
+              <div className={styles.mentionPopover}>
+                {filteredMembers.map((member, index) => (
+                  <div
+                    key={member.userId}
+                    className={`${styles.popoverItem} ${index === selectedIndex ? styles.active : ''}`}
+                    onClick={() => insertMention(member.username)}
+                  >
+                    <div className={styles.avatarCircleSmall}>
+                      {member.avatarUrl ? <img src={member.avatarUrl} alt={member.username} /> : member.username.charAt(0).toUpperCase()}
+                    </div>
+                    <span>{member.username}</span>
                   </div>
-                  <span>{member.username}</span>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          <div className={styles.commentActions}>
-            <button 
-              className={styles.sendBtn}
-              onClick={handlePostComment}
-              disabled={!newComment.trim()}
-            >
-              <MdSend /> <span>Gửi</span>
-            </button>
+            <div className={styles.commentActions}>
+              <button 
+                className={styles.sendBtn}
+                onClick={handlePostComment}
+                disabled={!newComment.trim()}
+              >
+                <MdSend /> <span>Gửi</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.commentsList}>
         {isLoading ? (
@@ -221,10 +224,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId }) 
                     </div>
                   )}
 
-                  <div className={styles.commentMetaLinks}>
-                    <button onClick={() => { setEditingId(comment.id); setEditContent(comment.content as string); }}><MdEdit size={14} /> Sửa</button>
-                    <button onClick={() => handleDeleteComment(comment.id)}><MdDelete size={14} /> Xóa</button>
-                  </div>
+                  {!readOnly && (
+                    <div className={styles.commentMetaLinks}>
+                      <button onClick={() => { setEditingId(comment.id); setEditContent(comment.content as string); }}><MdEdit size={14} /> Sửa</button>
+                      <button onClick={() => handleDeleteComment(comment.id)}><MdDelete size={14} /> Xóa</button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
