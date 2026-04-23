@@ -307,7 +307,6 @@ function BoardPage() {
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={() => navigate(-1)}>Quay lại</button>
         <div className={styles.boardMeta}>
-          <h1 className={styles.boardName}>{board.name}</h1>
           {board.description ? <span className={styles.boardDesc}>{board.description}</span> : null}
         </div>
         <div className={styles.boardActions}>

@@ -39,10 +39,18 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
     return () => window.removeEventListener('click', handleClickOutside);
   }, [showNotifications]);
 
+  const boardIdMatch = location.pathname.match(/\/board\/(\d+)/);
+  const boardId = boardIdMatch ? Number(boardIdMatch[1]) : null;
+  const { data: boardData } = apiSlice.endpoints.getBoard.useQuery(boardId as number, { 
+    skip: !boardId 
+  });
+
   const getPageTitle = () => {
     if (location.pathname === '/dashboard') return 'Bảng điều khiển';
     if (location.pathname.startsWith('/workspace/')) return 'Không gian làm việc';
-    if (location.pathname.startsWith('/board/')) return 'Bảng công việc';
+    if (location.pathname.startsWith('/board/')) {
+      return boardData?.data.name || 'Bảng công việc';
+    }
     if (location.pathname === '/settings') return 'Cài đặt';
     return 'OKABE';
   };
