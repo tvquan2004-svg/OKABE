@@ -17,5 +17,5 @@ public interface BackupCodeRepository extends JpaRepository<BackupCode, Long> {
     @Modifying
     @Transactional
     @Query("DELETE FROM BackupCode b WHERE b.user.id = :userId")
-    void deleteByUserId(Long userId);
+    void deleteByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
 }

@@ -91,7 +91,8 @@ function BoardPage() {
   });
   const canManageBoard =
     workspaceData?.data.currentUserRole === 'OWNER' ||
-    workspaceData?.data.currentUserRole === 'ADMIN';
+    workspaceData?.data.currentUserRole === 'ADMIN' ||
+    workspaceData?.data.currentUserRole === 'MEMBER';
 
   const { data: membersData } = useGetWorkspaceMembersQuery(board?.workspaceId ?? 0, {
     skip: !board?.workspaceId,
