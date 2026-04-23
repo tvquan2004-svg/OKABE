@@ -6,6 +6,7 @@ import { logout } from '../../features/auth/authSlice';
 import { apiSlice } from '../../services/apiSlice';
 import { useGetBoardQuery } from '../../services/boardApi';
 import { useGetUnreadCountQuery } from '../../services/notificationApi';
+import { useGetMeQuery } from '../../services/userApi';
 import NotificationDropdown from './NotificationDropdown';
 import styles from './Navbar.module.css';
 
@@ -17,7 +18,9 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const user = useAppSelector((state) => state.auth.user);
+  const { data: userData } = useGetMeQuery();
+  const authUser = useAppSelector((state) => state.auth.user);
+  const user = userData || authUser;
   const [showNotifications, setShowNotifications] = useState(false);
 
   const { data: unreadCountRes } = useGetUnreadCountQuery(undefined, {
@@ -83,7 +86,11 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
         <div className={styles.userSection}>
           <div className={styles.userInfo}>
             <div className={styles.avatar}>
-              {user?.username?.charAt(0).toUpperCase()}
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt={user.username} className={styles.avatarImg} />
+              ) : (
+                user?.username?.charAt(0).toUpperCase()
+              )}
             </div>
             <span className={styles.username}>{user?.username}</span>
           </div>

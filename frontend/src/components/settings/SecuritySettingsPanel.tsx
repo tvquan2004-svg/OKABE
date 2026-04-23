@@ -3,8 +3,8 @@ import {
   useSetup2faMutation, 
   useVerifySetup2faMutation, 
   useDisable2faMutation,
-  useGetMeQuery
 } from '../../services/authApi';
+import { useGetMeQuery } from '../../services/userApi';
 import { QRCodeSVG } from 'qrcode.react';
 import styles from './SecuritySettingsPanel.module.css';
 
@@ -78,7 +78,7 @@ const SecuritySettingsPanel = () => {
     }
   };
 
-  const is2faEnabled = userData?.data?.is2faEnabled;
+  const is2faEnabled = userData.is2faEnabled;
 
   return (
     <div className={styles.panel}>
