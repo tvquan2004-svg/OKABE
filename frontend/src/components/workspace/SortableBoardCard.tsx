@@ -1,6 +1,7 @@
 import type { CSSProperties, MouseEvent } from 'react';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
+import { FiEdit2, FiTrash2, FiLayers, FiCheckSquare } from 'react-icons/fi';
 import type { Board } from '../../services/boardApi';
 import styles from './SortableBoardCard.module.css';
 
@@ -48,6 +49,7 @@ function SortableBoardCard({
       {...attributes}
       {...listeners}
     >
+      <div className={styles.glassEffect} />
       <div className={styles.colorBar} />
       <div className={styles.content}>
         <div className={styles.headerRow}>
@@ -58,27 +60,37 @@ function SortableBoardCard({
                 type="button"
                 className={styles.iconButton}
                 onClick={(event) => onEdit(board, event)}
-                title="Edit board"
+                title="Chỉnh sửa bảng"
               >
-                Edit
+                <FiEdit2 size={14} />
               </button>
               <button
                 type="button"
-                className={styles.iconButton}
+                className={`${styles.iconButton} ${styles.deleteBtn}`}
                 onClick={(event) => onDelete(board.id, event)}
-                title="Delete board"
+                title="Xóa bảng"
               >
-                Delete
+                <FiTrash2 size={14} />
               </button>
             </div>
           ) : null}
         </div>
 
-        {board.description ? <p className={styles.description}>{board.description}</p> : null}
+        {board.description ? (
+          <p className={styles.description}>{board.description}</p>
+        ) : (
+          <p className={styles.descriptionPlaceholder}>Không có mô tả cho bảng này</p>
+        )}
 
         <div className={styles.stats}>
-          <span>{board.listCount ?? 0} lists</span>
-          <span>{board.totalCards ?? 0} cards</span>
+          <div className={styles.statItem}>
+            <FiLayers size={14} />
+            <span>{board.listCount ?? 0} danh sách</span>
+          </div>
+          <div className={styles.statItem}>
+            <FiCheckSquare size={14} />
+            <span>{board.totalCards ?? 0} thẻ</span>
+          </div>
         </div>
       </div>
     </div>
