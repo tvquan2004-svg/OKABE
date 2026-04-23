@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiCamera, FiCheck, FiMail, FiUser, FiShield, FiArrowRight, FiUploadCloud } from 'react-icons/fi';
+import { FiCamera, FiMail, FiUser, FiShield, FiArrowRight, FiUploadCloud } from 'react-icons/fi';
 import { useGetMeQuery, useUpdateProfileMutation, useUploadAvatarMutation } from '../../services/userApi';
 import styles from './ProfileSettings.module.css';
 
