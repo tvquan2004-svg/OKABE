@@ -206,20 +206,22 @@ function WorkspacePage() {
           <button className={styles.backBtn} onClick={() => navigate('/dashboard')}>
             Quay lại bảng điều khiển
           </button>
-          <div className={styles.wsInfo}>
-            <h1>{workspace?.name ?? 'Không gian làm việc'}</h1>
-            {workspace?.description ? <p>{workspace.description}</p> : null}
+          <div className={styles.headerFlex}>
+            <div className={styles.wsInfo}>
+              <h1>{workspace?.name ?? 'Không gian làm việc'}</h1>
+              {workspace?.description ? <p>{workspace.description}</p> : <p>Không có mô tả cho không gian này</p>}
+            </div>
+            <div className={styles.headerActions}>
+              <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
+                Thành viên ({workspace?.memberCount ?? 0})
+              </button>
+              {canManageWorkspace ? (
+                <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
+                  Thiết lập
+                </button>
+              ) : null}
+            </div>
           </div>
-        </div>
-        <div className={styles.headerActions}>
-          <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
-            Thành viên ({workspace?.memberCount ?? 0})
-          </button>
-          {canManageWorkspace ? (
-            <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
-              Sửa không gian
-            </button>
-          ) : null}
         </div>
       </header>
 

@@ -324,39 +324,41 @@ function BoardPage() {
         </div>
         <div className={styles.boardActions}>
           {canManageBoard ? (
-            <div style={{ position: 'relative', display: 'flex', gap: '8px' }}>
-              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={() => navigate(`/board/${id}/calendar`)}>
+            <div className={styles.toolbarGroup}>
+              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/calendar`)}>
                 <FiCalendar /> Lịch
               </button>
-              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={() => navigate(`/board/${id}/timeline`)}>
+              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/timeline`)}>
                 <FiCalendar /> Dòng thời gian
               </button>
-              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={() => navigate(`/board/${id}/analytics`)}>
+              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/analytics`)}>
                 <FiPieChart /> Thống kê
               </button>
-              <button 
-                className={styles.settingsBtn} 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowBackgroundPicker(!showBackgroundPicker);
-                }}
-              >
-                <FiImage /> Hình nền
-              </button>
-              {showBackgroundPicker && (
-                <div className={styles.backgroundPickerWrapper} onClick={(e) => e.stopPropagation()}>
-                  <BackgroundPicker 
-                    boardId={id} 
-                    currentBackground={board.background} 
-                  />
-                </div>
-              )}
-              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} onClick={openBoardEditModal}>
+              <div className={styles.pickerContainer}>
+                <button 
+                  className={styles.settingsBtn} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowBackgroundPicker(!showBackgroundPicker);
+                  }}
+                >
+                  <FiImage /> Hình nền
+                </button>
+                {showBackgroundPicker && (
+                  <div className={styles.backgroundPickerWrapper} onClick={(e) => e.stopPropagation()}>
+                    <BackgroundPicker 
+                      boardId={id} 
+                      currentBackground={board.background} 
+                    />
+                  </div>
+                )}
+              </div>
+              <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={openBoardEditModal}>
                 <FiSettings /> Sửa bảng
               </button>
               <button 
                 className="btn btn-outline" 
-                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} 
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
                 onClick={() => {
                   setTemplateName(`${board.name} Bản mẫu`);
                   setTemplateDescription(board.description ?? '');
@@ -367,14 +369,14 @@ function BoardPage() {
               </button>
               <button 
                 className="btn btn-outline" 
-                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }} 
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
                 onClick={() => setShowArchivedPanel(true)}
               >
                 <FiArchive /> Đã lưu trữ
               </button>
               <button 
                 className="btn btn-outline" 
-                style={{ color: '#ff4d4f', borderColor: 'rgba(255,77,79,0.3)' }} 
+                style={{ color: '#ff4d4f', borderColor: 'rgba(255,77,79,0.2)' }} 
                 onClick={handleArchiveBoard}
               >
                 <FiArchive /> Lưu trữ bảng
@@ -428,9 +430,9 @@ function BoardPage() {
                   autoFocus
                   onKeyDown={(e) => e.key === 'Enter' && void handleAddList()}
                 />
-                <div className={styles.addCardActions}>
-                  <button className="btn btn-primary" onClick={() => void handleAddList()}>Thêm</button>
-                  <button className="btn btn-outline" onClick={() => setShowAddList(false)}>Hủy</button>
+                <div className={styles.addListActions}>
+                  <button className="btn btn-primary btn-sm" onClick={() => void handleAddList()}>Thêm</button>
+                  <button className="btn btn-outline btn-sm" onClick={() => setShowAddList(false)}>Hủy</button>
                 </div>
               </div>
             ) : (

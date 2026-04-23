@@ -69,65 +69,44 @@ const SortableCard: React.FC<SortableCardProps> = ({
             {card.labels?.map((l) => (
               <div
                 key={l.id}
-                style={{ width: '32px', height: '6px', background: l.color, borderRadius: '3px' }}
+                style={{ width: '24px', height: '4px', background: l.color, borderRadius: '2px', opacity: 0.8 }}
+                title={l.name}
               />
             ))}
           </div>
-          <span
+          <div
             className={styles.priorityDot}
             style={{ background: priorityColor(card.priority) }}
-            title={card.priority}
+            title={`Độ ưu tiên: ${card.priority}`}
           />
-          <button
-            className={styles.deleteCardBtn}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteCard(card.id);
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            x
-          </button>
         </div>
 
         <h4 className={styles.cardTitle}>{card.title}</h4>
+        
+        {card.description && (
+          <p className={styles.cardDesc}>{card.description}</p>
+        )}
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
-          {card.description && (
-            <span title="Có mô tả" style={{ fontSize: '0.8rem' }}>📝</span>
-          )}
-          
+        <div className={styles.cardBadges}>
           {totalItems > 0 && (
-            <span
-              title="Tiến trình"
-              style={{
-                fontSize: '0.75rem',
-                background: isChecklistCompleted ? '#10b981' : 'rgba(255,255,255,0.1)',
-                color: isChecklistCompleted ? 'white' : '#94a3b8',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              ✅ {completedItems}/{totalItems}
-            </span>
+            <div className={`${styles.badgeItem} ${isChecklistCompleted ? styles.completed : ''}`}>
+              <span>{isChecklistCompleted ? '✓' : '☐'}</span>
+              {completedItems}/{totalItems}
+            </div>
           )}
 
           {card.attachments?.length > 0 && (
-            <span
-              title="Đính kèm"
-              style={{
-                fontSize: '0.75rem',
-                background: 'rgba(255,255,255,0.1)',
-                color: '#94a3b8',
-                padding: '2px 6px',
-                borderRadius: '3px',
-              }}
-            >
-              📎 {card.attachments.length}
-            </span>
+            <div className={styles.badgeItem}>
+              <span>📎</span>
+              {card.attachments.length}
+            </div>
+          )}
+
+          {card.dueDate && (
+            <div className={styles.badgeItem}>
+              <span>📅</span>
+              {new Date(card.dueDate).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })}
+            </div>
           )}
 
           <div style={{ display: 'flex', marginLeft: 'auto' }}>
@@ -135,19 +114,19 @@ const SortableCard: React.FC<SortableCardProps> = ({
               <div
                 key={member.id}
                 style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   borderRadius: '50%',
-                  background: '#334155',
-                  color: '#f1f5f9',
+                  background: 'var(--color-bg-elevated)',
+                  color: 'white',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.7rem',
+                  fontSize: '9px',
                   fontWeight: 700,
-                  border: '2px solid #1e293b',
-                  marginLeft: i > 0 ? '-10px' : '0',
-                  zIndex: 3 - i,
+                  border: '2px solid var(--color-bg-secondary)',
+                  marginLeft: i > 0 ? '-8px' : '0',
+                  zIndex: 10 - i,
                   overflow: 'hidden',
                 }}
                 title={member.username}
@@ -166,18 +145,18 @@ const SortableCard: React.FC<SortableCardProps> = ({
             {card.members?.length > 3 && (
               <div
                 style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   borderRadius: '50%',
-                  background: '#475569',
-                  color: '#f1f5f9',
+                  background: 'var(--color-border)',
+                  color: 'white',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.6rem',
+                  fontSize: '8px',
                   fontWeight: 700,
-                  border: '2px solid #1e293b',
-                  marginLeft: '-10px',
+                  border: '2px solid var(--color-bg-secondary)',
+                  marginLeft: '-8px',
                   zIndex: 0,
                 }}
               >
@@ -186,12 +165,6 @@ const SortableCard: React.FC<SortableCardProps> = ({
             )}
           </div>
         </div>
-
-        {card.dueDate && (
-          <div style={{ marginTop: '8px', fontSize: '0.7rem', color: '#94a3b8' }}>
-            📅 {new Date(card.dueDate).toLocaleDateString()}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -55,14 +55,7 @@ function BoardListColumn({
       <div className={styles.columnHeader}>
         <h3>{list.name}</h3>
         <span className={styles.cardCount}>{list.cards.length}</span>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <button
-            className={styles.secondaryActionBtn}
-            onClick={() => onArchiveList(list.id)}
-            title="Lưu trữ danh sách"
-          >
-            Lưu trữ
-          </button>
+        <div className={styles.addActions}>
           <button
             className={styles.secondaryActionBtn}
             onClick={() => onEditList(list)}
@@ -71,11 +64,11 @@ function BoardListColumn({
             Sửa
           </button>
           <button
-            className={styles.deleteListBtn}
+            className={styles.deleteBtn}
             onClick={() => onDeleteList(list.id)}
             title="Xóa danh sách"
           >
-            x
+            <span style={{ fontSize: '1.2rem' }}>&times;</span>
           </button>
         </div>
       </div>
@@ -95,12 +88,12 @@ function BoardListColumn({
         </SortableContext>
 
         {isAddingCard ? (
-          <div className={styles.addCardForm}>
+          <div className={styles.addForm}>
             <textarea
               value={newCardTitle}
               onChange={(event) => setNewCardTitle(event.target.value)}
               placeholder="Nhập tiêu đề thẻ..."
-              className={styles.addCardInput}
+              className={styles.addInput}
               autoFocus
               rows={2}
               onKeyDown={(event) => {
@@ -110,11 +103,11 @@ function BoardListColumn({
                 }
               }}
             />
-            <div className={styles.addCardActions}>
-              <button className="btn btn-primary" onClick={() => void handleAddCard()}>
-                Thêm thẻ
+            <div className={styles.addActions}>
+              <button className="btn btn-primary btn-sm" onClick={() => void handleAddCard()}>
+                Thêm
               </button>
-              <button className="btn btn-outline" onClick={() => setIsAddingCard(false)}>
+              <button className="btn btn-outline btn-sm" onClick={() => setIsAddingCard(false)}>
                 Hủy
               </button>
             </div>
@@ -127,7 +120,7 @@ function BoardListColumn({
               setNewCardTitle('');
             }}
           >
-            + Thêm thẻ
+            + Thêm thẻ mới
           </button>
         )}
       </div>
