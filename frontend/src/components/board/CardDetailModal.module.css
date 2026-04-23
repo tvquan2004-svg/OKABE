@@ -1053,3 +1053,23 @@
   cursor: pointer;
   color: white;
 }
+
+.titleDisplay {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  padding: 4px 8px;
+}
+
+.descriptionDisplay {
+  margin-left: 36px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #e2e8f0;
+  min-height: 40px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

@@ -89,6 +89,8 @@ export interface Board {
   background: string | null;
   isStarred: boolean;
   isArchived: boolean;
+  isPublic: boolean;
+  publicToken: string | null;
   listCount: number;
   totalCards: number;
   createdAt: string;
@@ -388,6 +390,13 @@ export const boardApi = apiSlice.injectEndpoints({
       query: (boardId) => `/boards/${boardId}/analytics`,
       providesTags: (_r, _e, boardId) => [{ type: 'Board', id: boardId }],
     }),
+    updateBoardVisibility: builder.mutation<ApiRes<Board>, { id: number; isPublic: boolean }>({
+      query: ({ id, isPublic }) => ({ url: `/boards/${id}/visibility`, method: 'PUT', params: { isPublic } }),
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'Board', id }],
+    }),
+    getPublicBoard: builder.query<ApiRes<Board>, string>({
+      query: (token) => `/public/boards/${token}`,
+    }),
   }),
 });
 
@@ -452,6 +461,8 @@ export const {
   useRestoreCardMutation,
   useGetArchivedCardsQuery,
   useGetBoardAnalyticsQuery,
+  useUpdateBoardVisibilityMutation,
+  useGetPublicBoardQuery,
 } = boardApi;
 
 export const useGetBoardsByWorkspaceQuery = useGetBoardsQuery;

@@ -23,8 +23,9 @@ import {
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity, FiTrash2 } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity, FiTrash2, FiShare2 } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
+import ShareBoardModal from '../components/board/ShareBoardModal';
 import { 
   useArchiveBoardMutation,
 } from '../services/boardApi';
@@ -135,6 +136,7 @@ function BoardPage() {
   const [templateDescription, setTemplateDescription] = useState('');
   const [editingList, setEditingList] = useState<TaskList | null>(null);
   const [listName, setListName] = useState('');
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   
   // Phase 2: Card Detail Modal State
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
@@ -449,6 +451,13 @@ function BoardPage() {
               <button 
                 className="btn btn-outline" 
                 style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
+                onClick={() => setIsShareModalOpen(true)}
+              >
+                <FiShare2 /> <span>Chia sẻ</span>
+              </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
                 onClick={() => {
                   setTemplateName(`${board.name} Bản mẫu`);
                   setTemplateDescription(board.description ?? '');
@@ -623,6 +632,13 @@ function BoardPage() {
         onClose={() => setShowActivitySidebar(false)}
         onCardClick={handleActivityCardClick}
       />
+
+      {isShareModalOpen && board && (
+        <ShareBoardModal 
+          board={board} 
+          onClose={() => setIsShareModalOpen(false)} 
+        />
+      )}
     </div>
   );
 }

@@ -40,4 +40,11 @@ public class Board extends BaseEntity {
     @Column(name = "is_archived", nullable = false)
     @Builder.Default
     private Boolean isArchived = false;
+
+    @Column(name = "is_public", nullable = false)
+    @Builder.Default
+    private Boolean isPublic = false;
+
+    @Column(name = "public_token", unique = true, length = 64)
+    private String publicToken;
 }

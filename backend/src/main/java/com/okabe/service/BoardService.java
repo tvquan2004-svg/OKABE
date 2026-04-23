@@ -3,6 +3,7 @@ package com.okabe.service;
 import com.okabe.dto.request.CreateBoardRequest;
 import com.okabe.dto.request.ReorderBoardRequest;
 import com.okabe.dto.request.UpdateBoardRequest;
+import com.okabe.dto.response.BoardPublicDto;
 import com.okabe.dto.response.BoardResponse;
 import com.okabe.security.UserPrincipal;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,4 +33,8 @@ public interface BoardService {
     BoardResponse restoreBoard(Long boardId, UserPrincipal currentUser);
 
     List<BoardResponse> getArchivedBoards(Long workspaceId, UserPrincipal currentUser);
+
+    BoardResponse updateVisibility(Long boardId, boolean isPublic, UserPrincipal currentUser);
+
+    BoardPublicDto getPublicBoard(String token);
 }

@@ -19,6 +19,7 @@ import {
   useGetCardActivitiesQuery,
   useArchiveCardMutation,
 } from '../../services/boardApi';
+import { getFullFileUrl } from '../../utils/urlHelper';
 import {
   MdAttachFile,
   MdDelete,
@@ -48,6 +49,7 @@ interface CardDetailModalProps {
   workspaceId: number;
   onClose: () => void;
   priorityColor: (priority: string) => string;
+  readOnly?: boolean;
 }
 
 const PRESET_COLORS = [
@@ -60,6 +62,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   boardId,
   workspaceId,
   onClose,
+  readOnly = false,
 }) => {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || '');
@@ -184,11 +187,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     }
   };
 
-  const getFullUrl = (url?: string) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
-  };
+  const getFullUrl = getFullFileUrl;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -240,35 +239,41 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
           <div className={styles.titleWrapper}>
             <div className={styles.titleRow}>
               <MdCheckBox className={styles.headerIcon} />
-              <input
-                className={styles.titleInput}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onBlur={() => title !== card.title && handleUpdateCard({ title })}
-              />
+              {readOnly ? (
+                <h2 className={styles.titleDisplay}>{title}</h2>
+              ) : (
+                <input
+                  className={styles.titleInput}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={() => title !== card.title && handleUpdateCard({ title })}
+                />
+              )}
             </div>
             <p className={styles.subtitle}>trong danh sách công việc</p>
           </div>
           <button className={styles.closeBtn} onClick={onClose}><MdClose /></button>
         </header>
 
-        <div className={styles.quickActions}>
-          <button className={styles.quickActionBtn} onClick={handleCreateChecklist}>
-            <FiCheckSquare /> <span>Việc cần làm</span>
-          </button>
-          <button className={styles.quickActionBtn} onClick={() => fileInputRef.current?.click()}>
-            <FiPaperclip /> <span>Đính kèm</span>
-          </button>
-          <button className={styles.quickActionBtn} onClick={() => setShowLabelPicker(!showLabelPicker)}>
-            <FiTag /> <span>Nhãn</span>
-          </button>
-          <button className={styles.quickActionBtn} onClick={() => setShowDatePicker(!showDatePicker)}>
-            <FiClock /> <span>Ngày</span>
-          </button>
-          <button className={styles.quickActionBtn} onClick={handleArchiveCard}>
-            <FiArchive /> <span>Lưu trữ</span>
-          </button>
-        </div>
+        {!readOnly && (
+          <div className={styles.quickActions}>
+            <button className={styles.quickActionBtn} onClick={handleCreateChecklist}>
+              <FiCheckSquare /> <span>Việc cần làm</span>
+            </button>
+            <button className={styles.quickActionBtn} onClick={() => fileInputRef.current?.click()}>
+              <FiPaperclip /> <span>Đính kèm</span>
+            </button>
+            <button className={styles.quickActionBtn} onClick={() => setShowLabelPicker(!showLabelPicker)}>
+              <FiTag /> <span>Nhãn</span>
+            </button>
+            <button className={styles.quickActionBtn} onClick={() => setShowDatePicker(!showDatePicker)}>
+              <FiClock /> <span>Ngày</span>
+            </button>
+            <button className={styles.quickActionBtn} onClick={handleArchiveCard}>
+              <FiArchive /> <span>Lưu trữ</span>
+            </button>
+          </div>
+        )}
 
         <div className={styles.contentGrid}>
           <main className={styles.mainContent}>
@@ -292,7 +297,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                         )}
                       </div>
                     ))}
-                    <button className={styles.addMetaBtn} onClick={() => setShowMemberPicker(true)}>+</button>
+                    {!readOnly && <button className={styles.addMetaBtn} onClick={() => setShowMemberPicker(true)}>+</button>}
                   </div>
                 </div>
               )}
@@ -306,12 +311,12 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                         key={label.id}
                         className={styles.labelChip}
                         style={{ background: label.color }}
-                        onClick={() => handleRemoveLabel(label.id)}
+                        onClick={() => !readOnly && handleRemoveLabel(label.id)}
                       >
                         {label.name}
                       </div>
                     ))}
-                    <button className={styles.addMetaBtn} onClick={() => setShowLabelPicker(true)}>+</button>
+                    {!readOnly && <button className={styles.addMetaBtn} onClick={() => setShowLabelPicker(true)}>+</button>}
                   </div>
                 </div>
               )}
@@ -320,7 +325,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 <h4 className={styles.metaLabel}>Ngày</h4>
                 <div 
                   className={`${styles.dueDateChip} ${dueDate && new Date(dueDate) < new Date() ? styles.overdue : ''}`}
-                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  onClick={() => !readOnly && setShowDatePicker(!showDatePicker)}
                 >
                   {dueDate ? (
                     <>
@@ -342,13 +347,17 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 <MdOutlineDescription className={styles.sectionIcon} />
                 <h3 className={styles.sectionTitle}>Mô tả</h3>
               </div>
-              <textarea
-                className={styles.descriptionBox}
-                placeholder="Thêm mô tả chi tiết hơn..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                onBlur={() => description !== (card.description || '') && handleUpdateCard({ description })}
-              />
+              {readOnly ? (
+                <div className={styles.descriptionDisplay}>{description || 'Không có mô tả'}</div>
+              ) : (
+                <textarea
+                  className={styles.descriptionBox}
+                  placeholder="Thêm mô tả chi tiết hơn..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  onBlur={() => description !== (card.description || '') && handleUpdateCard({ description })}
+                />
+              )}
             </div>
 
             {/* Checklists Section */}
@@ -375,10 +384,12 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                           <MdCheckBox className={styles.sectionIcon} />
                           <h3 className={styles.sectionTitle}>{checklist.name}</h3>
                         </div>
-                        <div className={styles.checklistActions}>
-                          <button onClick={() => { setEditingChecklistId(checklist.id); setEditingChecklistName(checklist.name); }}><MdEdit /></button>
-                          <button onClick={() => handleDeleteChecklist(checklist.id)}><MdDelete /></button>
-                        </div>
+                        {!readOnly && (
+                          <div className={styles.checklistActions}>
+                            <button onClick={() => { setEditingChecklistId(checklist.id); setEditingChecklistName(checklist.name); }}><MdEdit /></button>
+                            <button onClick={() => handleDeleteChecklist(checklist.id)}><MdDelete /></button>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -397,21 +408,24 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                           type="checkbox"
                           className={styles.checkbox}
                           checked={item.isCompleted}
-                          onChange={(e) => handleToggleItem(item.id, e.target.checked)}
+                          onChange={(e) => !readOnly && handleToggleItem(item.id, e.target.checked)}
+                          disabled={readOnly}
                         />
                         <span className={`${styles.itemContent} ${item.isCompleted ? styles.itemCompleted : ''}`}>
                           {item.content}
                         </span>
-                        <button className={styles.deleteItemBtn} onClick={() => handleDeleteItem(item.id)}><MdDelete /></button>
+                        {!readOnly && <button className={styles.deleteItemBtn} onClick={() => handleDeleteItem(item.id)}><MdDelete /></button>}
                       </div>
                     ))}
-                    <input
-                      className={styles.addItemInput}
-                      placeholder="Thêm một mục..."
-                      value={newItemContent[checklist.id] || ''}
-                      onChange={(e) => setNewItemContent({ ...newItemContent, [checklist.id]: e.target.value })}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddItem(checklist.id)}
-                    />
+                    {!readOnly && (
+                      <input
+                        className={styles.addItemInput}
+                        placeholder="Thêm một mục..."
+                        value={newItemContent[checklist.id] || ''}
+                        onChange={(e) => setNewItemContent({ ...newItemContent, [checklist.id]: e.target.value })}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddItem(checklist.id)}
+                      />
+                    )}
                   </div>
                 </div>
               );
@@ -440,17 +454,21 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                       <p className={styles.attachmentMeta}>
                         Đã thêm {new Date(attachment.createdAt).toLocaleDateString()} • {formatFileSize(attachment.fileSize)}
                       </p>
-                      <div className={styles.attachmentLinks}>
-                        <button onClick={() => handleDeleteAttachment(attachment.id)}>Xóa</button>
-                        <span>•</span>
-                        <button>Chỉnh sửa</button>
-                      </div>
+                      {!readOnly && (
+                        <div className={styles.attachmentLinks}>
+                          <button onClick={() => handleDeleteAttachment(attachment.id)}>Xóa</button>
+                          <span>•</span>
+                          <button>Chỉnh sửa</button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
-                <button className={styles.addAttachmentBtn} onClick={() => fileInputRef.current?.click()}>
-                  Thêm đính kèm
-                </button>
+                {!readOnly && (
+                  <button className={styles.addAttachmentBtn} onClick={() => fileInputRef.current?.click()}>
+                    Thêm đính kèm
+                  </button>
+                )}
               </div>
             </div>
           </main>
@@ -461,7 +479,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               <h3 className={styles.sectionTitle}>Nhận xét và hoạt động</h3>
             </div>
             
-            <CommentSection cardId={card.id} workspaceId={workspaceId} />
+            <CommentSection cardId={card.id} workspaceId={workspaceId} readOnly={readOnly} />
 
             <div className={styles.activityList}>
               {(showAllActivities ? activities : activities.slice(0, 5)).map((activity) => (

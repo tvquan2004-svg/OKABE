@@ -18,6 +18,7 @@ interface BoardListColumnProps {
   onCardClick: (card: CardItem) => void;
   priorityColor: (priority: string) => string;
   matchedCardIds: number[] | null;
+  readOnly?: boolean;
 }
 
 function BoardListColumn({
@@ -29,6 +30,7 @@ function BoardListColumn({
   onCardClick,
   priorityColor,
   matchedCardIds,
+  readOnly = false,
 }: BoardListColumnProps) {
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState('');
@@ -54,79 +56,96 @@ function BoardListColumn({
       <div className={styles.columnHeader}>
         <h3>{list.name}</h3>
         <span className={styles.cardCount}>{list.cards.length}</span>
-        <div className={styles.columnActions}>
-          <button
-            className={styles.columnActionBtn}
-            onClick={() => onEditList(list)}
-            title="Sửa danh sách"
-          >
-            <FiEdit2 size={14} />
-          </button>
-          <button
-            className={styles.columnActionBtn}
-            onClick={() => onArchiveList(list.id)}
-            title="Lưu trữ danh sách"
-          >
-            <FiArchive size={14} />
-          </button>
-          <button
-            className={styles.columnActionBtn}
-            onClick={() => onDeleteList(list.id)}
-            title="Xóa danh sách"
-          >
-            <FiTrash2 size={14} />
-          </button>
-        </div>
+        {!readOnly && (
+          <div className={styles.columnActions}>
+            <button
+              className={styles.columnActionBtn}
+              onClick={() => onEditList(list)}
+              title="Sửa danh sách"
+            >
+              <FiEdit2 size={14} />
+            </button>
+            <button
+              className={styles.columnActionBtn}
+              onClick={() => onArchiveList(list.id)}
+              title="Lưu trữ danh sách"
+            >
+              <FiArchive size={14} />
+            </button>
+            <button
+              className={styles.columnActionBtn}
+              onClick={() => onDeleteList(list.id)}
+              title="Xóa danh sách"
+            >
+              <FiTrash2 size={14} />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.cardList}>
-        <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
-          {list.cards.map((card) => (
+        {!readOnly ? (
+          <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
+            {list.cards.map((card) => (
+              <SortableCard
+                key={card.id}
+                card={card}
+                onCardClick={onCardClick}
+                priorityColor={priorityColor}
+                matchedCardIds={matchedCardIds}
+              />
+            ))}
+          </SortableContext>
+        ) : (
+          list.cards.map((card) => (
             <SortableCard
               key={card.id}
               card={card}
               onCardClick={onCardClick}
               priorityColor={priorityColor}
               matchedCardIds={matchedCardIds}
+              isDragDisabled={true}
             />
-          ))}
-        </SortableContext>
+          ))
+        )}
 
-        {isAddingCard ? (
-          <div className={styles.addForm}>
-            <textarea
-              value={newCardTitle}
-              onChange={(event) => setNewCardTitle(event.target.value)}
-              placeholder="Nhập tiêu đề thẻ..."
-              className={styles.addInput}
-              autoFocus
-              rows={2}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault();
-                  void handleAddCard();
-                }
-              }}
-            />
-            <div className={styles.addActions}>
-              <button className="btn btn-primary btn-sm" onClick={() => void handleAddCard()}>
-                Thêm
-              </button>
-              <button className="btn btn-outline btn-sm" onClick={() => setIsAddingCard(false)}>
-                Hủy
-              </button>
+        {!readOnly && (
+          isAddingCard ? (
+            <div className={styles.addForm}>
+              <textarea
+                value={newCardTitle}
+                onChange={(event) => setNewCardTitle(event.target.value)}
+                placeholder="Nhập tiêu đề thẻ..."
+                className={styles.addInput}
+                autoFocus
+                rows={2}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    void handleAddCard();
+                  }
+                }}
+              />
+              <div className={styles.addActions}>
+                <button className="btn btn-primary btn-sm" onClick={() => void handleAddCard()}>
+                  Thêm
+                </button>
+                <button className="btn btn-outline btn-sm" onClick={() => setIsAddingCard(false)}>
+                  Hủy
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <button
-            className={styles.addCardBtn}
-            onClick={() => {
-              setIsAddingCard(true);
-              setNewCardTitle('');
-            }}
-          >
-            <FiPlus /> <span>Thêm thẻ mới</span>
-          </button>
+          ) : (
+            <button
+              className={styles.addCardBtn}
+              onClick={() => {
+                setIsAddingCard(true);
+                setNewCardTitle('');
+              }}
+            >
+              <FiPlus /> <span>Thêm thẻ mới</span>
+            </button>
+          )
         )}
       </div>
     </div>

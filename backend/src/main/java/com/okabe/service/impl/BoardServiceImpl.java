@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -280,6 +281,37 @@ public class BoardServiceImpl implements BoardService {
         return boards.stream().map(b -> toBoardResponse(b, false)).toList();
     }
 
+    @Override
+    @Transactional
+    public BoardResponse updateVisibility(Long boardId, boolean isPublic, UserPrincipal currentUser) {
+        Board board = findBoardOrThrow(boardId);
+        validateWorkspaceAdmin(board.getWorkspace().getId(), currentUser.getId());
+
+        board.setIsPublic(isPublic);
+        if (isPublic && board.getPublicToken() == null) {
+            board.setPublicToken(UUID.randomUUID().toString().replace("-", ""));
+        } else if (!isPublic) {
+            board.setPublicToken(null);
+        }
+
+        board = boardRepository.save(board);
+        log.info("Board {} visibility updated to public: {}", boardId, isPublic);
+        return toBoardResponse(board, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BoardPublicDto getPublicBoard(String token) {
+        Board board = boardRepository.findByPublicToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Public Board", token));
+        
+        if (!board.getIsPublic()) {
+            throw new UnauthorizedException("This board is no longer public");
+        }
+
+        return toBoardPublicDto(board);
+    }
+
     // ─── Helpers ────────────────────────────────────────
 
     private Board findBoardOrThrow(Long id) {
@@ -337,11 +369,69 @@ public class BoardServiceImpl implements BoardService {
                 .background(board.getBackground())
                 .isStarred(board.getIsStarred())
                 .isArchived(board.getIsArchived())
+                .isPublic(board.getIsPublic())
+                .publicToken(board.getPublicToken())
                 .listCount(listCount)
                 .totalCards(totalCards)
                 .createdAt(board.getCreatedAt())
                 .lists(lists)
                 .build();
+    }
+
+    private BoardPublicDto toBoardPublicDto(Board board) {
+        List<TaskList> taskLists = taskListRepository
+                .findByBoardIdAndIsArchivedFalseOrderByPositionAsc(board.getId());
+
+        List<ListResponse> lists = taskLists.stream().map(this::toPublicListResponse).toList();
+
+        List<BoardPublicDto.PublicUserResponse> publicMembers = board.getWorkspace() != null 
+            ? memberRepository.findByWorkspaceId(board.getWorkspace().getId()).stream()
+                .map(m -> BoardPublicDto.PublicUserResponse.builder()
+                        .id(m.getUser().getId())
+                        .username(m.getUser().getUsername())
+                        .avatarUrl(m.getUser().getAvatarUrl())
+                        .build())
+                .toList()
+            : List.of();
+
+        return BoardPublicDto.builder()
+                .id(board.getId())
+                .name(board.getName())
+                .description(board.getDescription())
+                .background(board.getBackground())
+                .createdAt(board.getCreatedAt())
+                .lists(lists)
+                .members(publicMembers)
+                .build();
+    }
+
+    private ListResponse toPublicListResponse(TaskList taskList) {
+        List<Card> cards = cardRepository
+                .findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(taskList.getId());
+
+        return ListResponse.builder()
+                .id(taskList.getId())
+                .boardId(taskList.getBoard().getId())
+                .name(taskList.getName())
+                .position(taskList.getPosition())
+                .cards(cards.stream().map(this::toPublicCardResponse).toList())
+                .build();
+    }
+
+    private CardResponse toPublicCardResponse(Card card) {
+        CardResponse response = toCardResponse(card);
+        // Clear emails from members for public view
+        if (response.getMembers() != null) {
+            response.setMembers(response.getMembers().stream()
+                .map(m -> UserResponse.builder()
+                    .id(m.getId())
+                    .username(m.getUsername())
+                    .avatarUrl(m.getAvatarUrl())
+                    .email(null) // Hide email
+                    .build())
+                .toList());
+        }
+        return response;
     }
 
     private ListResponse toListResponse(TaskList taskList) {
@@ -393,10 +483,10 @@ public class BoardServiceImpl implements BoardService {
                 .position(card.getPosition())
                 .dueDate(card.getDueDate())
                 .startDate(card.getStartDate())
-                .priority(card.getPriority().name())
+                .priority(card.getPriority() != null ? card.getPriority().name() : "MEDIUM")
                 .isArchived(card.getIsArchived())
-                .createdById(card.getCreatedBy().getId())
-                .createdByName(card.getCreatedBy().getUsername())
+                .createdById(card.getCreatedBy() != null ? card.getCreatedBy().getId() : null)
+                .createdByName(card.getCreatedBy() != null ? card.getCreatedBy().getUsername() : "Hệ thống")
                 .createdAt(card.getCreatedAt())
                 .labels(labelResponses)
                 .checklists(checklistResponses)

@@ -8,19 +8,24 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardResponse {
+public class BoardPublicDto {
     private Long id;
-    private Long workspaceId;
     private String name;
     private String description;
-    private Integer position;
     private String background;
-    private Boolean isStarred;
-    private Boolean isArchived;
-    private Boolean isPublic;
-    private String publicToken;
-    private int listCount;
-    private int totalCards;
     private LocalDateTime createdAt;
     private List<ListResponse> lists;
+    
+    // Member info without email
+    private List<PublicUserResponse> members;
+    
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PublicUserResponse {
+        private Long id;
+        private String username;
+        private String avatarUrl;
+    }
 }

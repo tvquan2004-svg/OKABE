@@ -4,12 +4,14 @@ import { CSS } from '@dnd-kit/utilities';
 import { FiAlertCircle, FiCalendar } from 'react-icons/fi';
 import type { CardItem } from '../../services/boardApi';
 import styles from '../../pages/BoardPage.module.css';
+import { getFullFileUrl } from '../../utils/urlHelper';
 
 interface SortableCardProps {
   card: CardItem;
   onCardClick: (card: CardItem) => void;
   priorityColor: (priority: string) => string;
   matchedCardIds: number[] | null;
+  isDragDisabled?: boolean;
 }
 
 const SortableCard: React.FC<SortableCardProps> = ({
@@ -17,6 +19,7 @@ const SortableCard: React.FC<SortableCardProps> = ({
   onCardClick,
   priorityColor,
   matchedCardIds,
+  isDragDisabled = false,
 }) => {
   const {
     attributes,
@@ -25,7 +28,10 @@ const SortableCard: React.FC<SortableCardProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id });
+  } = useSortable({ 
+    id: card.id,
+    disabled: isDragDisabled
+  });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -33,11 +39,7 @@ const SortableCard: React.FC<SortableCardProps> = ({
     zIndex: isDragging ? 1000 : 1,
   };
 
-  const getFullUrl = (url?: string) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
-  };
+  const getFullUrl = getFullFileUrl;
 
   const coverImage = card.attachments?.find(a => a.mimeType.includes('image'))?.url;
   const totalItems = card.checklists?.reduce((acc, c) => acc + c.items.length, 0) || 0;
@@ -50,8 +52,8 @@ const SortableCard: React.FC<SortableCardProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      {...(!isDragDisabled ? attributes : {})}
+      {...(!isDragDisabled ? listeners : {})}
       className={`${styles.card} ${
         isDragging ? styles.isDragging : ''
       } ${

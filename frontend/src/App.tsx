@@ -10,6 +10,7 @@ import WorkspacePage from './pages/WorkspacePage';
 import SettingsPage from './pages/SettingsPage';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import PublicBoardPage from './pages/PublicBoardPage';
 import CalendarView from './pages/CalendarView';
 import TimelineView from './pages/TimelineView';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
@@ -48,6 +49,7 @@ function App() {
       </Route>
       <Route path="/invitations/accept" element={<AcceptInvitationPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/public/:token" element={<PublicBoardPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
