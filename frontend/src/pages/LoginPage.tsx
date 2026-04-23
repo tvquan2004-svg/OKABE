@@ -30,6 +30,11 @@ function LoginPage() {
 
     try {
       const result = await login({ email, password }).unwrap();
+      if (result.data.requires2fa && result.data.tempToken) {
+        navigate('/auth/2fa', { state: { tempToken: result.data.tempToken, redirect } });
+        return;
+      }
+
       if (result.data.accessToken && result.data.refreshToken && result.data.user) {
         dispatch(setCredentials({
           accessToken: result.data.accessToken,
@@ -58,6 +63,8 @@ function LoginPage() {
             accessToken: tokenResponse.access_token
           });
           setUsername(result.data.googleName || '');
+        } else if (result.data.requires2fa && result.data.tempToken) {
+          navigate('/auth/2fa', { state: { tempToken: result.data.tempToken, redirect } });
         } else if (result.data.accessToken && result.data.refreshToken && result.data.user) {
           dispatch(setCredentials({
             accessToken: result.data.accessToken,
@@ -83,6 +90,11 @@ function LoginPage() {
         accessToken: regData.accessToken,
         username: username.trim()
       }).unwrap();
+
+      if (result.data.requires2fa && result.data.tempToken) {
+        navigate('/auth/2fa', { state: { tempToken: result.data.tempToken, redirect } });
+        return;
+      }
 
       if (result.data.accessToken && result.data.refreshToken && result.data.user) {
         dispatch(setCredentials({

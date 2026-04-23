@@ -108,6 +108,15 @@ public class AuthServiceImpl implements AuthService {
 
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             log.info("User logged in: {}", user.getEmail());
+            
+            if (user.getIs2faEnabled()) {
+                String tempToken = jwtTokenProvider.generateTempToken(userPrincipal);
+                return AuthResponse.builder()
+                        .requires2fa(true)
+                        .tempToken(tempToken)
+                        .build();
+            }
+            
             return buildAuthResponse(userPrincipal, user);
         } catch (BadCredentialsException e) {
             throw new UnauthorizedException("Bad credentials");
@@ -188,6 +197,13 @@ public class AuthServiceImpl implements AuthService {
             }
 
             UserPrincipal userPrincipal = UserPrincipal.from(user);
+            if (user.getIs2faEnabled()) {
+                String tempToken = jwtTokenProvider.generateTempToken(userPrincipal);
+                return AuthResponse.builder()
+                        .requires2fa(true)
+                        .tempToken(tempToken)
+                        .build();
+            }
             return buildAuthResponse(userPrincipal, user);
         } catch (Exception e) {
             log.error("Google login failed", e);
@@ -216,10 +232,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse.UserInfo getCurrentUser(UserPrincipal currentUser) {
+        if (currentUser == null) return null;
         return AuthResponse.UserInfo.builder()
                 .id(currentUser.getId())
                 .email(currentUser.getEmail())
                 .username(currentUser.getUsername())
+                .is2faEnabled(currentUser.is2faEnabled())
                 .build();
     }
 
@@ -236,6 +254,7 @@ public class AuthServiceImpl implements AuthService {
                         .email(user.getEmail())
                         .username(user.getUsername())
                         .avatarUrl(user.getAvatarUrl())
+                        .is2faEnabled(user.getIs2faEnabled())
                         .build())
                 .build();
     }

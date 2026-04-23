@@ -19,6 +19,7 @@ public class UserPrincipal implements UserDetails {
     private String username;
     private String password;
     private Boolean isActive;
+    private boolean is2faEnabled;
 
     public static UserPrincipal from(User user) {
         return new UserPrincipal(
@@ -26,7 +27,8 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getUsername(),
                 user.getPassword(),
-                user.getIsActive()
+                user.getIsActive(),
+                user.getIs2faEnabled()
         );
     }
 

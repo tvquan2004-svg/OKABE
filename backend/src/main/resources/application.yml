@@ -97,3 +97,8 @@ springdoc:
     path: /swagger-ui.html
     tags-sorter: alpha
     operations-sorter: alpha
+# Logging Configuration
+logging:
+  level:
+    com.okabe.security: DEBUG
+    org.springframework.security: DEBUG

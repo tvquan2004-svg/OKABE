@@ -158,6 +158,13 @@
             <version>2.0.0</version>
         </dependency>
 
+        <!-- TOTP 2FA -->
+        <dependency>
+            <groupId>com.warrenstrange</groupId>
+            <artifactId>googleauth</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+
         <!-- Dotenv to load .env files -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
@@ -207,6 +214,9 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>10.20.1</version>
                 <configuration>
+                    <url>jdbc:mysql://localhost:3306/okabe_db?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC</url>
+                    <user>okabe</user>
+                    <password>123456</password>
                     <locations>
                         <location>filesystem:src/main/resources/db/migration</location>
                     </locations>

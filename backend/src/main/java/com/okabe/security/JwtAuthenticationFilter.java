@@ -32,12 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = extractTokenFromRequest(request);
-
+            log.debug("Extracted JWT: {}", jwt != null ? "present" : "null");
+            
             if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
                 String tokenType = jwtTokenProvider.getTokenType(jwt);
+                log.debug("Token type: {}", tokenType);
 
                 if ("access".equals(tokenType)) {
                     Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
+                    log.debug("Authenticated userId: {}", userId);
 
                     User user = userRepository.findById(userId).orElse(null);
                     if (user != null && user.getIsActive()) {
@@ -50,11 +53,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 new WebAuthenticationDetailsSource().buildDetails(request));
 
                         SecurityContextHolder.getContext().setAuthentication(authentication);
+                        log.debug("Security context set for user: {}", user.getEmail());
+                    } else {
+                        log.warn("User not found or inactive for id: {}", userId);
                     }
+                } else {
+                    log.warn("Invalid token type for authentication: {}", tokenType);
                 }
+            } else if (StringUtils.hasText(jwt)) {
+                log.warn("JWT token validation failed");
             }
         } catch (Exception ex) {
-            log.error("Could not set user authentication in security context: {}", ex.getMessage());
+            log.error("Could not set user authentication in security context", ex);
         }
 
         filterChain.doFilter(request, response);
@@ -68,13 +78,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.startsWith("/api/v1/auth/") ||
-               path.startsWith("/swagger-ui") ||
-               path.startsWith("/api-docs") ||
-               path.startsWith("/v3/api-docs") ||
-               path.equals("/api/v1/health");
-    }
 }

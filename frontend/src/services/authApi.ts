@@ -5,6 +5,7 @@ export interface UserInfo {
   email: string;
   username: string;
   avatarUrl: string | null;
+  is2faEnabled: boolean;
 }
 
 export interface AuthResponse {
@@ -16,6 +17,8 @@ export interface AuthResponse {
   email?: string;
   avatarUrl?: string;
   googleName?: string;
+  requires2fa?: boolean;
+  tempToken?: string;
 }
 
 export interface ApiResponseWrapper<T> {
@@ -72,6 +75,35 @@ export const authApi = apiSlice.injectEndpoints({
     verifyEmail: builder.query<ApiResponseWrapper<void>, string>({
       query: (token) => `/auth/verify-email?token=${token}`,
     }),
+    setup2fa: builder.mutation<ApiResponseWrapper<{ secret: string; qrCodeUri: string }>, void>({
+      query: () => ({
+        url: '/auth/2fa/setup',
+        method: 'POST',
+      }),
+    }),
+    verifySetup2fa: builder.mutation<ApiResponseWrapper<string[]>, { secret: string; code: number }>({
+      query: (body) => ({
+        url: '/auth/2fa/verify-setup',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    disable2fa: builder.mutation<ApiResponseWrapper<void>, { code: number }>({
+      query: (body) => ({
+        url: '/auth/2fa/disable',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    validate2fa: builder.mutation<ApiResponseWrapper<AuthResponse>, { tempToken: string; code: string; isBackupCode: boolean }>({
+      query: (body) => ({
+        url: '/auth/2fa/validate',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -82,4 +114,8 @@ export const {
   useRefreshTokenMutation,
   useGoogleLoginMutation,
   useVerifyEmailQuery,
+  useSetup2faMutation,
+  useVerifySetup2faMutation,
+  useDisable2faMutation,
+  useValidate2faMutation,
 } = authApi;

@@ -42,6 +42,10 @@ public class JwtTokenProvider {
         return buildToken(userPrincipal, refreshTokenExpiration, "refresh");
     }
 
+    public String generateTempToken(UserPrincipal userPrincipal) {
+        return buildToken(userPrincipal, 300000, "temp"); // 5 minutes
+    }
+
     private String buildToken(UserPrincipal userPrincipal, long expiration, String tokenType) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
