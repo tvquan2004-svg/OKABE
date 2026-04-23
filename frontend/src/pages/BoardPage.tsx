@@ -17,16 +17,18 @@ import {
   useUpdateListMutation,
   useSearchCardsQuery,
   useMoveCardMutation,
+  useArchiveCardMutation,
   type CardSearchParams,
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity, FiTrash2 } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
 import { 
   useArchiveBoardMutation,
 } from '../services/boardApi';
 import ArchivedItemsPanel from '../components/board/ArchivedItemsPanel';
+import BoardActivitySidebar from '../components/board/BoardActivitySidebar';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
 import styles from './BoardPage.module.css';
 import {
@@ -38,8 +40,30 @@ import {
   closestCorners,
   DragOverlay,
   defaultDropAnimationSideEffects,
+  useDroppable,
 } from '@dnd-kit/core';
 import SortableCard from '../components/board/SortableCard';
+
+// Archive Drop Zone Component
+const ArchiveDropZone = ({ isDragging }: { isDragging: boolean }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'archive-zone',
+  });
+
+  if (!isDragging) return null;
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      className={`${styles.archiveZone} ${isOver ? styles.archiveZoneOver : ''}`}
+    >
+      <div className={styles.archiveZoneContent}>
+        <FiTrash2 className={styles.archiveZoneIcon} />
+        <span>Kéo vào đây để lưu trữ thẻ</span>
+      </div>
+    </div>
+  );
+};
 
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -69,10 +93,12 @@ function BoardPage() {
   const [createCard] = useCreateCardMutation();
   const [deleteList] = useDeleteListMutation();
   const [moveCard] = useMoveCardMutation();
+  const [archiveCard] = useArchiveCardMutation();
   const [saveAsTemplate, { isLoading: isSavingAsTemplate }] = useSaveAsTemplateMutation();
   const [archiveBoard] = useArchiveBoardMutation();
 
   const [showArchivedPanel, setShowArchivedPanel] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -128,6 +154,14 @@ function BoardPage() {
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('cardId');
       setSearchParams(newParams);
+    }
+  };
+
+  const handleActivityCardClick = (cardId: number) => {
+    const card = lists.flatMap(l => l.cards).find(c => c.id === cardId);
+    if (card) {
+      setSelectedCard(card);
+      setShowActivitySidebar(false);
     }
   };
 
@@ -231,12 +265,22 @@ function BoardPage() {
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveCard(null);
     const { active, over } = event;
+    setActiveCard(null);
     if (!over) return;
 
     const cardId = Number(active.id);
     const overId = over.id.toString();
+
+    // Check if dropped on archive zone
+    if (overId === 'archive-zone') {
+      try {
+        await archiveCard({ id: cardId, boardId: id }).unwrap();
+      } catch (err) {
+        console.error('Failed to archive card:', err);
+      }
+      return;
+    }
 
     // Find target list and position
     let targetListId: number | null = null;
@@ -333,6 +377,13 @@ function BoardPage() {
               </button>
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/timeline`)}>
                 <FiClock /> <span>Dòng thời gian</span>
+              </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
+                onClick={() => setShowActivitySidebar(true)}
+              >
+                <FiActivity /> <span>Hoạt động</span>
               </button>
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/analytics`)}>
                 <FiPieChart /> <span>Thống kê</span>
@@ -462,6 +513,7 @@ function BoardPage() {
             </div>
           ) : null}
         </DragOverlay>
+        <ArchiveDropZone isDragging={activeCard !== null} />
       </DndContext>
 
       {isEditBoardModalOpen ? (
@@ -527,6 +579,13 @@ function BoardPage() {
           onClose={() => setShowArchivedPanel(false)} 
         />
       )}
+
+      <BoardActivitySidebar 
+        boardId={id}
+        isOpen={showActivitySidebar}
+        onClose={() => setShowActivitySidebar(false)}
+        onCardClick={handleActivityCardClick}
+      />
     </div>
   );
 }

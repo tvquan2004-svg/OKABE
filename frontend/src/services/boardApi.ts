@@ -68,6 +68,7 @@ export interface Activity {
   avatarUrl: string | null;
   actionType: string;
   description: string | null;
+  cardId?: number;
   createdAt: string;
 }
 
@@ -217,12 +218,24 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ cardId, name }) => ({ url: `/cards/${cardId}/checklists`, method: 'POST', body: { name } }),
       invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
+    updateChecklist: builder.mutation<ApiRes<Checklist>, { checklistId: number; boardId: number; cardId: number; name: string }>({
+      query: ({ checklistId, name }) => ({ url: `/checklists/${checklistId}`, method: 'PUT', body: { name } }),
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
+    }),
+    deleteChecklist: builder.mutation<ApiRes<void>, { checklistId: number; boardId: number; cardId: number }>({
+      query: ({ checklistId }) => ({ url: `/checklists/${checklistId}`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
+    }),
     createChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { checklistId: number; boardId: number; cardId: number; content: string }>({
       query: ({ checklistId, content }) => ({ url: `/checklists/${checklistId}/items`, method: 'POST', body: { content } }),
       invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
-    updateChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { itemId: number; boardId: number; cardId: number; body: { content?: string; isCompleted?: boolean; position?: number } }>({
-      query: ({ itemId, body }) => ({ url: `/checklists/items/${itemId}`, method: 'PUT', body }),
+    updateChecklistItem: builder.mutation<ApiRes<ChecklistItem>, { itemId: number; boardId: number; cardId: number; content?: string; isCompleted?: boolean; position?: number }>({
+      query: ({ itemId, ...body }) => ({ url: `/checklists/items/${itemId}`, method: 'PUT', body }),
+      invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
+    }),
+    deleteChecklistItem: builder.mutation<ApiRes<void>, { itemId: number; boardId: number; cardId: number }>({
+      query: ({ itemId }) => ({ url: `/checklists/items/${itemId}`, method: 'DELETE' }),
       invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
 
@@ -278,10 +291,13 @@ export const boardApi = apiSlice.injectEndpoints({
       query: ({ attachmentId }) => ({ url: `/attachments/${attachmentId}`, method: 'DELETE' }),
       invalidatesTags: (_r, _e, { boardId, cardId }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id: cardId }],
     }),
-    // Phase 2: Activity
     getCardActivities: builder.query<ApiRes<Activity[]>, number>({
       query: (cardId) => `/cards/${cardId}/activities`,
       providesTags: (_r, _e, cardId) => [{ type: 'Activity', id: cardId }],
+    }),
+    getBoardActivities: builder.query<ApiRes<Activity[]>, number>({
+      query: (boardId) => `/boards/${boardId}/activities`,
+      providesTags: (_r, _e, boardId) => [{ type: 'Board', id: boardId }],
     }),
     searchCards: builder.query<ApiRes<PaginatedRes<CardItem>>, { boardId: number; params: CardSearchParams }>({
       query: ({ boardId, params }) => {
@@ -403,8 +419,11 @@ export const {
   useDeleteCardMutation,
   // Phase 2
   useCreateChecklistMutation,
+  useUpdateChecklistMutation,
+  useDeleteChecklistMutation,
   useCreateChecklistItemMutation,
   useUpdateChecklistItemMutation,
+  useDeleteChecklistItemMutation,
   useCreateLabelMutation,
   useGetBoardLabelsQuery,
   useUpdateLabelMutation,
@@ -416,6 +435,7 @@ export const {
   useUploadAttachmentMutation,
   useDeleteAttachmentMutation,
   useGetCardActivitiesQuery,
+  useGetBoardActivitiesQuery,
   useSearchCardsQuery,
   useUpdateBoardBackgroundMutation,
   useGetCardCommentsQuery,

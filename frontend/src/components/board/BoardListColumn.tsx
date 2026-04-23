@@ -6,6 +6,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import SortableCard from './SortableCard';
 
 interface BoardListColumnProps {
@@ -51,20 +52,20 @@ function BoardListColumn({
       <div className={styles.columnHeader}>
         <h3>{list.name}</h3>
         <span className={styles.cardCount}>{list.cards.length}</span>
-        <div className={styles.addActions}>
+        <div className={styles.columnActions}>
           <button
-            className={styles.secondaryActionBtn}
+            className={styles.columnActionBtn}
             onClick={() => onEditList(list)}
             title="Sửa danh sách"
           >
-            Sửa
+            <FiEdit2 size={14} />
           </button>
           <button
-            className={styles.deleteBtn}
+            className={styles.columnActionBtn}
             onClick={() => onDeleteList(list.id)}
             title="Xóa danh sách"
           >
-            <span style={{ fontSize: '1.2rem' }}>&times;</span>
+            <FiTrash2 size={14} />
           </button>
         </div>
       </div>
@@ -115,7 +116,7 @@ function BoardListColumn({
               setNewCardTitle('');
             }}
           >
-            + Thêm thẻ mới
+            <FiPlus /> <span>Thêm thẻ mới</span>
           </button>
         )}
       </div>

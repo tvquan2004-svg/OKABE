@@ -3,9 +3,11 @@ package com.okabe.controller;
 import com.okabe.dto.request.CreateBoardRequest;
 import com.okabe.dto.request.ReorderBoardRequest;
 import com.okabe.dto.request.UpdateBoardRequest;
+import com.okabe.dto.response.ActivityResponse;
 import com.okabe.dto.response.ApiResponse;
 import com.okabe.dto.response.BoardResponse;
 import com.okabe.security.UserPrincipal;
+import com.okabe.service.ActivityService;
 import com.okabe.service.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final ActivityService activityService;
 
     @GetMapping("/api/v1/workspaces/{workspaceId}/boards")
     @Operation(summary = "Get all boards in a workspace")
@@ -131,5 +134,13 @@ public class BoardController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
                 boardService.restoreBoard(id, currentUser), "Board restored"));
+    }
+
+    @GetMapping("/api/v1/boards/{id}/activities")
+    @Operation(summary = "Get all activities for a board")
+    public ResponseEntity<ApiResponse<List<ActivityResponse>>> getBoardActivities(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(activityService.getBoardActivities(id)));
     }
 }

@@ -44,6 +44,25 @@ public class ActivityServiceImpl implements ActivityService {
                         .avatarUrl(a.getUser() != null ? a.getUser().getAvatarUrl() : null)
                         .actionType(a.getActionType())
                         .description(a.getDescription())
+                        .cardId(a.getCard() != null ? a.getCard().getId() : null)
+                        .createdAt(a.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ActivityResponse> getBoardActivities(Long boardId) {
+        // Get last 100 activities for board
+        return activityRepository.findByCardTaskListBoardIdOrderByCreatedAtDesc(boardId, PageRequest.of(0, 100)).stream()
+                .map(a -> ActivityResponse.builder()
+                        .id(a.getId())
+                        .userId(a.getUser() != null ? a.getUser().getId() : null)
+                        .username(a.getUser() != null ? a.getUser().getUsername() : "Unknown")
+                        .avatarUrl(a.getUser() != null ? a.getUser().getAvatarUrl() : null)
+                        .actionType(a.getActionType())
+                        .description(a.getDescription())
+                        .cardId(a.getCard() != null ? a.getCard().getId() : null)
                         .createdAt(a.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());

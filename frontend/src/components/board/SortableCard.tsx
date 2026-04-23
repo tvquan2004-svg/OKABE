@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { FiAlertCircle, FiCalendar } from 'react-icons/fi';
 import type { CardItem } from '../../services/boardApi';
 import styles from '../../pages/BoardPage.module.css';
 
@@ -42,6 +43,8 @@ const SortableCard: React.FC<SortableCardProps> = ({
   const totalItems = card.checklists?.reduce((acc, c) => acc + c.items.length, 0) || 0;
   const completedItems = card.checklists?.reduce((acc, c) => acc + c.items.filter((i) => i.isCompleted).length, 0) || 0;
   const isChecklistCompleted = totalItems > 0 && totalItems === completedItems;
+
+  const isOverdue = card.dueDate && new Date(card.dueDate) < new Date();
 
   return (
     <div
@@ -102,9 +105,12 @@ const SortableCard: React.FC<SortableCardProps> = ({
           )}
 
           {card.dueDate && (
-            <div className={styles.badgeItem}>
-              <span>📅</span>
-              {new Date(card.dueDate).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })}
+            <div className={`${styles.badgeItem} ${isOverdue ? styles.overdueBadge : ''}`}>
+              {isOverdue ? <FiAlertCircle className={styles.alarmIcon} /> : <FiCalendar />}
+              <span>
+                {card.startDate && `${new Date(card.startDate).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })} - `}
+                {new Date(card.dueDate).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' })}
+              </span>
             </div>
           )}
 
