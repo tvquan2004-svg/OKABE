@@ -17,7 +17,7 @@ const ShareBoardModal: React.FC<ShareBoardModalProps> = ({ board, onClose }) => 
   const handleToggleVisibility = async () => {
     try {
       await updateVisibility({ id: board.id, isPublic: !board.isPublic }).unwrap();
-    } catch (err) {
+    } catch (_err) {
       alert('Không thể cập nhật trạng thái chia sẻ');
     }
   };

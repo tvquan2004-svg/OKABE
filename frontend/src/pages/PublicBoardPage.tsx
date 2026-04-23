@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useGetPublicBoardQuery } from '../services/boardApi';
+import { useGetPublicBoardQuery, CardItem } from '../services/boardApi';
 import BoardListColumn from '../components/board/BoardListColumn';
 import CardDetailModal from '../components/board/CardDetailModal';
 import { FiExternalLink, FiLock, FiInfo } from 'react-icons/fi';
@@ -13,7 +13,7 @@ function PublicBoardPage() {
     skip: !token
   });
 
-  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
 
   useEffect(() => {
     if (boardData?.data?.name) {
