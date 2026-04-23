@@ -9,7 +9,6 @@ import {
 } from 'react-icons/fi';
 import { useGetWorkspacesQuery } from '../../services/workspaceApi';
 import styles from './Sidebar.module.css';
-import logoImg from '../../../favicon.png';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -30,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
     `}>
       <div className={styles.header}>
         <div className={styles.logoContainer}>
-          <img src={logoImg} className={styles.logoImg} alt="Logo" />
+          <img src="/favicon.png" className={styles.logoImg} alt="Logo" />
           {!isCollapsed && <span className={styles.logoText}>OKABE</span>}
         </div>
         <div className={styles.headerActions}>
