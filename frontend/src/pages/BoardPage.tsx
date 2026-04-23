@@ -21,7 +21,7 @@ import {
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
 import { 
   useArchiveBoardMutation,
@@ -303,9 +303,11 @@ function BoardPage() {
   };
 
   return (
-    <div className={styles.container} style={containerStyle}>
+    <div className={`${styles.container} ${isFiltering ? 'is-filtering' : ''}`} style={containerStyle}>
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate(-1)}>Quay lại</button>
+        <button className={styles.backBtn} onClick={() => navigate(-1)}>
+          <FiChevronLeft /> <span>Quay lại</span>
+        </button>
         <div className={styles.boardMeta}>
           {board.description ? <span className={styles.boardDesc}>{board.description}</span> : null}
         </div>
@@ -313,13 +315,13 @@ function BoardPage() {
           {canManageBoard ? (
             <div className={styles.toolbarGroup}>
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/calendar`)}>
-                <FiCalendar /> Lịch
+                <FiCalendar /> <span>Lịch</span>
               </button>
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/timeline`)}>
-                <FiCalendar /> Dòng thời gian
+                <FiClock /> <span>Dòng thời gian</span>
               </button>
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={() => navigate(`/board/${id}/analytics`)}>
-                <FiPieChart /> Thống kê
+                <FiPieChart /> <span>Thống kê</span>
               </button>
               <div className={styles.pickerContainer}>
                 <button 
@@ -329,7 +331,7 @@ function BoardPage() {
                     setShowBackgroundPicker(!showBackgroundPicker);
                   }}
                 >
-                  <FiImage /> Hình nền
+                  <FiImage /> <span>Hình nền</span>
                 </button>
                 {showBackgroundPicker && (
                   <div className={styles.backgroundPickerWrapper} onClick={(e) => e.stopPropagation()}>
@@ -341,7 +343,7 @@ function BoardPage() {
                 )}
               </div>
               <button className="btn btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} onClick={openBoardEditModal}>
-                <FiSettings /> Sửa bảng
+                <FiSettings /> <span>Sửa bảng</span>
               </button>
               <button 
                 className="btn btn-outline" 
@@ -352,21 +354,21 @@ function BoardPage() {
                   setIsSaveAsTemplateModalOpen(true);
                 }}
               >
-                <FiCopy /> Lưu bản mẫu
+                <FiCopy /> <span>Lưu bản mẫu</span>
               </button>
               <button 
                 className="btn btn-outline" 
                 style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
                 onClick={() => setShowArchivedPanel(true)}
               >
-                <FiArchive /> Đã lưu trữ
+                <FiArchive /> <span>Đã lưu trữ</span>
               </button>
               <button 
                 className="btn btn-outline" 
                 style={{ color: '#ff4d4f', borderColor: 'rgba(255,77,79,0.2)' }} 
                 onClick={handleArchiveBoard}
               >
-                <FiArchive /> Lưu trữ bảng
+                <FiArchive /> <span>Ẩn bảng</span>
               </button>
             </div>
           ) : null}

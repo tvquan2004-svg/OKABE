@@ -9,7 +9,7 @@ const MainLayout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className={styles.layout}>
+    <div className={styles.layout} data-sidebar-collapsed={isSidebarCollapsed}>
       <Sidebar 
         isCollapsed={isSidebarCollapsed} 
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 

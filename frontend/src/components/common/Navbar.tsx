@@ -4,6 +4,7 @@ import { FiBell, FiLogOut, FiMenu } from 'react-icons/fi';
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
 import { logout } from '../../features/auth/authSlice';
 import { apiSlice } from '../../services/apiSlice';
+import { useGetBoardQuery } from '../../services/boardApi';
 import { useGetUnreadCountQuery } from '../../services/notificationApi';
 import NotificationDropdown from './NotificationDropdown';
 import styles from './Navbar.module.css';
@@ -41,7 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
 
   const boardIdMatch = location.pathname.match(/\/board\/(\d+)/);
   const boardId = boardIdMatch ? Number(boardIdMatch[1]) : null;
-  const { data: boardData } = apiSlice.endpoints.getBoard.useQuery(boardId as number, { 
+  const { data: boardData } = useGetBoardQuery(boardId as number, { 
     skip: !boardId 
   });
 
