@@ -17,8 +17,8 @@ const MainLayout: React.FC = () => {
         onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
       <div className={styles.mainWrapper}>
-        <Navbar onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
         <main className={styles.content}>
+          <Navbar onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
           <Outlet />
         </main>
       </div>
