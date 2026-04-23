@@ -35,4 +35,11 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 50)
     @Builder.Default
     private String provider = "LOCAL";
+
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "is_2fa_enabled", nullable = false)
+    @Builder.Default
+    private Boolean is2faEnabled = false;
 }

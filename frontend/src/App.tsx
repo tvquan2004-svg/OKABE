@@ -5,6 +5,7 @@ import BoardPage from './pages/BoardPage';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import TwoFactorPage from './pages/TwoFactorPage';
 import WorkspacePage from './pages/WorkspacePage';
 import SettingsPage from './pages/SettingsPage';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
@@ -30,13 +31,11 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+      <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/dashboard" />} />
+      <Route path="/auth/2fa" element={<TwoFactorPage />} />
       <Route
         path="/login"
         element={<LoginRoute isAuthenticated={isAuthenticated} />}
-      />
-      <Route
-        path="/register"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
       />
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
