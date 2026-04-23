@@ -11,7 +11,6 @@ import {
   type CardItem,
   useCreateCardMutation,
   useCreateListMutation,
-  useDeleteCardMutation,
   useDeleteListMutation,
   useGetBoardQuery,
   useUpdateBoardMutation,
@@ -26,7 +25,6 @@ import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart } from '
 import { useSaveAsTemplateMutation } from '../services/templateApi';
 import { 
   useArchiveBoardMutation,
-  useArchiveListMutation,
 } from '../services/boardApi';
 import ArchivedItemsPanel from '../components/board/ArchivedItemsPanel';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
@@ -67,11 +65,9 @@ function BoardPage() {
   const [updateBoard, { isLoading: isUpdatingBoard }] = useUpdateBoardMutation();
   const [createCard] = useCreateCardMutation();
   const [deleteList] = useDeleteListMutation();
-  const [deleteCard] = useDeleteCardMutation();
   const [moveCard] = useMoveCardMutation();
   const [saveAsTemplate, { isLoading: isSavingAsTemplate }] = useSaveAsTemplateMutation();
   const [archiveBoard] = useArchiveBoardMutation();
-  const [archiveList] = useArchiveListMutation();
 
   const [showArchivedPanel, setShowArchivedPanel] = useState(false);
 
@@ -213,20 +209,12 @@ function BoardPage() {
     }
   };
 
-  const handleArchiveList = async (listId: number) => {
-    await archiveList({ id: listId, boardId: id }).unwrap();
-  };
-
   const handleArchiveBoard = async () => {
     if (!board) return;
     if (confirm('Lưu trữ bảng này? Bảng sẽ được chuyển vào mục lưu trữ.')) {
       await archiveBoard(id).unwrap();
       navigate(`/workspace/${board.workspaceId}`);
     }
-  };
-
-  const handleDeleteCard = async (cardId: number) => {
-    await deleteCard({ id: cardId, boardId: id }).unwrap();
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
