@@ -111,7 +111,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public ListResponse archiveList(Long listId, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateAdminAccess(taskList.getBoard(), currentUser.getId());
+        validateWriteAccess(taskList.getBoard(), currentUser.getId());
 
         taskList.setIsArchived(true);
         taskList = taskListRepository.save(taskList);
@@ -133,7 +133,7 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     public ListResponse restoreList(Long listId, UserPrincipal currentUser) {
         TaskList taskList = findListOrThrow(listId);
-        validateAdminAccess(taskList.getBoard(), currentUser.getId());
+        validateWriteAccess(taskList.getBoard(), currentUser.getId());
 
         // Reset position to end
         TaskList lastList = taskListRepository.findTopByBoardIdAndIsArchivedFalseOrderByPositionDesc(taskList.getBoard().getId());

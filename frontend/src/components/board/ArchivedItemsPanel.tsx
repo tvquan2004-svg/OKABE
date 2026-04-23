@@ -38,35 +38,35 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
   const handleRestoreList = async (listId: number) => {
     try {
       await restoreList({ id: listId, boardId }).unwrap();
-    } catch (err) {
-      console.error('Failed to restore list:', err);
+    } catch (err: any) {
+      alert(err.data?.message || 'Không thể khôi phục danh sách');
     }
   };
 
   const handleRestoreCard = async (cardId: number) => {
     try {
       await restoreCard({ id: cardId, boardId }).unwrap();
-    } catch (err) {
-      console.error('Failed to restore card:', err);
+    } catch (err: any) {
+      alert(err.data?.message || 'Không thể khôi phục thẻ');
     }
   };
 
   const handleDeleteList = async (listId: number) => {
-    if (confirm('Permanently delete this list and all its cards? This cannot be undone.')) {
+    if (confirm('Xóa danh sách này vĩnh viễn? Hành động này không thể hoàn tác.')) {
       try {
         await deleteList({ id: listId, boardId }).unwrap();
-      } catch (err) {
-        console.error('Failed to delete list:', err);
+      } catch (err: any) {
+        alert(err.data?.message || 'Không thể xóa danh sách. Có thể bạn không có quyền.');
       }
     }
   };
 
   const handleDeleteCard = async (cardId: number) => {
-    if (confirm('Permanently delete this card? This cannot be undone.')) {
+    if (confirm('Xóa thẻ này vĩnh viễn? Hành động này không thể hoàn tác.')) {
       try {
         await deleteCard({ id: cardId, boardId }).unwrap();
-      } catch (err) {
-        console.error('Failed to delete card:', err);
+      } catch (err: any) {
+        alert(err.data?.message || 'Không thể xóa thẻ. Có thể bạn không có quyền.');
       }
     }
   };

@@ -6,13 +6,14 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiPlus, FiArchive } from 'react-icons/fi';
 import SortableCard from './SortableCard';
 
 interface BoardListColumnProps {
   list: TaskList;
   onEditList: (list: TaskList) => void;
   onDeleteList: (listId: number) => void;
+  onArchiveList: (listId: number) => void;
   onAddCard: (listId: number, title: string) => Promise<void>;
   onCardClick: (card: CardItem) => void;
   priorityColor: (priority: string) => string;
@@ -23,6 +24,7 @@ function BoardListColumn({
   list,
   onEditList,
   onDeleteList,
+  onArchiveList,
   onAddCard,
   onCardClick,
   priorityColor,
@@ -59,6 +61,13 @@ function BoardListColumn({
             title="Sửa danh sách"
           >
             <FiEdit2 size={14} />
+          </button>
+          <button
+            className={styles.columnActionBtn}
+            onClick={() => onArchiveList(list.id)}
+            title="Lưu trữ danh sách"
+          >
+            <FiArchive size={14} />
           </button>
           <button
             className={styles.columnActionBtn}

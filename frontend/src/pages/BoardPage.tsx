@@ -15,6 +15,7 @@ import {
   useGetBoardQuery,
   useUpdateBoardMutation,
   useUpdateListMutation,
+  useArchiveListMutation,
   useSearchCardsQuery,
   useMoveCardMutation,
   useArchiveCardMutation,
@@ -92,6 +93,7 @@ function BoardPage() {
   const [updateBoard, { isLoading: isUpdatingBoard }] = useUpdateBoardMutation();
   const [createCard] = useCreateCardMutation();
   const [deleteList] = useDeleteListMutation();
+  const [archiveList] = useArchiveListMutation();
   const [moveCard] = useMoveCardMutation();
   const [archiveCard] = useArchiveCardMutation();
   const [saveAsTemplate, { isLoading: isSavingAsTemplate }] = useSaveAsTemplateMutation();
@@ -190,21 +192,29 @@ function BoardPage() {
 
   const handleAddList = async () => {
     if (!newListName.trim() || !board) return;
-    await createList({ boardId: id, name: newListName.trim() }).unwrap();
-    setNewListName('');
-    setShowAddList(false);
+    try {
+      await createList({ boardId: id, name: newListName.trim() }).unwrap();
+      setNewListName('');
+      setShowAddList(false);
+    } catch (err: any) {
+      alert(err.data?.message || 'Không thể tạo danh sách mới');
+    }
   };
 
   const handleSaveBoard = async () => {
     if (!board || !boardName.trim()) return;
-    await updateBoard({
-      id,
-      body: {
-        name: boardName.trim(),
-        description: boardDescription.trim() || null,
-      },
-    }).unwrap();
-    setIsEditBoardModalOpen(false);
+    try {
+      await updateBoard({
+        id,
+        body: {
+          name: boardName.trim(),
+          description: boardDescription.trim() || null,
+        },
+      }).unwrap();
+      setIsEditBoardModalOpen(false);
+    } catch (err: any) {
+      alert(err.data?.message || 'Không thể cập nhật bảng');
+    }
   };
 
   const handleSaveAsTemplate = async () => {
@@ -229,29 +239,55 @@ function BoardPage() {
 
   const handleSaveList = async () => {
     if (!editingList || !listName.trim()) return;
-    await updateList({
-      id: editingList.id,
-      boardId: id,
-      body: { name: listName.trim() },
-    }).unwrap();
-    setEditingList(null);
+    try {
+      await updateList({
+        id: editingList.id,
+        boardId: id,
+        body: { name: listName.trim() },
+      }).unwrap();
+      setEditingList(null);
+    } catch (err: any) {
+      alert(err.data?.message || 'Không thể cập nhật danh sách');
+    }
   };
 
   const handleAddCard = async (listId: number, title: string) => {
-    await createCard({ listId, boardId: id, title: title.trim() }).unwrap();
+    try {
+      await createCard({ listId, boardId: id, title: title.trim() }).unwrap();
+    } catch (err: any) {
+      alert(err.data?.message || 'Không thể tạo thẻ mới');
+    }
   };
 
   const handleDeleteList = async (listId: number) => {
     if (confirm('Xóa danh sách này và tất cả thẻ bên trong?')) {
-      await deleteList({ id: listId, boardId: id }).unwrap();
+      try {
+        await deleteList({ id: listId, boardId: id }).unwrap();
+      } catch (err: any) {
+        alert(err.data?.message || 'Không thể xóa danh sách. Có thể bạn không có quyền.');
+      }
+    }
+  };
+
+  const handleArchiveList = async (listId: number) => {
+    if (confirm('Lưu trữ danh sách này? Bạn có thể khôi phục lại từ mục lưu trữ.')) {
+      try {
+        await archiveList({ id: listId, boardId: id }).unwrap();
+      } catch (err: any) {
+        alert(err.data?.message || 'Không thể lưu trữ danh sách. Có thể bạn không có quyền.');
+      }
     }
   };
 
   const handleArchiveBoard = async () => {
     if (!board) return;
     if (confirm('Lưu trữ bảng này? Bảng sẽ được chuyển vào mục lưu trữ.')) {
-      await archiveBoard(id).unwrap();
-      navigate(`/workspace/${board.workspaceId}`);
+      try {
+        await archiveBoard(id).unwrap();
+        navigate(`/workspace/${board.workspaceId}`);
+      } catch (err: any) {
+        alert(err.data?.message || 'Không thể lưu trữ bảng. Có thể bạn không có quyền.');
+      }
     }
   };
 
@@ -464,6 +500,7 @@ function BoardPage() {
               list={list}
               onEditList={handleOpenEditList}
               onDeleteList={(listId) => void handleDeleteList(listId)}
+              onArchiveList={(listId) => void handleArchiveList(listId)}
               onAddCard={handleAddCard}
               onCardClick={setSelectedCard}
               priorityColor={priorityColor}
