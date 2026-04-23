@@ -40,14 +40,14 @@ function BoardListColumn({
     setIsAddingCard(false);
   };
 
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: `list-${list.id}`,
   });
 
   const cardIds = list.cards.map(c => c.id);
 
   return (
-    <div className={styles.column} ref={setNodeRef}>
+    <div className={`${styles.column} ${isOver ? styles.isOver : ''}`} ref={setNodeRef}>
       <div className={styles.columnHeader}>
         <h3>{list.name}</h3>
         <span className={styles.cardCount}>{list.cards.length}</span>

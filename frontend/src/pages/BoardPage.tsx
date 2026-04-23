@@ -36,7 +36,10 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
+import SortableCard from '../components/board/SortableCard';
 
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -107,6 +110,7 @@ function BoardPage() {
   
   // Phase 2: Card Detail Modal State
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+  const [activeCard, setActiveCard] = useState<CardItem | null>(null);
 
   // Effect to handle cardId from URL (for notifications)
   useEffect(() => {
@@ -217,7 +221,17 @@ function BoardPage() {
     }
   };
 
+  const handleDragStart = (event: any) => {
+    const { active } = event;
+    const cardId = Number(active.id);
+    const card = lists.flatMap(l => l.cards).find(c => c.id === cardId);
+    if (card) {
+      setActiveCard(card);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveCard(null);
     const { active, over } = event;
     if (!over) return;
 
@@ -389,6 +403,7 @@ function BoardPage() {
       <DndContext 
         sensors={sensors} 
         collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <div className={styles.kanban}>
@@ -427,6 +442,26 @@ function BoardPage() {
             )}
           </div>
         </div>
+        <DragOverlay dropAnimation={{
+          sideEffects: defaultDropAnimationSideEffects({
+            styles: {
+              active: {
+                opacity: '0.5',
+              },
+            },
+          }),
+        }}>
+          {activeCard ? (
+            <div className={styles.dragOverlayWrapper}>
+              <SortableCard 
+                card={activeCard} 
+                onCardClick={() => {}} 
+                priorityColor={priorityColor} 
+                matchedCardIds={null} 
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
       {isEditBoardModalOpen ? (
