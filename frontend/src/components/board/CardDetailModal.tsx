@@ -38,7 +38,7 @@ import {
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
-import { FiArchive, FiCheckSquare, FiPaperclip, FiTag } from 'react-icons/fi';
+import { FiArchive, FiCheckSquare, FiPaperclip, FiTag, FiClock, FiCalendar } from 'react-icons/fi';
 import CommentSection from './CommentSection';
 import styles from './CardDetailModal.module.css';
 
@@ -63,12 +63,14 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 }) => {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || '');
+  const [startDate, setStartDate] = useState(card.startDate ? card.startDate.slice(0, 16) : '');
   const [dueDate, setDueDate] = useState(card.dueDate ? card.dueDate.slice(0, 16) : '');
   const [newItemContent, setNewItemContent] = useState<{ [key: number]: string }>({});
   const [editingChecklistId, setEditingChecklistId] = useState<number | null>(null);
   const [editingChecklistName, setEditingChecklistName] = useState('');
   const [showMemberPicker, setShowMemberPicker] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAllActivities, setShowAllActivities] = useState(false);
   const [memberSearch, setMemberSearch] = useState('');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -101,6 +103,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   useEffect(() => {
     setTitle(card.title);
     setDescription(card.description || '');
+    setStartDate(card.startDate ? card.startDate.slice(0, 16) : '');
     setDueDate(card.dueDate ? card.dueDate.slice(0, 16) : '');
   }, [card]);
 
@@ -258,6 +261,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
           <button className={styles.quickActionBtn} onClick={() => setShowLabelPicker(!showLabelPicker)}>
             <FiTag /> <span>Nhãn</span>
           </button>
+          <button className={styles.quickActionBtn} onClick={() => setShowDatePicker(!showDatePicker)}>
+            <FiClock /> <span>Ngày</span>
+          </button>
           <button className={styles.quickActionBtn} onClick={handleArchiveCard}>
             <FiArchive /> <span>Lưu trữ</span>
           </button>
@@ -309,18 +315,24 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 </div>
               )}
 
-              {dueDate && (
-                <div className={styles.metaSection}>
-                  <h4 className={styles.metaLabel}>Ngày hết hạn</h4>
-                  <div className={`${styles.dueDateChip} ${new Date(dueDate) < new Date() ? styles.overdue : ''}`}>
-                    {new Date(dueDate).toLocaleString('vi-VN', { 
-                      day: '2-digit', month: '2-digit', year: 'numeric', 
-                      hour: '2-digit', minute: '2-digit' 
-                    })}
-                    {new Date(dueDate) < new Date() ? <span className={styles.badge}>Quá hạn</span> : ''}
-                  </div>
+              <div className={styles.metaSection}>
+                <h4 className={styles.metaLabel}>Ngày</h4>
+                <div 
+                  className={`${styles.dueDateChip} ${dueDate && new Date(dueDate) < new Date() ? styles.overdue : ''}`}
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                >
+                  {dueDate ? (
+                    <>
+                      {startDate && `${new Date(startDate).toLocaleDateString()} - `}
+                      {new Date(dueDate).toLocaleString('vi-VN', { 
+                        day: '2-digit', month: '2-digit', year: 'numeric', 
+                        hour: '2-digit', minute: '2-digit' 
+                      })}
+                      {new Date(dueDate) < new Date() ? <span className={styles.badge}>Quá hạn</span> : ''}
+                    </>
+                  ) : 'Chưa thiết lập ngày'}
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Description Section */}
@@ -517,6 +529,87 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                       {card.members.some(cm => cm.id === m.userId) && <span className={styles.checkMark}>✔</span>}
                     </div>
                   ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDatePicker && (
+          <div className={styles.popover} style={{ top: '150px', left: '400px', width: '320px' }}>
+            <div className={styles.popoverHeader}>
+              <span>Thiết lập thời gian</span>
+              <button onClick={() => setShowDatePicker(false)}><MdClose /></button>
+            </div>
+            <div className={styles.popoverBody}>
+              <div className={styles.datePickerContent}>
+                <div className={styles.dateFieldGroup}>
+                  <label className={styles.metaLabel}>Ngày bắt đầu</label>
+                  <div className={styles.dateInputWrapper}>
+                    <FiCalendar className={styles.dateInputIcon} />
+                    <input 
+                      type="datetime-local" 
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className={styles.customDateInput}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.dateFieldGroup} style={{ marginTop: '16px' }}>
+                  <label className={styles.metaLabel}>Ngày hết hạn</label>
+                  <div className={styles.dateInputWrapper}>
+                    <FiClock className={styles.dateInputIcon} />
+                    <input 
+                      type="datetime-local" 
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className={styles.customDateInput}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.quickSelectGrid}>
+                  <button onClick={() => {
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                    setDueDate(now.toISOString().slice(0, 16));
+                  }}>Hôm nay</button>
+                  <button onClick={() => {
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+                    setDueDate(tomorrow.toISOString().slice(0, 16));
+                  }}>Ngày mai</button>
+                  <button onClick={() => {
+                    const nextWeek = new Date();
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    nextWeek.setMinutes(nextWeek.getMinutes() - nextWeek.getTimezoneOffset());
+                    setDueDate(nextWeek.toISOString().slice(0, 16));
+                  }}>Tuần sau</button>
+                </div>
+              </div>
+
+              <div className={styles.popoverActions} style={{ marginTop: '20px', display: 'flex', gap: '8px' }}>
+                <button 
+                  className={styles.saveBtn} 
+                  style={{ flex: 1, padding: '10px' }}
+                  onClick={() => {
+                    handleUpdateCard({ startDate: startDate || null, dueDate: dueDate || null });
+                    setShowDatePicker(false);
+                  }}
+                >
+                  Lưu thiết lập
+                </button>
+                <button 
+                  className={styles.removeDateBtn}
+                  onClick={() => {
+                    setStartDate('');
+                    setDueDate('');
+                    handleUpdateCard({ startDate: null, dueDate: null });
+                  }}
+                >
+                  Gỡ bỏ
+                </button>
               </div>
             </div>
           </div>

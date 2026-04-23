@@ -295,10 +295,45 @@
 
 .cardCount {
   font-size: 11px;
-  background: var(--color-bg-elevated);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 12px;
   color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.columnActions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.column:hover .columnActions {
+  opacity: 1;
+}
+
+.columnActionBtn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.columnActionBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.columnActionBtn:last-child:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 /* Card List */
@@ -425,6 +460,23 @@
 .badgeItem.completed {
   background: var(--color-success);
   color: white;
+}
+
+.overdueBadge {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.alarmIcon {
+  color: #ef4444;
+  animation: pulseAlarm 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseAlarm {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0)); }
+  50% { transform: scale(1.2); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.8)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0)); }
 }
 
 /* Add Card / Add List */
@@ -602,4 +654,56 @@
 
 .kanban::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
+}
+
+/* Archive Drop Zone */
+.archiveZone {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  height: 80px;
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  color: #94a3b8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideUpIn 0.3s ease-out;
+}
+
+.archiveZoneOver {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+}
+
+.archiveZoneContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.archiveZoneIcon {
+  font-size: 24px;
+  transition: transform 0.2s;
+}
+
+.archiveZoneOver .archiveZoneIcon {
+  transform: translateY(-4px) rotate(10deg);
+}
+
+@keyframes slideUpIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(40px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }

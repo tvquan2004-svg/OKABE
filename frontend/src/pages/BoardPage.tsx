@@ -17,11 +17,12 @@ import {
   useUpdateListMutation,
   useSearchCardsQuery,
   useMoveCardMutation,
+  useArchiveCardMutation,
   type CardSearchParams,
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity, FiTrash2 } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
 import { 
   useArchiveBoardMutation,
@@ -39,8 +40,30 @@ import {
   closestCorners,
   DragOverlay,
   defaultDropAnimationSideEffects,
+  useDroppable,
 } from '@dnd-kit/core';
 import SortableCard from '../components/board/SortableCard';
+
+// Archive Drop Zone Component
+const ArchiveDropZone = ({ isDragging }: { isDragging: boolean }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'archive-zone',
+  });
+
+  if (!isDragging) return null;
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      className={`${styles.archiveZone} ${isOver ? styles.archiveZoneOver : ''}`}
+    >
+      <div className={styles.archiveZoneContent}>
+        <FiTrash2 className={styles.archiveZoneIcon} />
+        <span>Kéo vào đây để lưu trữ thẻ</span>
+      </div>
+    </div>
+  );
+};
 
 function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -70,6 +93,7 @@ function BoardPage() {
   const [createCard] = useCreateCardMutation();
   const [deleteList] = useDeleteListMutation();
   const [moveCard] = useMoveCardMutation();
+  const [archiveCard] = useArchiveCardMutation();
   const [saveAsTemplate, { isLoading: isSavingAsTemplate }] = useSaveAsTemplateMutation();
   const [archiveBoard] = useArchiveBoardMutation();
 
@@ -241,12 +265,22 @@ function BoardPage() {
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveCard(null);
     const { active, over } = event;
+    setActiveCard(null);
     if (!over) return;
 
     const cardId = Number(active.id);
     const overId = over.id.toString();
+
+    // Check if dropped on archive zone
+    if (overId === 'archive-zone') {
+      try {
+        await archiveCard({ id: cardId, boardId: id }).unwrap();
+      } catch (err) {
+        console.error('Failed to archive card:', err);
+      }
+      return;
+    }
 
     // Find target list and position
     let targetListId: number | null = null;
@@ -479,6 +513,7 @@ function BoardPage() {
             </div>
           ) : null}
         </DragOverlay>
+        <ArchiveDropZone isDragging={activeCard !== null} />
       </DndContext>
 
       {isEditBoardModalOpen ? (
