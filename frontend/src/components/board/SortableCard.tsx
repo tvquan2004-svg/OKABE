@@ -29,7 +29,6 @@ const SortableCard: React.FC<SortableCardProps> = ({
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1000 : 1,
   };
 
@@ -51,6 +50,8 @@ const SortableCard: React.FC<SortableCardProps> = ({
       {...attributes}
       {...listeners}
       className={`${styles.card} ${
+        isDragging ? styles.isDragging : ''
+      } ${
         matchedCardIds !== null && !matchedCardIds.includes(card.id) ? styles.dimmed : ''
       }`}
       onClick={() => onCardClick(card)}

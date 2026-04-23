@@ -9,6 +9,29 @@ export interface NotificationPreferences {
 
 export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    getMe: builder.query<UserResponse, void>({
+      query: () => '/users/me',
+      providesTags: ['User'],
+      transformResponse: (response: { data: UserResponse }) => response.data,
+    }),
+    updateProfile: builder.mutation<UserResponse, { username: string; avatarUrl?: string }>({
+      query: (body) => ({
+        url: '/users/me',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['User'],
+      transformResponse: (response: { data: UserResponse }) => response.data,
+    }),
+    uploadAvatar: builder.mutation<UserResponse, FormData>({
+      query: (formData) => ({
+        url: '/users/avatar',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['User'],
+      transformResponse: (response: { data: UserResponse }) => response.data,
+    }),
     getNotificationPreferences: builder.query<NotificationPreferences, void>({
       query: () => '/users/me/notification-preferences',
       providesTags: ['NotificationPreferences'],
@@ -26,7 +49,18 @@ export const userApi = apiSlice.injectEndpoints({
   }),
 });
 
+export interface UserResponse {
+  id: number;
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+  is2faEnabled: boolean;
+}
+
 export const {
+  useGetMeQuery,
+  useUpdateProfileMutation,
+  useUploadAvatarMutation,
   useGetNotificationPreferencesQuery,
   useUpdateNotificationPreferencesMutation,
 } = userApi;

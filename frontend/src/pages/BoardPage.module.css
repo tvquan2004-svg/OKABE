@@ -265,7 +265,14 @@
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 160px);
-  transition: transform var(--transition-base);
+  transition: all var(--transition-base);
+}
+
+.column.isOver {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.2);
+  transform: translateY(-2px);
 }
 
 .columnHeader {
@@ -319,6 +326,25 @@
   transform: translateY(-4px);
   border-color: var(--color-primary);
   box-shadow: var(--shadow-lg);
+}
+
+.card.isDragging {
+  opacity: 0.4;
+  border: 2px dashed var(--color-primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.dragOverlayWrapper {
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.dragOverlayWrapper .card {
+  transform: rotate(3deg) scale(1.05) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+  cursor: grabbing !important;
+  opacity: 1 !important;
+  border-color: var(--color-primary) !important;
 }
 
 .card.dimmed {

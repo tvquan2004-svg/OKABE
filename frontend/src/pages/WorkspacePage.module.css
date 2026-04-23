@@ -134,25 +134,110 @@
 }
 
 .archivedSection {
-  margin-top: var(--spacing-2xl);
-  padding-top: var(--spacing-2xl);
+  margin-top: 4rem;
+  padding-top: 2rem;
   border-top: 1px solid var(--color-border);
 }
 
 .toggleArchivedBtn {
-  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
   font-weight: 600;
-  transition: all var(--transition-fast);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .toggleArchivedBtn:hover {
-  background: var(--color-bg-secondary);
-  border-color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.archivedBoardCard {
+  position: relative;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  height: 140px;
+  transition: all 0.3s ease;
+  filter: grayscale(0.8);
+  opacity: 0.6;
+}
+
+.archivedBoardCard:hover {
+  filter: grayscale(0);
+  opacity: 1;
+  background: rgba(15, 23, 42, 0.6);
+  border-color: var(--board-accent);
+  transform: translateY(-4px);
+}
+
+.archivedContent {
+  padding: var(--spacing-lg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.archivedHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.archiveIcon {
+  color: var(--board-accent);
+  opacity: 0.7;
+}
+
+.archivedHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.archivedActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.archiveActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-secondary);
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.archiveActionBtn:hover {
+  background: var(--color-primary);
+  color: white;
+  border-color: transparent;
+}
+
+.archiveDeleteBtn:hover {
+  background: var(--color-error);
+}
+
+.archiveActionBtn span {
+  font-size: 0.8rem;
 }
 
 @media (max-width: 768px) {

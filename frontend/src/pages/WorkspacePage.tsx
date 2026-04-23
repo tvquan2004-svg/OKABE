@@ -7,7 +7,11 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
+import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff } from 'react-icons/fi';
+import BoardArchiveZone from '../components/workspace/BoardArchiveZone';
 import {
   SortableContext,
   arrayMove,
@@ -55,6 +59,7 @@ function WorkspacePage() {
   const [isEditWorkspaceModalOpen, setIsEditWorkspaceModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState<Board | null>(null);
+  const [activeBoard, setActiveBoard] = useState<Board | null>(null);
   const [boardName, setBoardName] = useState('');
   const [boardDescription, setBoardDescription] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -174,10 +179,35 @@ function WorkspacePage() {
     openEditBoardModal(board);
   };
 
+  const handleDragStart = (event: any) => {
+    const { active } = event;
+    const board = orderedBoards.find(b => b.id === active.id);
+    if (board) setActiveBoard(board);
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
-    if (!canEditBoards || !event.over || event.active.id === event.over.id) {
+    setActiveBoard(null);
+    const { active, over } = event;
+    if (!canEditBoards || !over) {
       return;
     }
+
+    // Handle Drop to Archive Zone
+    if (over.id === 'archive-zone') {
+      const boardId = Number(active.id);
+      try {
+        await updateBoard({
+          id: boardId,
+          body: { isArchived: true }
+        }).unwrap();
+        // Optional: Show a toast notification here
+      } catch (err) {
+        console.error('Failed to archive board:', err);
+      }
+      return;
+    }
+
+    if (active.id === over.id) return;
 
     const oldIndex = orderedBoards.findIndex((board) => board.id === event.active.id);
     const newIndex = orderedBoards.findIndex((board) => board.id === event.over?.id);
@@ -250,7 +280,12 @@ function WorkspacePage() {
             </button>
           </div>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext 
+            sensors={sensors} 
+            collisionDetection={closestCenter} 
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
             <SortableContext
               items={orderedBoards.map((board) => board.id)}
               strategy={rectSortingStrategy}
@@ -269,6 +304,31 @@ function WorkspacePage() {
                 ))}
               </div>
             </SortableContext>
+            
+            <BoardArchiveZone isDragging={!!activeBoard} />
+
+            <DragOverlay dropAnimation={{
+              sideEffects: defaultDropAnimationSideEffects({
+                styles: {
+                  active: {
+                    opacity: '0.5',
+                  },
+                },
+              }),
+            }}>
+              {activeBoard ? (
+                <div style={{ width: '300px', cursor: 'grabbing' }}>
+                  <SortableBoardCard
+                    board={activeBoard}
+                    canManage={false}
+                    canReorder={false}
+                    onOpen={() => {}}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
           </DndContext>
         )}
 
@@ -277,6 +337,7 @@ function WorkspacePage() {
             className={styles.toggleArchivedBtn}
             onClick={() => setShowArchivedBoards(!showArchivedBoards)}
           >
+            {showArchivedBoards ? <FiEyeOff /> : <FiEye />}
             {showArchivedBoards ? 'Ẩn' : 'Hiện'} bảng đã lưu trữ ({archivedBoardsData?.data.length ?? 0})
           </button>
 
@@ -290,25 +351,30 @@ function WorkspacePage() {
                     key={board.id} 
                     className={styles.archivedBoardCard}
                     style={{ 
-                      backgroundImage: board.background?.startsWith('http') ? `url(${board.background})` : 'none',
-                      backgroundColor: board.background?.startsWith('#') ? board.background : '#334155'
-                    }}
+                      '--board-accent': board.background?.startsWith('#') ? board.background : '#6366f1'
+                    } as any}
                   >
-                    <div className={styles.archivedBoardOverlay}>
-                      <h3>{board.name}</h3>
+                    <div className={styles.archivedContent}>
+                      <div className={styles.archivedHeader}>
+                        <FiArchive className={styles.archiveIcon} />
+                        <h3>{board.name}</h3>
+                      </div>
                       <div className={styles.archivedActions}>
                         <button 
-                          className="btn btn-primary btn-sm" 
+                          className={styles.archiveActionBtn} 
                           onClick={(e) => handleRestoreBoard(board.id, e)}
+                          title="Khôi phục bảng"
                         >
-                          Khôi phục
+                          <FiRotateCcw size={16} />
+                          <span>Khôi phục</span>
                         </button>
                         <button 
-                          className="btn btn-outline btn-sm" 
-                          style={{ color: '#ff4d4f', borderColor: '#ff4d4f' }}
+                          className={`${styles.archiveActionBtn} ${styles.archiveDeleteBtn}`}
                           onClick={(e) => handleDeleteBoard(board.id, e)}
+                          title="Xóa vĩnh viễn"
                         >
-                          Xóa
+                          <FiTrash2 size={16} />
+                          <span>Xóa</span>
                         </button>
                       </div>
                     </div>

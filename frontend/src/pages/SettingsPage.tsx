@@ -3,10 +3,11 @@ import { FiBell, FiLock, FiUser, FiArrowLeft, FiChevronRight } from 'react-icons
 import { useNavigate } from 'react-router-dom';
 import NotificationSettings from '../components/settings/NotificationSettings';
 import SecuritySettingsPanel from '../components/settings/SecuritySettingsPanel';
+import ProfileSettings from '../components/settings/ProfileSettings';
 import styles from './SettingsPage.module.css';
 
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = React.useState<'notifications' | 'security'>('notifications');
+  const [activeTab, setActiveTab] = React.useState<'notifications' | 'security' | 'profile'>('profile');
   const navigate = useNavigate();
 
   return (
@@ -50,20 +51,25 @@ const SettingsPage: React.FC = () => {
               <FiChevronRight className={styles.arrowIcon} />
             </button>
 
-            <button className={`${styles.navItem} ${styles.disabled}`} disabled>
+            <button 
+              className={`${styles.navItem} ${activeTab === 'profile' ? styles.active : ''}`}
+              onClick={() => setActiveTab('profile')}
+            >
               <div className={styles.iconWrapper}><FiUser /></div>
               <div className={styles.navLabel}>
                 <span className={styles.navTitle}>Hồ sơ</span>
                 <span className={styles.navDesc}>Thông tin cá nhân</span>
               </div>
-              <span className={styles.badge}>Sắp có</span>
+              <FiChevronRight className={styles.arrowIcon} />
             </button>
           </nav>
         </aside>
         
         <div className={styles.contentArea}>
           <div className={styles.contentCard}>
-            {activeTab === 'notifications' ? <NotificationSettings /> : <SecuritySettingsPanel />}
+            {activeTab === 'notifications' && <NotificationSettings />}
+            {activeTab === 'security' && <SecuritySettingsPanel />}
+            {activeTab === 'profile' && <ProfileSettings onNavigateToSecurity={() => setActiveTab('security')} />}
           </div>
         </div>
       </main>
