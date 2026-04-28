@@ -39,7 +39,8 @@ public class SecurityConfig {
             "/api-docs/**",
             "/v3/api-docs/**",
             "/ws/**",
-            "/api/v1/public/**"
+            "/api/v1/public/**",
+            "/api/v1/admin/test/**"   // Dev-only: trigger scheduled jobs manually
     };
 
     @Bean

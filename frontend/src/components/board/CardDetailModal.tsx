@@ -39,7 +39,7 @@ import {
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
-import { FiArchive, FiCheckSquare, FiPaperclip, FiTag, FiClock, FiCalendar } from 'react-icons/fi';
+import { FiArchive, FiCheckSquare, FiPaperclip, FiTag, FiClock, FiCalendar, FiUsers } from 'react-icons/fi';
 import CommentSection from './CommentSection';
 import styles from './CardDetailModal.module.css';
 
@@ -269,6 +269,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             <button className={styles.quickActionBtn} onClick={() => setShowDatePicker(!showDatePicker)}>
               <FiClock /> <span>Ngày</span>
             </button>
+            <button className={styles.quickActionBtn} onClick={() => setShowMemberPicker(!showMemberPicker)}>
+              <FiUsers /> <span>Thành viên</span>
+            </button>
             <button className={styles.quickActionBtn} onClick={handleArchiveCard}>
               <FiArchive /> <span>Lưu trữ</span>
             </button>
@@ -279,28 +282,34 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
           <main className={styles.mainContent}>
             {/* Metadata Section (Members, Labels, Due Date) */}
             <div className={styles.metadataRow}>
-              {card.members.length > 0 && (
-                <div className={styles.metaSection}>
-                  <h4 className={styles.metaLabel}>Thành viên</h4>
-                  <div className={styles.avatarGroup}>
-                    {card.members.map(member => (
-                      <div 
-                        key={member.id} 
-                        className={styles.avatarCircle} 
-                        title={member.username}
-                        onClick={() => handleUnassignMember(member.id)}
-                      >
-                        {member.avatarUrl ? (
-                          <img src={member.avatarUrl} alt={member.username} />
-                        ) : (
-                          member.username.charAt(0).toUpperCase()
-                        )}
-                      </div>
-                    ))}
-                    {!readOnly && <button className={styles.addMetaBtn} onClick={() => setShowMemberPicker(true)}>+</button>}
-                  </div>
+              <div className={styles.metaSection}>
+                <h4 className={styles.metaLabel}>Thành viên</h4>
+                <div className={styles.avatarGroup}>
+                  {card.members.map(member => (
+                    <div 
+                      key={member.id} 
+                      className={styles.avatarCircle} 
+                      title={`${member.username} (click để gỡ)`}
+                      onClick={() => !readOnly && handleUnassignMember(member.id)}
+                    >
+                      {member.avatarUrl ? (
+                        <img src={member.avatarUrl} alt={member.username} />
+                      ) : (
+                        member.username.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                  ))}
+                  {!readOnly && (
+                    <button
+                      className={styles.addMetaBtn}
+                      onClick={() => setShowMemberPicker(true)}
+                      title="Thêm thành viên"
+                    >
+                      +
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
 
               {card.labels.length > 0 && (
                 <div className={styles.metaSection}>
