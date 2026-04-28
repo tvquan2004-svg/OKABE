@@ -38,16 +38,18 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
   const handleRestoreList = async (listId: number) => {
     try {
       await restoreList({ id: listId, boardId }).unwrap();
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể khôi phục danh sách');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể khôi phục danh sách');
     }
   };
 
   const handleRestoreCard = async (cardId: number) => {
     try {
       await restoreCard({ id: cardId, boardId }).unwrap();
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể khôi phục thẻ');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể khôi phục thẻ');
     }
   };
 
@@ -55,8 +57,9 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
     if (confirm('Xóa danh sách này vĩnh viễn? Hành động này không thể hoàn tác.')) {
       try {
         await deleteList({ id: listId, boardId }).unwrap();
-      } catch (err: any) {
-        alert(err.data?.message || 'Không thể xóa danh sách. Có thể bạn không có quyền.');
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } };
+        alert(e.data?.message || 'Không thể xóa danh sách. Có thể bạn không có quyền.');
       }
     }
   };
@@ -65,8 +68,9 @@ const ArchivedItemsPanel: React.FC<ArchivedItemsPanelProps> = ({ boardId, onClos
     if (confirm('Xóa thẻ này vĩnh viễn? Hành động này không thể hoàn tác.')) {
       try {
         await deleteCard({ id: cardId, boardId }).unwrap();
-      } catch (err: any) {
-        alert(err.data?.message || 'Không thể xóa thẻ. Có thể bạn không có quyền.');
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } };
+        alert(e.data?.message || 'Không thể xóa thẻ. Có thể bạn không có quyền.');
       }
     }
   };

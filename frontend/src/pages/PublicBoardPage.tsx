@@ -47,7 +47,7 @@ function PublicBoardPage() {
     }
   };
 
-  const isImageUrl = board.background?.startsWith('http') || board.background?.startsWith('/api/v1/files/');
+  const isImageUrl = board.background?.startsWith('http') || board.background?.startsWith('/api/v1/files/') || board.background?.startsWith('/backgrounds/');
 
   const containerStyle: React.CSSProperties = {
     backgroundImage: isImageUrl 

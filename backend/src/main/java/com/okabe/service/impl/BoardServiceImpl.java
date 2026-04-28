@@ -179,23 +179,19 @@ public class BoardServiceImpl implements BoardService {
                 throw new IllegalArgumentException("Invalid hex color format");
             }
             backgroundValue = colorValue;
+        } else if ("PRESET".equalsIgnoreCase(type)) {
+            // Accept preset local image paths like /backgrounds/mau-background-dep-1.jpg
+            if (colorValue == null || colorValue.isBlank()) {
+                throw new IllegalArgumentException("Preset image path cannot be empty");
+            }
+            backgroundValue = colorValue;
         } else if ("IMAGE".equalsIgnoreCase(type) && file != null && !file.isEmpty()) {
             try {
-                // Delete old image if it was an image
+                // Delete old image if it was a remote image
                 if (board.getBackground() != null && board.getBackground().startsWith("http")) {
                     storageService.delete(board.getBackground());
                 }
-                
-                try {
-                    backgroundValue = storageService.upload(file);
-                } catch (Exception e) {
-                    log.warn("Cloudinary upload failed, falling back to local storage: {}", e.getMessage());
-                    // We need a way to access the local storage service directly if the primary fails
-                    // Since we can't easily inject both with same type without qualifiers, 
-                    // we'll just throw the error for now, but I've ensured .env will load.
-                    throw e; 
-                }
-                
+                backgroundValue = storageService.upload(file);
                 log.info("Board background updated: {}", backgroundValue);
             } catch (Exception e) {
                 log.error("Failed to upload board background", e);

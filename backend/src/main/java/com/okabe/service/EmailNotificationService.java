@@ -105,6 +105,23 @@ public class EmailNotificationService {
     }
 
     @Async
+    public void sendOverdueEmail(User recipient, String cardTitle, Long boardId, Long cardId, LocalDateTime dueDate) {
+        NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
+        if (!pref.isEmailDueSoon()) return;
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipient.getUsername());
+        vars.put("cardTitle", cardTitle);
+        vars.put("dueDate", dueDate.format(DateTimeFormatter.ofPattern("HH:mm, dd/MM/yyyy")));
+        vars.put("cardUrl", String.format("%s/board/%d?card=%d", appUrl, boardId, cardId));
+
+        sendEmail(recipient.getEmail(),
+                "\u26a0\ufe0f Quá hạn: Thẻ \"" + cardTitle + "\" chưa được hoàn thành",
+                "overdue",
+                vars);
+    }
+
+    @Async
     public void sendEmailVerification(User user, String token) {
         log.info("Preparing email verification for {}", user.getEmail());
         Map<String, Object> vars = new HashMap<>();

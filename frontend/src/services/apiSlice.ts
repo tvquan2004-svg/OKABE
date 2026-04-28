@@ -33,6 +33,17 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: number;
+    email: string;
+    username: string;
+    avatarUrl: string | null;
+  };
+}
+
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -47,7 +58,7 @@ const baseQueryWithReauth: BaseQueryFn<
       
       if (refreshToken) {
         try {
-          const refreshResult: any = await baseQuery(
+          const refreshResult = await baseQuery(
             {
               url: '/auth/refresh',
               method: 'POST',
@@ -58,8 +69,9 @@ const baseQueryWithReauth: BaseQueryFn<
           );
 
           if (refreshResult.data) {
-            const newAccessToken = refreshResult.data.data.accessToken;
-            api.dispatch(setCredentials(refreshResult.data.data));
+            const refreshData = (refreshResult.data as { data: RefreshResponse }).data;
+            const newAccessToken = refreshData.accessToken;
+            api.dispatch(setCredentials(refreshData));
             onTokenRefreshed(newAccessToken);
             isRefreshing = false;
             

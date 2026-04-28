@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header { background-color: #ef4444; padding: 24px 20px; text-align: center; color: #ffffff; }
+        .header-icon { font-size: 40px; margin-bottom: 8px; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        .header p { margin: 6px 0 0 0; font-size: 13px; opacity: 0.85; }
+        .content { padding: 32px 30px; line-height: 1.7; color: #333333; }
+        .greeting { font-size: 16px; margin-bottom: 16px; }
+        .card-box { background: #fff5f5; border-left: 4px solid #ef4444; border-radius: 6px; padding: 14px 18px; margin: 20px 0; }
+        .card-title { font-size: 17px; font-weight: 600; color: #b91c1c; margin-bottom: 6px; }
+        .card-meta { font-size: 13px; color: #6b7280; }
+        .overdue-badge { display: inline-block; background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; }
+        .message { font-size: 15px; color: #4b5563; margin-bottom: 24px; }
+        .btn { display: inline-block; padding: 13px 28px; background-color: #ef4444; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; margin-top: 8px; }
+        .btn:hover { background-color: #dc2626; }
+        .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #f0f0f0; }
+        .footer a { color: #6b7280; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">⚠️</div>
+            <h1>Công việc đã quá hạn!</h1>
+            <p>Hành động ngay để tránh ảnh hưởng đến tiến độ</p>
+        </div>
+        <div class="content">
+            <p class="greeting">Xin chào <strong th:text="${recipientName}">Người dùng</strong>,</p>
+
+            <div class="overdue-badge">🔴 QUÁ HẠN</div>
+
+            <p class="message">Thẻ công việc dưới đây đã <strong>vượt quá thời hạn</strong> mà chưa được hoàn thành. Vui lòng cập nhật trạng thái hoặc điều chỉnh deadline sớm nhất có thể.</p>
+
+            <div class="card-box">
+                <div class="card-title" th:text="${cardTitle}">Tên thẻ công việc</div>
+                <div class="card-meta">
+                    ⏰ Hạn chót đã qua: <strong th:text="${dueDate}">Thời gian</strong>
+                </div>
+            </div>
+
+            <a th:href="${cardUrl}" class="btn">Xem và cập nhật công việc →</a>
+        </div>
+        <div class="footer">
+            <p>Bạn nhận được email này vì bạn là thành viên phụ trách thẻ công việc này trong <strong>OKABE</strong>.</p>
+            <p style="margin-top: 8px;">
+                <a th:href="${cardUrl}">Xem công việc</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

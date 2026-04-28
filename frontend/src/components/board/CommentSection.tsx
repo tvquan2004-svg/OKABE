@@ -118,7 +118,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, re
     }
   };
 
-  const renderContent = (content: string, mentions: any[] = []) => {
+  const renderContent = (content: string, mentions: { username: string }[] = []) => {
     if (!content) return null;
     const mentionUsernames = mentions.map(m => m.username);
     const parts = content.split(/(@[^\s@]+(?:\s+[^\s@]+)*)/g);

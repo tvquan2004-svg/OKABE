@@ -159,6 +159,9 @@ public class CardServiceImpl implements CardService {
             if (!java.util.Objects.equals(newDueDate, card.getDueDate())) {
                 activityService.logActivity(card, user, "UPDATE_CARD", "updated due date");
                 card.setDueDate(newDueDate);
+                // Reset notification flag so scheduler re-notifies for the new due date
+                card.setNotificationSent(false);
+                log.info("Card {} due date changed to {}, notification flag reset", card.getId(), newDueDate);
             }
         }
         if (request.startDate() != null) {
