@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUpdateBoardBackgroundMutation } from '../../services/boardApi';
+import { useUpdateBoardBackgroundMutation, useUpdateBoardMutation } from '../../services/boardApi';
 import { FiUpload } from 'react-icons/fi';
 import styles from './BackgroundPicker.module.css';
 
@@ -33,7 +33,9 @@ const PRESET_IMAGES = [
 const BackgroundPicker: React.FC<BackgroundPickerProps> = ({ boardId, currentBackground }) => {
   const [activeTab, setActiveTab] = useState<'COLORS' | 'PHOTOS'>('COLORS');
   const [customHex, setCustomHex] = useState('');
-  const [updateBackground, { isLoading }] = useUpdateBoardBackgroundMutation();
+  const [updateBackground, { isLoading: isUploading }] = useUpdateBoardBackgroundMutation();
+  const [updateBoard, { isLoading: isSettingPreset }] = useUpdateBoardMutation();
+  const isLoading = isUploading || isSettingPreset;
 
   const handleColorSelect = async (hex: string) => {
     try {
@@ -45,7 +47,9 @@ const BackgroundPicker: React.FC<BackgroundPickerProps> = ({ boardId, currentBac
 
   const handleImageSelect = async (url: string) => {
     try {
-      await updateBackground({ id: boardId, type: 'PRESET', value: url }).unwrap();
+      // Use the standard board update endpoint (no type validation)
+      // This works on both local and production backends
+      await updateBoard({ id: boardId, body: { background: url } }).unwrap();
     } catch (err) {
       console.error('Failed to update background image', err);
     }
