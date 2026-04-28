@@ -27,7 +27,9 @@ const SecuritySettingsPanel = () => {
   const handleStartSetup = async () => {
     try {
       const result = await setup2fa().unwrap();
-      const dataToSet = (result as any).secret ? result : (result as any).data;
+      const dataToSet = (result as { secret?: string; data?: { secret: string; qrCodeUri: string } }).secret
+        ? result as unknown as { secret: string; qrCodeUri: string }
+        : (result as { data: { secret: string; qrCodeUri: string } }).data;
       if (dataToSet && dataToSet.secret) {
         setSetupData(dataToSet);
         setError('');
@@ -47,7 +49,7 @@ const SecuritySettingsPanel = () => {
         code: parseInt(code) 
       }).unwrap();
       
-      const codes = Array.isArray(result) ? result : (result as any).data;
+      const codes = Array.isArray(result) ? result : (result as { data?: string[] }).data;
       
       if (Array.isArray(codes)) {
         setBackupCodes(codes);

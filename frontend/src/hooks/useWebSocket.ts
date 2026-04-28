@@ -7,7 +7,7 @@ import { getBaseUrl as getRootUrl } from '../utils/urlHelper';
 export interface WebSocketMessage {
   type: string;
   boardId?: number;
-  payload: any;
+  payload: unknown;
   actorId?: number;
   timestamp: string;
 }

@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
   DragOverlay,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
@@ -157,8 +158,9 @@ function WorkspacePage() {
         },
       }).unwrap();
       setIsEditWorkspaceModalOpen(false);
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể cập nhật không gian làm việc');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể cập nhật không gian làm việc');
     }
   };
 
@@ -167,8 +169,9 @@ function WorkspacePage() {
     if (confirm('Xóa bảng này vĩnh viễn? Hành động này không thể hoàn tác.')) {
       try {
         await deleteBoard(boardId).unwrap();
-      } catch (err: any) {
-        alert(err.data?.message || 'Không thể xóa bảng. Có thể bạn không có quyền.');
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } };
+        alert(e.data?.message || 'Không thể xóa bảng. Có thể bạn không có quyền.');
       }
     }
   };
@@ -177,8 +180,9 @@ function WorkspacePage() {
     event.stopPropagation();
     try {
       await restoreBoard(boardId).unwrap();
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể khôi phục bảng. Có thể bạn không có quyền.');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể khôi phục bảng. Có thể bạn không có quyền.');
     }
   };
 
@@ -187,7 +191,7 @@ function WorkspacePage() {
     openEditBoardModal(board);
   };
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const board = orderedBoards.find(b => b.id === active.id);
     if (board) setActiveBoard(board);
@@ -360,7 +364,7 @@ function WorkspacePage() {
                     className={styles.archivedBoardCard}
                     style={{ 
                       '--board-accent': board.background?.startsWith('#') ? board.background : '#6366f1'
-                    } as any}
+                    } as React.CSSProperties}
                   >
                     <div className={styles.archivedContent}>
                       <div className={styles.archivedHeader}>

@@ -38,8 +38,9 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
         body: { email: inviteEmail.trim(), role: inviteRole },
       }).unwrap();
       setInviteEmail('');
-    } catch (err: any) {
-      setError(err.data?.message || 'Failed to invite member. Make sure they have an account.');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      setError(e.data?.message || 'Failed to invite member. Make sure they have an account.');
     }
   };
 
@@ -50,8 +51,9 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
         memberId,
         body: { role: newRole },
       }).unwrap();
-    } catch (err: any) {
-      alert(err.data?.message || 'Failed to update role');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Failed to update role');
     }
   };
 
@@ -59,8 +61,9 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
     if (!confirm('Are you sure you want to remove this member?')) return;
     try {
       await removeMember({ workspaceId, memberId }).unwrap();
-    } catch (err: any) {
-      alert(err.data?.message || 'Failed to remove member');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Failed to remove member');
     }
   };
 

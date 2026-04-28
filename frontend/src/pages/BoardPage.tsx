@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useRedux';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -36,6 +36,7 @@ import styles from './BoardPage.module.css';
 import {
   DndContext,
   DragEndEvent,
+  DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
@@ -45,6 +46,7 @@ import {
   useDroppable,
 } from '@dnd-kit/core';
 import SortableCard from '../components/board/SortableCard';
+import type { Label } from '../services/boardApi';
 
 // Archive Drop Zone Component
 const ArchiveDropZone = ({ isDragging }: { isDragging: boolean }) => {
@@ -112,7 +114,7 @@ function BoardPage() {
   );
 
   const board = boardData?.data;
-  const lists = board?.lists ?? [];
+  const lists = useMemo(() => board?.lists ?? [], [board]);
 
   const { data: workspaceData } = useGetWorkspaceQuery(board?.workspaceId ?? 0, {
     skip: !board?.workspaceId,
@@ -180,8 +182,8 @@ function BoardPage() {
   );
 
   const matchedCardIds = searchData?.data?.content.map(c => c.id) ?? null;
-  const isFiltering = Object.keys(filters).some(key => {
-    const val = (filters as any)[key];
+  const isFiltering = (Object.keys(filters) as (keyof CardSearchParams)[]).some(key => {
+    const val = filters[key];
     return val !== undefined && val !== '' && (Array.isArray(val) ? val.length > 0 : true);
   });
 
@@ -198,8 +200,9 @@ function BoardPage() {
       await createList({ boardId: id, name: newListName.trim() }).unwrap();
       setNewListName('');
       setShowAddList(false);
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể tạo danh sách mới');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể tạo danh sách mới');
     }
   };
 
@@ -214,8 +217,9 @@ function BoardPage() {
         },
       }).unwrap();
       setIsEditBoardModalOpen(false);
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể cập nhật bảng');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể cập nhật bảng');
     }
   };
 
@@ -229,8 +233,9 @@ function BoardPage() {
       }).unwrap();
       setIsSaveAsTemplateModalOpen(false);
       alert('Đã lưu bảng thành bản mẫu thành công!');
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể lưu bản mẫu');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể lưu bản mẫu');
     }
   };
 
@@ -248,16 +253,18 @@ function BoardPage() {
         body: { name: listName.trim() },
       }).unwrap();
       setEditingList(null);
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể cập nhật danh sách');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể cập nhật danh sách');
     }
   };
 
   const handleAddCard = async (listId: number, title: string) => {
     try {
       await createCard({ listId, boardId: id, title: title.trim() }).unwrap();
-    } catch (err: any) {
-      alert(err.data?.message || 'Không thể tạo thẻ mới');
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể tạo thẻ mới');
     }
   };
 
@@ -265,8 +272,9 @@ function BoardPage() {
     if (confirm('Xóa danh sách này và tất cả thẻ bên trong?')) {
       try {
         await deleteList({ id: listId, boardId: id }).unwrap();
-      } catch (err: any) {
-        alert(err.data?.message || 'Không thể xóa danh sách. Có thể bạn không có quyền.');
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } };
+        alert(e.data?.message || 'Không thể xóa danh sách. Có thể bạn không có quyền.');
       }
     }
   };
@@ -275,8 +283,9 @@ function BoardPage() {
     if (confirm('Lưu trữ danh sách này? Bạn có thể khôi phục lại từ mục lưu trữ.')) {
       try {
         await archiveList({ id: listId, boardId: id }).unwrap();
-      } catch (err: any) {
-        alert(err.data?.message || 'Không thể lưu trữ danh sách. Có thể bạn không có quyền.');
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } };
+        alert(e.data?.message || 'Không thể lưu trữ danh sách. Có thể bạn không có quyền.');
       }
     }
   };
@@ -287,13 +296,14 @@ function BoardPage() {
       try {
         await archiveBoard(id).unwrap();
         navigate(`/workspace/${board.workspaceId}`);
-      } catch (err: any) {
-        alert(err.data?.message || 'Không thể lưu trữ bảng. Có thể bạn không có quyền.');
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } };
+        alert(e.data?.message || 'Không thể lưu trữ bảng. Có thể bạn không có quyền.');
       }
     }
   };
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const cardId = Number(active.id);
     const card = lists.flatMap(l => l.cards).find(c => c.id === cardId);
@@ -486,7 +496,7 @@ function BoardPage() {
       </header>
 
       <BoardFilter 
-        labels={board.lists?.flatMap(l => l.cards).flatMap(c => c.labels).reduce((acc: any[], curr) => acc.find(x => x.id === curr.id) ? acc : [...acc, curr], []) ?? []}
+        labels={board.lists?.flatMap(l => l.cards).flatMap(c => c.labels).reduce((acc: Label[], curr) => acc.find(x => x.id === curr.id) ? acc : [...acc, curr], []) ?? []}
         members={membersData?.data.map(m => ({
           id: m.userId,
           username: m.username,

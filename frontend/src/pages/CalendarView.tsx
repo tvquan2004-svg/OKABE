@@ -65,6 +65,10 @@ const CalendarView: React.FC = () => {
     return board?.lists?.flatMap(l => l.cards) ?? [];
   }, [board]);
 
+  const allLabels = useMemo(() => {
+    return board?.lists?.flatMap(l => l.cards).flatMap(c => c.labels) ?? [];
+  }, [board]);
+
   const filteredCards = useMemo(() => {
     return allCards.filter(card => {
       if (!card.dueDate) return false;
@@ -176,7 +180,7 @@ const CalendarView: React.FC = () => {
       {showFilters && (
         <div className={styles.filterBar}>
           <BoardFilter 
-            labels={board.lists?.flatMap(l => l.cards).flatMap(c => c.labels).reduce((acc: any[], curr) => acc.find(x => x.id === curr.id) ? acc : [...acc, curr], []) ?? []}
+            labels={allLabels.reduce((acc: typeof allLabels, curr) => acc.find(x => x.id === curr.id) ? acc : [...acc, curr], [])}
             members={membersData?.data.map(m => ({
               id: m.userId,
               username: m.username,

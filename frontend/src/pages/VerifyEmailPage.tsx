@@ -14,7 +14,7 @@ const VerifyEmailPage: React.FC = () => {
   const getMessage = () => {
     if (!token) return 'Invalid or missing verification token.';
     if (error) {
-      const err = error as any;
+      const err = error as { data?: { message?: string } };
       return err.data?.message || 'Verification failed. The link may have expired or is invalid.';
     }
     return data?.message || 'Email verified successfully! You can now log in.';

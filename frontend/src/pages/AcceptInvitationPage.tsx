@@ -17,9 +17,10 @@ const AcceptInvitationPage: React.FC = () => {
       await acceptInvitation(token!).unwrap();
       console.log('Invitation accepted successfully!');
       navigate('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to accept invitation:', err);
-      const msg = err.data?.message || 'Failed to accept invitation. It may have expired or is invalid.';
+      const e = err as { data?: { message?: string } };
+      const msg = e.data?.message || 'Failed to accept invitation. It may have expired or is invalid.';
       setError(msg);
     }
   }, [token, acceptInvitation, navigate]);
