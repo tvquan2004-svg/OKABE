@@ -18,12 +18,16 @@ const PRESET_COLORS = [
 ];
 
 const PRESET_IMAGES = [
-  'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1434725039720-abb26e22ebe8?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80',
+  { url: '/backgrounds/mau-background-dep-1.jpg',  label: 'Núi rừng 1' },
+  { url: '/backgrounds/mau-background-dep-2.jpg',  label: 'Núi rừng 2' },
+  { url: '/backgrounds/mau-background-dep-4.jpg',  label: 'Thiên nhiên 1' },
+  { url: '/backgrounds/mau-background-dep-5.jpg',  label: 'Thiên nhiên 2' },
+  { url: '/backgrounds/mau-background-dep-6.jpg',  label: 'Phong cảnh 1' },
+  { url: '/backgrounds/mau-background-dep-7.jpg',  label: 'Phong cảnh 2' },
+  { url: '/backgrounds/mau-background-dep-8.jpg',  label: 'Phong cảnh 3' },
+  { url: '/backgrounds/mau-background-dep-9.jpg',  label: 'Phong cảnh 4' },
+  { url: '/backgrounds/mau-background-dep-10.jpg', label: 'Phong cảnh 5' },
+  { url: '/backgrounds/mau-background-dep-11.jpg', label: 'Phong cảnh 6' },
 ];
 
 const BackgroundPicker: React.FC<BackgroundPickerProps> = ({ boardId, currentBackground }) => {
@@ -41,8 +45,7 @@ const BackgroundPicker: React.FC<BackgroundPickerProps> = ({ boardId, currentBac
 
   const handleImageSelect = async (url: string) => {
     try {
-      // Use COLOR type for preset URLs as they are just strings
-      await updateBackground({ id: boardId, type: 'COLOR', value: url }).unwrap();
+      await updateBackground({ id: boardId, type: 'PRESET', value: url }).unwrap();
     } catch (err) {
       console.error('Failed to update background image', err);
     }
@@ -108,12 +111,13 @@ const BackgroundPicker: React.FC<BackgroundPickerProps> = ({ boardId, currentBac
       ) : (
         <>
           <div className={styles.grid}>
-            {PRESET_IMAGES.map(url => (
+            {PRESET_IMAGES.map(img => (
               <div 
-                key={url}
-                className={`${styles.imageItem} ${currentBackground === url ? styles.activeItem : ''}`}
-                style={{ backgroundImage: `url(${url})` }}
-                onClick={() => handleImageSelect(url)}
+                key={img.url}
+                className={`${styles.imageItem} ${currentBackground === img.url ? styles.activeItem : ''}`}
+                style={{ backgroundImage: `url(${img.url})` }}
+                title={img.label}
+                onClick={() => handleImageSelect(img.url)}
               />
             ))}
           </div>

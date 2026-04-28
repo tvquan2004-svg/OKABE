@@ -318,7 +318,7 @@ export const boardApi = apiSlice.injectEndpoints({
       },
       providesTags: (_r, _e, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
-    updateBoardBackground: builder.mutation<ApiRes<Board>, { id: number; type: 'COLOR' | 'IMAGE'; value?: string; file?: File }>({
+    updateBoardBackground: builder.mutation<ApiRes<Board>, { id: number; type: 'COLOR' | 'IMAGE' | 'PRESET'; value?: string; file?: File }>({
       query: ({ id, type, value, file }) => {
         const formData = new FormData();
         formData.append('type', type);
