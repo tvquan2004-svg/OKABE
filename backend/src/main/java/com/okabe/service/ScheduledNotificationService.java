@@ -22,10 +22,10 @@ public class ScheduledNotificationService {
     private final NotificationService notificationService;
 
     /**
-     * Runs every hour to check for cards due within the next 24 hours and send email + in-app notifications.
-     * Uses notificationSent flag to prevent duplicate notifications.
+     * Runs every minute to check for cards due within the next 24 hours and send email + in-app notifications.
+     * Uses notificationSent flag to prevent duplicate notifications (each card only notified once per due date).
      */
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 * * * * *")  // Every minute
     @Transactional
     public void checkCardsDueSoon() {
         log.info("[Scheduler] Starting due-date notification check...");
@@ -100,17 +100,17 @@ public class ScheduledNotificationService {
                     recipient.getId(), cardId, e.getMessage());
         }
 
-        // Email notification (async, will respect user preferences internally)
+        // Email notification — use different template based on type
         try {
-            emailNotificationService.sendDueSoonEmail(
-                    recipient,
-                    card.getTitle(),
-                    boardId,
-                    cardId,
-                    card.getDueDate()
-            );
+            if ("CARD_OVERDUE".equals(type)) {
+                emailNotificationService.sendOverdueEmail(
+                        recipient, card.getTitle(), boardId, cardId, card.getDueDate());
+            } else {
+                emailNotificationService.sendDueSoonEmail(
+                        recipient, card.getTitle(), boardId, cardId, card.getDueDate());
+            }
         } catch (Exception e) {
-            log.error("[Scheduler] Failed to queue email notification for user {} on card {}: {}",
+            log.error("[Scheduler] Failed to queue email for user {} on card {}: {}",
                     recipient.getId(), cardId, e.getMessage());
         }
     }
