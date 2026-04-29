@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- ══════════════════════════════════════════════════
+         OKABE Backend — Logback Configuration
+         Console: ngắn gọn, có màu
+         File:    logs/error.log (rolling, 30 ngày)
+    ══════════════════════════════════════════════════ -->
+
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="okabe"/>
+    <springProperty scope="context" name="PROFILE"  source="spring.profiles.active"  defaultValue="default"/>
+
+    <!-- ── Color shortcuts ───────────────────────────── -->
+    <conversionRule conversionWord="clr"
+                    converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+
+    <!-- ══════════════════════════════════════════════════
+         CONSOLE APPENDER — ngắn gọn, màu sắc
+    ══════════════════════════════════════════════════ -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--
+                %ex{8} = chỉ hiện 8 dòng stacktrace đầu tiên, còn lại "... N more"
+                Full stacktrace vẫn được lưu trong logs/error.log
+            -->
+            <pattern>%clr(%d{HH:mm:ss.SSS}){faint} %clr([%15.15t]){faint} %clr(%-5level){highlight} %clr(%-35.35logger{35}){cyan} - %msg%n%ex{8}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ══════════════════════════════════════════════════
+         ERROR FILE APPENDER — rolling, 30 ngày
+         Path: logs/error.log
+    ══════════════════════════════════════════════════ -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n%ex</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ══════════════════════════════════════════════════
+         PROFILE: dev — verbose business, silent framework
+    ══════════════════════════════════════════════════ -->
+    <springProfile name="dev,default">
+
+        <!-- Framework: im lặng hoàn toàn -->
+        <logger name="org.springframework"          level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="org.springframework.security" level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="org.hibernate"                level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="org.hibernate.SQL"            level="OFF"   additivity="false"/>
+        <logger name="org.hibernate.orm.jdbc.bind"  level="OFF"   additivity="false"/>
+        <logger name="org.flywaydb"                 level="INFO"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="org.apache"                   level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="org.apache.catalina.startup"  level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="com.zaxxer.hikari"            level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="io.lettuce"                   level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+        <logger name="io.netty"                     level="WARN"  additivity="false"><appender-ref ref="CONSOLE"/></logger>
+
+        <!-- Business: INFO + lưu WARN+ ra file -->
+        <logger name="com.okabe" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+
+        <!-- Gemini debug: thấy mọi API call -->
+        <logger name="com.okabe.service.GeminiProvider" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- ══════════════════════════════════════════════════
+         PROFILE: prod — chỉ WARN+, không DEBUG
+    ══════════════════════════════════════════════════ -->
+    <springProfile name="prod">
+        <logger name="com.okabe" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>

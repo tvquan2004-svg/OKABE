@@ -12,7 +12,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
 
   data:
     redis:
@@ -42,10 +42,6 @@ app:
   mail:
     from: ${SPRING_MAIL_USERNAME:noreply@okabe.com}
 
-# Logging
-logging:
-  level:
-    com.okabe: DEBUG
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+# Logging: handled by logback-spring.xml + application.yml
+# show-sql=false kills Hibernate: stdout (bypasses logback)
+# Do NOT re-enable DEBUG here unless debugging specific issues

@@ -88,6 +88,11 @@ app:
     api-secret: ${CLOUDINARY_API_SECRET:}
   storage:
     type: ${APP_STORAGE_TYPE:local}
+  ai:
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      model: ${GROQ_MODEL:llama-3.3-70b-versatile}
+      max-tokens: ${AI_MAX_TOKENS:1000}
 
 # Springdoc / Swagger
 springdoc:
@@ -99,9 +104,18 @@ springdoc:
     operations-sorter: alpha
 # Logging Configuration
 logging:
+  config: classpath:logback-spring.xml
   level:
-    com.okabe.security: DEBUG
-    com.okabe.scheduler: DEBUG
-    com.okabe.service.ScheduledNotificationService: DEBUG
-    com.okabe.service.EmailNotificationService: DEBUG
-    org.springframework.security: DEBUG
+    # Business logic
+    com.okabe: INFO
+    com.okabe.service.GeminiProvider: DEBUG
+    com.okabe.service.AiContextBuilder: WARN
+    # Framework: WARN only (no spam)
+    org.springframework: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.orm.jdbc.bind: OFF
+    org.flywaydb: WARN
+    org.apache: WARN
+    com.zaxxer.hikari: WARN
