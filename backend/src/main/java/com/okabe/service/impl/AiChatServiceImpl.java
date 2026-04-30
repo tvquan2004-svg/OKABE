@@ -15,6 +15,7 @@ import com.okabe.repository.UserRepository;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.AiChatService;
 import com.okabe.service.AiContextBuilder;
+import com.okabe.service.AiActionExecutor;
 import com.okabe.service.GeminiProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,13 +43,39 @@ public class AiChatServiceImpl implements AiChatService {
             
             %s
             
-            Hướng dẫn CỰC KỲ QUAN TRỌNG:
-            - Bạn là trợ lý CHỈ ĐỌC (Read-Only). Bạn KHÔNG THỂ thực hiện các hành động như: tạo thẻ (card), xóa, sửa, di chuyển thẻ hay mời thành viên.
-            - Nếu người dùng yêu cầu bạn tạo một công việc hay làm một hành động thay đổi dữ liệu, BẠN PHẢI TỪ CHỐI một cách lịch sự, giải thích rằng bạn hiện tại chỉ có chức năng phân tích/đọc dữ liệu, và hướng dẫn họ tự làm trên giao diện web.
-            - KHÔNG BAO GIỜ được nói dối rằng bạn "đã tạo" hay "đã thực hiện" một thao tác nào đó.
+            Hướng dẫn QUAN TRỌNG:
             - Luôn trả lời bằng TIẾNG VIỆT, ngắn gọn và rõ ràng.
             - Không bịa đặt thông tin không có trong dữ liệu context.
-            - Sử dụng emoji phù hợp để làm câu trả lời sinh động hơn.
+            - Bạn CÓ THỂ thao tác dữ liệu (Tạo thẻ, Chuyển cột, Giao việc) bằng cách TRẢ VỀ CHUỖI JSON ĐẶC BIỆT ở cuối câu trả lời theo đúng định dạng sau (chỉ dùng khi người dùng yêu cầu):
+            
+            Để tạo card mới:
+            [ACTION]
+            {
+              "type": "CREATE_CARD",
+              "title": "Tên card cần tạo",
+              "listName": "Tên cột (ví dụ: To-do, Doing)"
+            }
+            [/ACTION]
+            
+            Để di chuyển card:
+            [ACTION]
+            {
+              "type": "MOVE_CARD",
+              "cardTitle": "Tên card hiện tại",
+              "targetList": "Tên cột đích"
+            }
+            [/ACTION]
+            
+            Để gán thành viên:
+            [ACTION]
+            {
+              "type": "ASSIGN_MEMBER",
+              "cardTitle": "Tên card",
+              "memberName": "Tên username của thành viên"
+            }
+            [/ACTION]
+            
+            CHỈ tạo block [ACTION] khi bạn chắc chắn có đủ thông tin (tên card, tên cột đích). Nếu thiếu, hãy hỏi lại người dùng.
             """;
 
     private final AiConversationRepository conversationRepository;
@@ -56,6 +83,7 @@ public class AiChatServiceImpl implements AiChatService {
     private final UserRepository userRepository;
     private final GeminiProvider geminiProvider;
     private final AiContextBuilder contextBuilder;
+    private final AiActionExecutor actionExecutor;
 
     @Override
     @Transactional
@@ -116,15 +144,9 @@ public class AiChatServiceImpl implements AiChatService {
         List<Map<String, String>> history = buildMessageHistory(conversation.getId());
 
         // 5. Call Gemini API
-        String reply;
-        try {
-            reply = geminiProvider.generateContent(systemPrompt, history);
-        } catch (Exception e) {
-            log.error("Gemini call failed for user {}: {}", currentUser.getId(), e.getMessage());
-            reply = "Xin lỗi, tôi đang gặp sự cố kết nối. Vui lòng thử lại sau một chút! 🔧";
-        }
+        String reply = geminiProvider.generateContent(systemPrompt, history);
 
-        // 6. Save assistant reply
+        // 6. Save assistant message
         AiMessage assistantMessage = AiMessage.builder()
                 .conversation(conversation)
                 .role(MessageRole.ASSISTANT)
@@ -132,8 +154,10 @@ public class AiChatServiceImpl implements AiChatService {
                 .build();
         messageRepository.save(assistantMessage);
 
-        // 7. Update conversation title if first exchange
         updateConversationTitleIfNeeded(conversation, request.message());
+        
+        // 7. Process Actions if any
+        actionExecutor.processActions(reply, request.boardId(), currentUser);
 
         return ChatResponse.builder()
                 .conversationId(conversation.getId())
@@ -184,6 +208,9 @@ public class AiChatServiceImpl implements AiChatService {
                                 .build();
                         messageRepository.save(assistantMessage);
                         updateConversationTitleIfNeeded(conversation, request.message());
+                        
+                        // 7. Process Actions if any
+                        actionExecutor.processActions(completeText, request.boardId(), currentUser);
                     });
         } catch (Exception e) {
             log.error("Stream failed for user {}: {}", currentUser.getId(), e.getMessage());
