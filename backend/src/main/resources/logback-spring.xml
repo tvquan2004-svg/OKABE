@@ -92,11 +92,9 @@
     <springProfile name="prod">
         <logger name="com.okabe" level="INFO" additivity="false">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="ERROR_FILE"/>
         </logger>
         <root level="WARN">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="ERROR_FILE"/>
         </root>
     </springProfile>
 
