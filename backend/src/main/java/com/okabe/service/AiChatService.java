@@ -31,6 +31,13 @@ public interface AiChatService {
     ChatResponse sendMessage(ChatRequest request, UserPrincipal currentUser);
 
     /**
+     * Streams the AI reply using SSE — calls onToken for each chunk.
+     * Returns the conversation ID (created if new).
+     */
+    Long streamMessage(ChatRequest request, UserPrincipal currentUser,
+                       java.util.function.Consumer<String> onToken);
+
+    /**
      * Deletes a conversation and all its messages.
      */
     void deleteConversation(Long conversationId, UserPrincipal currentUser);

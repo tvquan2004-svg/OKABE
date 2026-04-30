@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAiChat } from '../../hooks/useAiChat';
+import { useAiChatStream } from '../../hooks/useAiChatStream';
+import { MarkdownMessage } from './MarkdownMessage';
 import styles from './AiChatWidget.module.css';
 
 const QUICK_PROMPTS: Record<string, string[]> = {
@@ -25,7 +26,7 @@ export default function AiChatWidget() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const location = useLocation();
 
-  const { messages, isLoading, sendMessage, clearConversation } = useAiChat();
+  const { messages, isLoading, sendMessage, clearConversation } = useAiChatStream();
 
   const getQuickPrompts = useCallback((): string[] => {
     if (location.pathname.includes('/board/')) return QUICK_PROMPTS.board ?? [];
@@ -140,11 +141,22 @@ export default function AiChatWidget() {
               {msg.role === 'ASSISTANT' && (
                 <div className={styles.messageAvatar}>🤖</div>
               )}
-              <div className={styles.bubble2}>
-                {msg.isLoading ? (
+              <div className={`${styles.bubble2} ${msg.role === 'ASSISTANT' ? styles.bubble2Ai : ''}`}>
+                {msg.isLoading && !msg.content ? (
                   <TypingIndicator />
                 ) : (
-                  <span className={styles.messageContent}>{msg.content}</span>
+                  <>
+                    <MarkdownMessage content={msg.content} />
+                    {msg.role === 'ASSISTANT' && !msg.isLoading && (
+                      <button 
+                        className={styles.copyBtn}
+                        onClick={() => navigator.clipboard.writeText(msg.content)}
+                        title="Copy"
+                      >
+                        📋
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -249,6 +249,27 @@
   border-radius: 4px 18px 18px 18px;
 }
 
+.bubble2Ai {
+  position: relative;
+  padding-right: 32px; /* make space for copy btn */
+}
+
+.copyBtn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.4;
+  font-size: 14px;
+  transition: opacity 0.2s ease;
+}
+
+.copyBtn:hover {
+  opacity: 1;
+}
+
 .messageContent {
   white-space: pre-wrap;
 }
@@ -403,6 +424,72 @@
   }
 }
 
+/* ── Markdown Styles ──────────────────────────── */
+.mdContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mdParagraph {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mdHeading1, .mdHeading2, .mdHeading3 {
+  margin: 10px 0 4px 0;
+  font-weight: 600;
+  color: inherit;
+}
+
+.mdHeading1 { font-size: 1.15em; }
+.mdHeading2 { font-size: 1.1em; }
+.mdHeading3 { font-size: 1.05em; }
+
+.mdListItem, .mdListItemNum {
+  margin-left: 16px;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.mdListItem::before {
+  content: '•';
+  position: absolute;
+  left: -12px;
+  color: currentColor;
+  opacity: 0.7;
+}
+
+.mdNum {
+  margin-right: 4px;
+  font-weight: 500;
+}
+
+.mdEmptyLine {
+  height: 8px;
+}
+
+.mdInlineCode {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9em;
+  color: #c026d3;
+}
+
+.mdCodeBlock {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 10px 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+  margin: 4px 0;
+}
+
 /* ── Dark Mode ────────────────────────────────── */
 [data-theme='dark'] .panel {
   background: rgba(30, 41, 59, 0.97);
@@ -431,4 +518,9 @@
 [data-theme='dark'] .quickPrompt {
   background: rgba(79, 70, 229, 0.15);
   border-color: rgba(79, 70, 229, 0.3);
+}
+
+[data-theme='dark'] .mdInlineCode {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e879f9;
 }

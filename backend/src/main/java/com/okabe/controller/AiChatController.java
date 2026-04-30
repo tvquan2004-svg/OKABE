@@ -11,12 +11,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 @RestController
 @RequestMapping("/api/v1/ai")
@@ -64,6 +71,48 @@ public class AiChatController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
                 aiChatService.sendMessage(request, currentUser)));
+    }
+
+    @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "Stream AI reply token by token via SSE")
+    public SseEmitter streamMessage(
+            @Valid @RequestBody ChatRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+
+        SseEmitter emitter = new SseEmitter(120_000L); // 2 min timeout
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
+            try {
+                Long conversationId = aiChatService.streamMessage(request, currentUser, token -> {
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("token")
+                                .data(token));
+                    } catch (IOException e) {
+                        emitter.completeWithError(e);
+                    }
+                });
+
+                // Send conversation ID as final event
+                emitter.send(SseEmitter.event()
+                        .name("done")
+                        .data(conversationId));
+                emitter.complete();
+
+            } catch (Exception e) {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("error")
+                            .data("Lỗi kết nối AI"));
+                } catch (IOException ignored) {}
+                emitter.completeWithError(e);
+            } finally {
+                executor.shutdown();
+            }
+        });
+
+        return emitter;
     }
 
     @DeleteMapping("/conversations/{conversationId}")

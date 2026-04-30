@@ -42,9 +42,11 @@ public class AiChatServiceImpl implements AiChatService {
             
             %s
             
-            Hướng dẫn:
+            Hướng dẫn CỰC KỲ QUAN TRỌNG:
+            - Bạn là trợ lý CHỈ ĐỌC (Read-Only). Bạn KHÔNG THỂ thực hiện các hành động như: tạo thẻ (card), xóa, sửa, di chuyển thẻ hay mời thành viên.
+            - Nếu người dùng yêu cầu bạn tạo một công việc hay làm một hành động thay đổi dữ liệu, BẠN PHẢI TỪ CHỐI một cách lịch sự, giải thích rằng bạn hiện tại chỉ có chức năng phân tích/đọc dữ liệu, và hướng dẫn họ tự làm trên giao diện web.
+            - KHÔNG BAO GIỜ được nói dối rằng bạn "đã tạo" hay "đã thực hiện" một thao tác nào đó.
             - Luôn trả lời bằng TIẾNG VIỆT, ngắn gọn và rõ ràng.
-            - Nếu không có dữ liệu, hãy nói thật và gợi ý cách tạo tasks mới.
             - Không bịa đặt thông tin không có trong dữ liệu context.
             - Sử dụng emoji phù hợp để làm câu trả lời sinh động hơn.
             """;
@@ -139,6 +141,57 @@ public class AiChatServiceImpl implements AiChatService {
                 .reply(reply)
                 .createdAt(assistantMessage.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public Long streamMessage(ChatRequest request, UserPrincipal currentUser,
+                              java.util.function.Consumer<String> onToken) {
+        // 1. Get or create conversation
+        AiConversation conversation = resolveConversation(request, currentUser);
+
+        // 2. Save user message
+        AiMessage userMessage = AiMessage.builder()
+                .conversation(conversation)
+                .role(MessageRole.USER)
+                .content(request.message())
+                .build();
+        messageRepository.saveAndFlush(userMessage);
+
+        // 3. Build system prompt with context
+        String contextData = contextBuilder.buildContext(
+                currentUser.getId(), request.boardId(), request.workspaceId());
+        String systemPrompt = String.format(SYSTEM_PROMPT_TEMPLATE,
+                currentUser.getUsername(), contextData);
+
+        // 4. Build messages history
+        List<Map<String, String>> history = buildMessageHistory(conversation.getId());
+
+        // 5. Stream from Groq API
+        StringBuilder fullReply = new StringBuilder();
+        try {
+            geminiProvider.streamContent(systemPrompt, history,
+                    token -> {
+                        onToken.accept(token);
+                        fullReply.append(token);
+                    },
+                    completeText -> {
+                        // 6. Save complete reply after stream ends
+                        AiMessage assistantMessage = AiMessage.builder()
+                                .conversation(conversation)
+                                .role(MessageRole.ASSISTANT)
+                                .content(completeText)
+                                .build();
+                        messageRepository.save(assistantMessage);
+                        updateConversationTitleIfNeeded(conversation, request.message());
+                    });
+        } catch (Exception e) {
+            log.error("Stream failed for user {}: {}", currentUser.getId(), e.getMessage());
+            String errorMsg = "Xin lỗi, tôi đang gặp sự cố. Vui lòng thử lại! 🔧";
+            onToken.accept(errorMsg);
+        }
+
+        return conversation.getId();
     }
 
     @Override
