@@ -8,14 +8,14 @@ interface MarkdownMessageProps {
 
 export function MarkdownMessage({ content }: MarkdownMessageProps) {
   // Trích xuất các action blocks
-  const actions: any[] = [];
+  const actions: Record<string, unknown>[] = [];
   const actionRegex = /\[ACTION\]([\s\S]*?)\[\/ACTION\]/g;
   let match;
   while ((match = actionRegex.exec(content)) !== null) {
     try {
       const actionObj = JSON.parse(match[1] || '{}');
       actions.push(actionObj);
-    } catch (e) {
+    } catch (_e) {
       // Bỏ qua lỗi parse JSON khi đang stream dở
     }
   }
@@ -36,6 +36,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
             ul: ({ ...props }) => <ul className={styles.mdList} {...props} />,
             ol: ({ ...props }) => <ol className={styles.mdListNum} {...props} />,
             li: ({ ...props }) => <li className={styles.mdListItem} {...props} />,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             code: ({ inline, ...props }: any) => 
               inline ? (
                 <code className={styles.mdInlineCode} {...props} />

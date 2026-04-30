@@ -137,8 +137,8 @@ export function useAiChatStream(): UseAiChatStreamReturn {
           }
         }
       }
-    } catch (e: any) {
-      const errorText = e.message === '429' 
+    } catch (e: unknown) {
+      const errorText = e instanceof Error && e.message === '429' 
         ? '⏳ AI đang bận (Rate limit), vui lòng thử lại sau.' 
         : '❌ Xin lỗi, đã có lỗi kết nối xảy ra. Vui lòng thử lại!';
       
