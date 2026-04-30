@@ -6,9 +6,18 @@ interface MarkdownMessageProps {
   content: string;
 }
 
+interface AiAction {
+  type?: string;
+  title?: string;
+  listName?: string;
+  cardTitle?: string;
+  targetList?: string;
+  memberName?: string;
+}
+
 export function MarkdownMessage({ content }: MarkdownMessageProps) {
   // Trích xuất các action blocks
-  const actions: Record<string, unknown>[] = [];
+  const actions: AiAction[] = [];
   const actionRegex = /\[ACTION\]([\s\S]*?)\[\/ACTION\]/g;
   let match;
   while ((match = actionRegex.exec(content)) !== null) {
