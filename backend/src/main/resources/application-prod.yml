@@ -32,7 +32,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     open-in-view: false
     properties:
@@ -49,3 +49,14 @@ app:
   url: ${APP_URL}
   jwt:
     secret: ${JWT_SECRET}
+
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME}
+    api-key: ${CLOUDINARY_API_KEY}
+    api-secret: ${CLOUDINARY_API_SECRET}
+  storage:
+    type: ${APP_STORAGE_TYPE:cloudinary}
+  ai:
+    groq:
+      api-key: ${GROQ_API_KEY}
+      model: ${GROQ_MODEL:llama-3.3-70b-versatile}
