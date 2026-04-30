@@ -74,7 +74,8 @@ export function useAiChatStream(): UseAiChatStreamReturn {
 
     try {
       const token = localStorage.getItem('okabe_access_token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/ai/chat/stream`, {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+      const response = await fetch(`${baseUrl}/ai/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
