@@ -20,5 +20,9 @@ COPY --from=builder /app/target/*.jar app.jar
 RUN chown okabe:okabe app.jar
 USER okabe
 
+# Render sử dụng biến môi trường PORT, chúng ta cấu hình để Spring Boot nhận port này
+ENV SERVER_PORT=8080
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
+
+# Cấu hình RAM (Xmx384m) để không bị crash trên gói Free của Render
+ENTRYPOINT ["java", "-Xmx384m", "-Xms384m", "-jar", "app.jar", "--spring.profiles.active=prod"]
