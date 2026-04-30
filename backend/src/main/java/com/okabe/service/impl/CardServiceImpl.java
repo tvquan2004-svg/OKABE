@@ -553,6 +553,9 @@ public class CardServiceImpl implements CardService {
             card.getTaskList().getBoard().getName()
         );
         
+        CardResponse response = toCardResponse(card);
+        webSocketService.broadcastToBoard(card.getTaskList().getBoard().getId(), "CARD_UPDATED", response, currentUser.getId());
+        
         log.info("Member {} assigned to card {}", userId, cardId);
     }
 
@@ -567,6 +570,10 @@ public class CardServiceImpl implements CardService {
 
         card.getMembers().remove(user);
         cardRepository.save(card);
+        
+        CardResponse response = toCardResponse(card);
+        webSocketService.broadcastToBoard(card.getTaskList().getBoard().getId(), "CARD_UPDATED", response, currentUser.getId());
+        
         log.info("User {} unassigned from card {}", userId, cardId);
     }
 
