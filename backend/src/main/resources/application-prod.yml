@@ -4,6 +4,8 @@
 
 spring:
   datasource:
+    # Aiven MySQL: SPRING_DATASOURCE_URL phải có dạng:
+    # jdbc:mysql://<host>:<port>/<db>?ssl-mode=REQUIRED&allowPublicKeyRetrieval=true&serverTimezone=UTC
     url: ${SPRING_DATASOURCE_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -14,6 +16,12 @@ spring:
       max-lifetime: 1200000
       connection-timeout: 30000
       pool-name: OkabeHikariCP
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
   mail:
     host: ${SPRING_MAIL_HOST:smtp.gmail.com}
