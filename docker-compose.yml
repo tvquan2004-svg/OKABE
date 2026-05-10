@@ -85,7 +85,7 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
 
-      APP_URL: http://localhost:5173
+      APP_URL: ${APP_URL:-http://localhost:5173}
 
       JWT_SECRET: your_very_strong_and_long_jwt_secret_key_here
 
