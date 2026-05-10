@@ -1,17 +1,25 @@
 # Build stage
 FROM node:20-alpine AS builder
+
 WORKDIR /app
+
 COPY package.json package-lock.json ./
+
 RUN npm ci
+
 COPY . .
+
+# Fix permission for binaries
+RUN chmod -R +x node_modules/.bin
+
 RUN npm run build
 
 # Serve stage
 FROM nginx:alpine
 
-# Copy the pre-built dist folder from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]
