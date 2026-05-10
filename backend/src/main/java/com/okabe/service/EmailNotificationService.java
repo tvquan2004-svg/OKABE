@@ -47,6 +47,19 @@ public class EmailNotificationService {
     }
 
     @Async
+    public void sendWorkspaceAddedEmail(User inviter, User recipient, String workspaceName, Long workspaceId) {
+        log.info("Preparing workspace added email for {} (workspace: {})", recipient.getEmail(), workspaceName);
+        
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("recipientName", recipient.getUsername());
+        vars.put("inviterName", inviter.getUsername());
+        vars.put("workspaceName", workspaceName);
+        vars.put("workspaceUrl", appUrl + "/workspace/" + workspaceId);
+
+        sendEmail(recipient.getEmail(), "Bạn đã được thêm vào không gian làm việc: " + workspaceName, "workspace-added", vars);
+    }
+
+    @Async
     public void sendBoardInvitationEmail(User inviter, User recipient, String boardName, Long boardId) {
         NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
         if (!pref.isEmailInvited()) return;
@@ -144,8 +157,10 @@ public class EmailNotificationService {
 
             mailSender.send(message);
             log.info("Email sent to {} with template {}", to, templateName);
-        } catch (MessagingException e) {
-            log.error("Failed to send email to {}: {}", to, e.getMessage());
+        } catch (Exception e) {
+            log.error("CRITICAL: Failed to send email to {}. Error type: {}, Message: {}", 
+                to, e.getClass().getName(), e.getMessage());
+            e.printStackTrace();
         }
     }
 }

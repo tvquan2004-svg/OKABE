@@ -177,6 +177,13 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             String.format("%s đã thêm bạn vào không gian làm việc: %s", actor.getUsername(), workspace.getName())
         );
 
+        emailNotificationService.sendWorkspaceAddedEmail(
+            actor,
+            userToAdd,
+            workspace.getName(),
+            workspaceId
+        );
+
         log.info("User {} added directly to workspace {} by {}", request.email(), workspaceId, currentUser.getEmail());
         return toMemberResponse(member);
     }
