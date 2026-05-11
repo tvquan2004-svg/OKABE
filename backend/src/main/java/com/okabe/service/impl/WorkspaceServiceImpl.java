@@ -191,14 +191,17 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Override
     @Transactional
     public void inviteMember(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser) {
+        log.info("[SERVICE] inviteMember triggered for workspace: {}, email: {}", workspaceId, request.email());
         validateAdminAccess(workspaceId, currentUser.getId());
         Workspace workspace = findWorkspaceOrThrow(workspaceId);
 
         if (memberRepository.existsByWorkspaceIdAndEmail(workspaceId, request.email())) {
+            log.warn("[SERVICE] User {} is already a member of workspace {}", request.email(), workspaceId);
             throw new DuplicateResourceException("User is already a member");
         }
 
         if (invitationRepository.existsByWorkspaceIdAndEmailAndStatus(workspaceId, request.email(), "PENDING")) {
+            log.warn("[SERVICE] Invitation already pending for {} in workspace {}", request.email(), workspaceId);
             throw new DuplicateResourceException("An invitation is already pending for this email");
         }
 
@@ -214,14 +217,15 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .build();
 
         invitationRepository.save(invitation);
+        log.info("[SERVICE] Invitation saved to DB, token: {}", token);
 
         User inviter = userRepository.findById(currentUser.getId()).orElseThrow();
         
-        // Find if user already exists to get their name
         String recipientName = userRepository.findByEmail(request.email())
                 .map(User::getUsername)
                 .orElse("there");
 
+        log.info("[SERVICE] Calling emailNotificationService.sendWorkspaceInvitationEmail synchronously...");
         emailNotificationService.sendWorkspaceInvitationEmail(
             inviter,
             request.email(),
@@ -229,8 +233,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             workspace.getName(),
             token
         );
-
-        log.info("Invitation sent to {} for workspace {}", request.email(), workspaceId);
+        log.info("[SERVICE] emailNotificationService.sendWorkspaceInvitationEmail call finished.");
     }
 
     @Override
