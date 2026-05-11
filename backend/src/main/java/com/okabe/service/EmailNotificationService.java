@@ -32,18 +32,24 @@ public class EmailNotificationService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        log.info("EmailNotificationService initialized with App URL: {} and From Email: {}", appUrl, fromEmail);
+    }
+
     @Async
     public void sendWorkspaceInvitationEmail(User inviter, String recipientEmail, String recipientName, String workspaceName, String token) {
-        log.info("Preparing workspace invitation email for {} (workspace: {})", recipientEmail, workspaceName);
+        String invitationUrl = appUrl + "/invitations/accept?token=" + token;
+        log.info("[DEBUG-EMAIL] Preparing invitation: recipient={}, inviter={}, workspace={}, url={}", 
+            recipientEmail, inviter.getUsername(), workspaceName, invitationUrl);
         
         Map<String, Object> vars = new HashMap<>();
         vars.put("recipientName", recipientName);
         vars.put("inviterName", inviter.getUsername());
         vars.put("workspaceName", workspaceName);
-        vars.put("invitationUrl", appUrl + "/invitations/accept?token=" + token);
+        vars.put("invitationUrl", invitationUrl);
 
         sendEmail(recipientEmail, "Lời mời tham gia không gian làm việc: " + workspaceName, "workspace-invitation", vars);
-        log.info("Invitation email sent to queue for {}", recipientEmail);
     }
 
     @Async
@@ -145,21 +151,30 @@ public class EmailNotificationService {
     }
 
     private void sendEmail(String to, String subject, String templateName, Map<String, Object> variables) {
+        log.info("[DEBUG-EMAIL] Starting sendEmail to: {}, subject: {}, template: {}", to, subject, templateName);
         try {
             String htmlContent = templateService.render(templateName, variables);
+            log.info("[DEBUG-EMAIL] Template rendered successfully, length: {}", htmlContent.length());
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromEmail != null && !fromEmail.isEmpty() ? fromEmail : "noreply@okabe.com");
+            String sender = (fromEmail != null && !fromEmail.isEmpty()) ? fromEmail : "noreply@okabe.com";
+            helper.setFrom(sender);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
+            log.info("[DEBUG-EMAIL] Attempting to send MimeMessage from: {} to: {}", sender, to);
             mailSender.send(message);
-            log.info("Email sent to {} with template {}", to, templateName);
+            log.info("[SUCCESS-EMAIL] Email sent successfully to {}", to);
         } catch (Exception e) {
-            log.error("CRITICAL: Failed to send email to {}. Error type: {}, Message: {}", 
-                to, e.getClass().getName(), e.getMessage());
+            log.error("[ERROR-EMAIL] FAILED to send email to {}.", to);
+            log.error("[ERROR-EMAIL] Exception type: {}", e.getClass().getName());
+            log.error("[ERROR-EMAIL] Exception message: {}", e.getMessage());
+            if (e.getCause() != null) {
+                log.error("[ERROR-EMAIL] Root cause: {}", e.getCause().getMessage());
+            }
             e.printStackTrace();
         }
     }
