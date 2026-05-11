@@ -7,9 +7,9 @@ services:
 
     environment:
       MYSQL_DATABASE: okabe_db
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_USER: ${MYSQL_USER:-okabe}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-123456}
 
     ports:
       - "3306:3306"
@@ -40,18 +40,6 @@ services:
     networks:
       - okabe-net
 
-  # --- MailHog (Email Testing) ---
-  mailhog:
-    image: mailhog/mailhog
-    container_name: okabe-mailhog
-    restart: unless-stopped
-
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-
-    networks:
-      - okabe-net
 
   # --- Spring Boot Backend ---
   backend:
@@ -69,21 +57,21 @@ services:
       SPRING_PROFILES_ACTIVE: prod
 
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/okabe_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: password
-      DB_USERNAME: user
-      DB_PASSWORD: password
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-okabe}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-123456}
+      DB_USERNAME: ${DB_USERNAME:-okabe}
+      DB_PASSWORD: ${DB_PASSWORD:-123456}
 
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
 
-      # MailHog
-      SPRING_MAIL_HOST: mailhog
-      SPRING_MAIL_PORT: 1025
-      SPRING_MAIL_USERNAME: ""
-      SPRING_MAIL_PASSWORD: ""
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      # Email Configuration (Uses Gmail if not specified)
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-smtp.gmail.com}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SPRING_MAIL_AUTH:-true}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_STARTTLS:-true}
 
       APP_URL: ${APP_URL:-http://localhost:5173}
 
@@ -94,9 +82,6 @@ services:
         condition: service_healthy
 
       redis:
-        condition: service_started
-
-      mailhog:
         condition: service_started
 
     networks:

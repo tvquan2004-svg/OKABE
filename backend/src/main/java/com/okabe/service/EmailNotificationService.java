@@ -39,15 +39,13 @@ public class EmailNotificationService {
 
     @Async
     public void sendWorkspaceInvitationEmail(User inviter, String recipientEmail, String recipientName, String workspaceName, String token) {
-        String invitationUrl = appUrl + "/invitations/accept?token=" + token;
-        log.info("[DEBUG-EMAIL] Preparing invitation: recipient={}, inviter={}, workspace={}, url={}", 
-            recipientEmail, inviter.getUsername(), workspaceName, invitationUrl);
+        log.info("Preparing workspace invitation email for {} (workspace: {})", recipientEmail, workspaceName);
         
         Map<String, Object> vars = new HashMap<>();
         vars.put("recipientName", recipientName);
         vars.put("inviterName", inviter.getUsername());
         vars.put("workspaceName", workspaceName);
-        vars.put("invitationUrl", invitationUrl);
+        vars.put("invitationUrl", appUrl + "/invitations/accept?token=" + token);
 
         sendEmail(recipientEmail, "Lời mời tham gia không gian làm việc: " + workspaceName, "workspace-invitation", vars);
     }
@@ -151,11 +149,8 @@ public class EmailNotificationService {
     }
 
     private void sendEmail(String to, String subject, String templateName, Map<String, Object> variables) {
-        log.info("[DEBUG-EMAIL] Starting sendEmail to: {}, subject: {}, template: {}", to, subject, templateName);
         try {
             String htmlContent = templateService.render(templateName, variables);
-            log.info("[DEBUG-EMAIL] Template rendered successfully, length: {}", htmlContent.length());
-            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -165,16 +160,11 @@ public class EmailNotificationService {
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
-            log.info("[DEBUG-EMAIL] Attempting to send MimeMessage from: {} to: {}", sender, to);
             mailSender.send(message);
-            log.info("[SUCCESS-EMAIL] Email sent successfully to {}", to);
+            log.info("Email sent to {} with template {}", to, templateName);
         } catch (Exception e) {
-            log.error("[ERROR-EMAIL] FAILED to send email to {}.", to);
-            log.error("[ERROR-EMAIL] Exception type: {}", e.getClass().getName());
-            log.error("[ERROR-EMAIL] Exception message: {}", e.getMessage());
-            if (e.getCause() != null) {
-                log.error("[ERROR-EMAIL] Root cause: {}", e.getCause().getMessage());
-            }
+            log.error("CRITICAL: Failed to send email to {}. Error type: {}, Message: {}", 
+                to, e.getClass().getName(), e.getMessage());
             e.printStackTrace();
         }
     }
