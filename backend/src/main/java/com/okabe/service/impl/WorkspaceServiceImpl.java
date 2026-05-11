@@ -230,7 +230,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             token
         );
 
-        log.info("Invitation sent to {} for workspace {}", request.email(), workspaceId);
+        log.info("[DEBUG-WORKSPACE] Invitation trigger success for email: {} in workspace: {}", request.email(), workspaceId);
     }
 
     @Override
