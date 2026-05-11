@@ -119,6 +119,7 @@ public class WorkspaceController {
             @PathVariable Long id,
             @Valid @RequestBody com.okabe.dto.request.AddWorkspaceMemberRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
+        System.out.println("[CONTROLLER] inviteMember called for workspace " + id + " email " + request.email());
         workspaceService.inviteMember(id, request, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation sent successfully"));
     }

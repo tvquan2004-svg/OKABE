@@ -34,12 +34,12 @@ public class EmailNotificationService {
 
     @jakarta.annotation.PostConstruct
     public void init() {
-        log.info("EmailNotificationService initialized with App URL: {} and From Email: {}", appUrl, fromEmail);
+        log.info("[EMAIL-INIT] App URL: {}, From Email: {}", appUrl, fromEmail);
     }
 
-    @Async
+    // @Async  <-- Temporarily disabled for debugging
     public void sendWorkspaceInvitationEmail(User inviter, String recipientEmail, String recipientName, String workspaceName, String token) {
-        log.info("Preparing workspace invitation email for {} (workspace: {})", recipientEmail, workspaceName);
+        log.info("[EMAIL] sendWorkspaceInvitationEmail called for: {}", recipientEmail);
         
         Map<String, Object> vars = new HashMap<>();
         vars.put("recipientName", recipientName);
@@ -47,6 +47,7 @@ public class EmailNotificationService {
         vars.put("workspaceName", workspaceName);
         vars.put("invitationUrl", appUrl + "/invitations/accept?token=" + token);
 
+        log.info("[EMAIL] Variables: {}", vars);
         sendEmail(recipientEmail, "Lời mời tham gia không gian làm việc: " + workspaceName, "workspace-invitation", vars);
     }
 
@@ -149,22 +150,31 @@ public class EmailNotificationService {
     }
 
     private void sendEmail(String to, String subject, String templateName, Map<String, Object> variables) {
+        log.info("[EMAIL] Attempting to send email to: {} | Subject: {} | Template: {}", to, subject, templateName);
         try {
             String htmlContent = templateService.render(templateName, variables);
+            log.info("[EMAIL] Template rendered. Content length: {}", htmlContent.length());
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             String sender = (fromEmail != null && !fromEmail.isEmpty()) ? fromEmail : "noreply@okabe.com";
+            log.info("[EMAIL] Using sender address: {}", sender);
+            
             helper.setFrom(sender);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
+            log.info("[EMAIL] Calling mailSender.send()...");
             mailSender.send(message);
-            log.info("Email sent to {} with template {}", to, templateName);
+            log.info("[EMAIL] SUCCESS: Email sent to {}", to);
         } catch (Exception e) {
-            log.error("CRITICAL: Failed to send email to {}. Error type: {}, Message: {}", 
-                to, e.getClass().getName(), e.getMessage());
+            log.error("[EMAIL] ERROR: Failed to send email to {}.", to);
+            log.error("[EMAIL] Exception: {} | Message: {}", e.getClass().getName(), e.getMessage());
+            if (e.getCause() != null) {
+                log.error("[EMAIL] Cause: {}", e.getCause().getMessage());
+            }
             e.printStackTrace();
         }
     }
