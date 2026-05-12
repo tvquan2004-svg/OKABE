@@ -4,19 +4,19 @@
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:okabe_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:okabe_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.H2Dialect}
     show-sql: true
 
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
 
   data:
@@ -28,3 +28,7 @@ logging:
   level:
     com.okabe: DEBUG
     org.hibernate.SQL: DEBUG
+
+app:
+  email:
+    provider: smtp

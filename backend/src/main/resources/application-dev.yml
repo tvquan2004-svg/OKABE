@@ -39,6 +39,11 @@ spring:
 
 app:
   url: ${APP_URL:http://localhost:5173}
+  email:
+    provider: ${EMAIL_PROVIDER:smtp}
+    from: ${MAIL_FROM:${SPRING_MAIL_USERNAME:noreply@okabe.com}}
+    resend:
+      api-key: ${RESEND_API_KEY:}
   mail:
     from: ${SPRING_MAIL_USERNAME:noreply@okabe.com}
 

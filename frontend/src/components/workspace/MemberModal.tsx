@@ -40,7 +40,7 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
       setInviteEmail('');
     } catch (err: unknown) {
       const e = err as { data?: { message?: string } };
-      setError(e.data?.message || 'Failed to invite member. Make sure they have an account.');
+      setError(e.data?.message || 'Không thể gửi lời mời. Vui lòng kiểm tra lại email hoặc thử lại sau.');
     }
   };
 
@@ -53,17 +53,17 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
       }).unwrap();
     } catch (err: unknown) {
       const e = err as { data?: { message?: string } };
-      alert(e.data?.message || 'Failed to update role');
+      alert(e.data?.message || 'Không thể cập nhật vai trò.');
     }
   };
 
   const handleRemove = async (memberId: number) => {
-    if (!confirm('Are you sure you want to remove this member?')) return;
+    if (!confirm('Bạn có chắc muốn xóa thành viên này khỏi workspace?')) return;
     try {
       await removeMember({ workspaceId, memberId }).unwrap();
     } catch (err: unknown) {
       const e = err as { data?: { message?: string } };
-      alert(e.data?.message || 'Failed to remove member');
+      alert(e.data?.message || 'Không thể xóa thành viên.');
     }
   };
 
@@ -80,20 +80,20 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2>Workspace Members</h2>
+          <h2>Thành viên workspace</h2>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>
         </div>
 
         <div className={styles.modalBody}>
           {canManage && (
             <div className={styles.inviteSection}>
-              <h3>Invite Member</h3>
+              <h3>Mời thành viên</h3>
               <form className={styles.inviteForm} onSubmit={handleInvite}>
                 <div className={styles.inputGroup}>
                   <input
                     type="email"
                     className={styles.inviteInput}
-                    placeholder="Enter email address"
+                    placeholder="Nhập địa chỉ email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     required
@@ -105,11 +105,11 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
                 >
-                  <option value="ADMIN">Admin</option>
-                  <option value="MEMBER">Member</option>
+                  <option value="ADMIN">Quản trị viên</option>
+                  <option value="MEMBER">Thành viên</option>
                 </select>
                 <button type="submit" className="btn btn-primary" disabled={isInviting}>
-                  {isInviting ? 'Inviting...' : 'Invite'}
+                  {isInviting ? 'Đang mời...' : 'Gửi lời mời'}
                 </button>
               </form>
             </div>
@@ -117,11 +117,11 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
 
           <div className={styles.memberListSection}>
             <h3>
-              Current Members <span className={styles.memberCount}>{members.length}</span>
+              Thành viên hiện tại <span className={styles.memberCount}>{members.length}</span>
             </h3>
             
             {isLoadingMembers ? (
-              <div className={styles.loadingOverlay}>Loading members...</div>
+              <div className={styles.loadingOverlay}>Đang tải thành viên...</div>
             ) : (
               <div className={styles.memberList}>
                 {members.map((member: WorkspaceMember) => (
@@ -144,20 +144,19 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
                       {canManage && member.role !== 'OWNER' ? (
                         <>
                           <select
-                            className={styles.roleSelect}
-                            style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
+                            className={`${styles.roleSelect} ${styles.memberRoleSelect}`}
                             value={member.role}
                             onChange={(e) => handleRoleChange(member.userId, e.target.value)}
                           >
-                            <option value="ADMIN">Admin</option>
-                            <option value="MEMBER">Member</option>
+                            <option value="ADMIN">Quản trị viên</option>
+                            <option value="MEMBER">Thành viên</option>
                           </select>
                           <button
                             className={`${styles.actionBtn} ${styles.removeBtn}`}
                             onClick={() => handleRemove(member.userId)}
-                            title="Remove member"
+                            title="Xóa thành viên"
                           >
-                            Remove
+                            Xóa
                           </button>
                         </>
                       ) : (

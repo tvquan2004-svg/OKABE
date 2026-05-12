@@ -122,6 +122,11 @@
   color: #fff;
 }
 
+.memberRoleSelect {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+}
+
 .memberListSection h3 {
   font-size: 1rem;
   margin-bottom: 1rem;

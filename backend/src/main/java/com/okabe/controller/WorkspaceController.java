@@ -113,17 +113,6 @@ public class WorkspaceController {
         return ResponseEntity.ok(ApiResponse.success(null, "Member removed successfully"));
     }
 
-    @PostMapping("/{id}/invite")
-    @Operation(summary = "Invite a member to workspace (ADMIN/OWNER only)")
-    public ResponseEntity<ApiResponse<Void>> inviteMember(
-            @PathVariable Long id,
-            @Valid @RequestBody com.okabe.dto.request.AddWorkspaceMemberRequest request,
-            @AuthenticationPrincipal UserPrincipal currentUser) {
-        System.out.println("[CONTROLLER] inviteMember called for workspace " + id + " email " + request.email());
-        workspaceService.inviteMember(id, request, currentUser);
-        return ResponseEntity.ok(ApiResponse.success(null, "Invitation sent successfully"));
-    }
-
     @PostMapping("/invitations/accept")
     @Operation(summary = "Accept a workspace invitation")
     public ResponseEntity<ApiResponse<Void>> acceptInvitation(
