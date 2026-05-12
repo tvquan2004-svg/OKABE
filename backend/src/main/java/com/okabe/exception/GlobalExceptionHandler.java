@@ -55,6 +55,14 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage(), "UNAUTHORIZED"));
     }
 
+    @ExceptionHandler(EmailDeliveryException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEmailDelivery(EmailDeliveryException ex) {
+        log.error("Email delivery failed: {}", ex.getMessage(), ex);
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(ApiResponse.error("Không thể gửi email lời mời. Vui lòng kiểm tra cấu hình email production.", "EMAIL_DELIVERY_FAILED"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex, HttpServletRequest request) {
         log.error("Unexpected error at {}: {}", request.getRequestURI(), ex.getMessage(), ex);

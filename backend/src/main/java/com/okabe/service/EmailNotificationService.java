@@ -2,13 +2,10 @@ package com.okabe.service;
 
 import com.okabe.entity.NotificationPreference;
 import com.okabe.entity.User;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.okabe.exception.EmailDeliveryException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -22,22 +19,21 @@ import java.util.Map;
 @Slf4j
 public class EmailNotificationService {
 
-    private final JavaMailSender mailSender;
+    private final EmailDeliveryService emailDeliveryService;
     private final EmailTemplateService templateService;
     private final NotificationPreferenceService preferenceService;
 
     @Value("${app.url}")
     private String appUrl;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    @Value("${app.email.provider:smtp}")
+    private String emailProvider;
 
     @jakarta.annotation.PostConstruct
     public void init() {
-        log.info("[EMAIL-INIT] App URL: {}, From Email: {}", appUrl, fromEmail);
+        log.info("[EMAIL-INIT] App URL: {}, Provider: {}", appUrl, emailProvider);
     }
 
-    // @Async  <-- Temporarily disabled for debugging
     public void sendWorkspaceInvitationEmail(User inviter, String recipientEmail, String recipientName, String workspaceName, String token) {
         log.info("[EMAIL] sendWorkspaceInvitationEmail called for: {}", recipientEmail);
         
@@ -51,7 +47,6 @@ public class EmailNotificationService {
         sendEmail(recipientEmail, "Lời mời tham gia không gian làm việc: " + workspaceName, "workspace-invitation", vars);
     }
 
-    @Async
     public void sendWorkspaceAddedEmail(User inviter, User recipient, String workspaceName, Long workspaceId) {
         log.info("Preparing workspace added email for {} (workspace: {})", recipient.getEmail(), workspaceName);
         
@@ -64,7 +59,6 @@ public class EmailNotificationService {
         sendEmail(recipient.getEmail(), "Bạn đã được thêm vào không gian làm việc: " + workspaceName, "workspace-added", vars);
     }
 
-    @Async
     public void sendBoardInvitationEmail(User inviter, User recipient, String boardName, Long boardId) {
         NotificationPreference pref = preferenceService.getPreferences(recipient.getId());
         if (!pref.isEmailInvited()) return;
@@ -155,27 +149,15 @@ public class EmailNotificationService {
             String htmlContent = templateService.render(templateName, variables);
             log.info("[EMAIL] Template rendered. Content length: {}", htmlContent.length());
             
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            String sender = (fromEmail != null && !fromEmail.isEmpty()) ? fromEmail : "noreply@okabe.com";
-            log.info("[EMAIL] Using sender address: {}", sender);
-            
-            helper.setFrom(sender);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-
-            log.info("[EMAIL] Calling mailSender.send()...");
-            mailSender.send(message);
+            emailDeliveryService.sendHtmlEmail(to, subject, htmlContent);
             log.info("[EMAIL] SUCCESS: Email sent to {}", to);
         } catch (Exception e) {
-            log.error("[EMAIL] ERROR: Failed to send email to {}.", to);
-            log.error("[EMAIL] Exception: {} | Message: {}", e.getClass().getName(), e.getMessage());
+            log.error("[EMAIL] ERROR: Failed to send email to {}. Exception: {} | Message: {}",
+                    to, e.getClass().getName(), e.getMessage(), e);
             if (e.getCause() != null) {
                 log.error("[EMAIL] Cause: {}", e.getCause().getMessage());
             }
-            e.printStackTrace();
+            throw new EmailDeliveryException("Failed to send email to " + to, e);
         }
     }
 }
