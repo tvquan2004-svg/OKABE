@@ -34,6 +34,12 @@ export interface SubtaskSuggestion {
   estimatedHours: number;
 }
 
+export interface PrioritySuggestion {
+  suggestedPriority: string;
+  score: number;
+  reason: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;

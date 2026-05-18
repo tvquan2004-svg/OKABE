@@ -39,7 +39,8 @@ import {
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
-import { useBreakdownTaskMutation } from '../../services/aiApi';
+import { useBreakdownTaskMutation, useSuggestPriorityMutation } from '../../services/aiApi';
+import type { PrioritySuggestion } from '../../types/ai.types';
 import { FiArchive, FiCheckSquare, FiPaperclip, FiTag, FiClock, FiCalendar, FiUsers } from 'react-icons/fi';
 import CommentSection from './CommentSection';
 import styles from './CardDetailModal.module.css';
@@ -63,6 +64,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   boardId,
   workspaceId,
   onClose,
+  priorityColor,
   readOnly = false,
 }) => {
   const [title, setTitle] = useState(card.title);
@@ -95,6 +97,10 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [deleteAttachment] = useDeleteAttachmentMutation();
   const [archiveCard] = useArchiveCardMutation();
   const [breakdownTask] = useBreakdownTaskMutation();
+  const [suggestPriority] = useSuggestPriorityMutation();
+
+  const [aiPrioritySuggestion, setAiPrioritySuggestion] = useState<PrioritySuggestion | null>(null);
+  const [aiPriorityLoading, setAiPriorityLoading] = useState(false);
   
   const { data: activitiesRes } = useGetCardActivitiesQuery(card.id);
   const activities = activitiesRes?.data || [];
@@ -111,6 +117,30 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     setStartDate(card.startDate ? card.startDate.slice(0, 16) : '');
     setDueDate(card.dueDate ? card.dueDate.slice(0, 16) : '');
   }, [card]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAiPriorityLoading(true);
+    suggestPriority({ cardId: card.id })
+      .unwrap()
+      .then(res => {
+        if (cancelled) return;
+        const suggestion = res?.data;
+        if (!suggestion) return;
+        setAiPrioritySuggestion(suggestion);
+        const isDefaultPriority = !card.priority || card.priority === 'MEDIUM';
+        if (isDefaultPriority && suggestion.suggestedPriority !== 'MEDIUM') {
+          handleUpdateCard({ priority: suggestion.suggestedPriority });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAiPrioritySuggestion(null);
+      })
+      .finally(() => {
+        if (!cancelled) setAiPriorityLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [card.id]);
 
   const handleUpdateCard = async (body: Partial<CardItem>) => {
     await updateCard({ id: card.id, boardId, body }).unwrap();
@@ -316,8 +346,30 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
         <div className={styles.contentGrid}>
           <main className={styles.mainContent}>
-            {/* Metadata Section (Members, Labels, Due Date) */}
+            {/* Metadata Section (Members, Labels, Priority, Due Date) */}
             <div className={styles.metadataRow}>
+              <div className={styles.metaSection}>
+                <h4 className={styles.metaLabel}>Độ ưu tiên</h4>
+                <div className={styles.priorityDisplay}>
+                  <span
+                    className={styles.priorityBadge}
+                    style={{ background: priorityColor(card.priority) }}
+                  >
+                    {card.priority}
+                  </span>
+                  {aiPrioritySuggestion && aiPrioritySuggestion.suggestedPriority !== card.priority && (
+                    <span
+                      className={styles.aiPriorityBadge}
+                      title={`AI gợi ý: ${aiPrioritySuggestion.reason}`}
+                      onClick={() => handleUpdateCard({ priority: aiPrioritySuggestion.suggestedPriority })}
+                    >
+                      AI: {aiPrioritySuggestion.suggestedPriority}
+                    </span>
+                  )}
+                  {aiPriorityLoading && <span className={styles.aiPriorityLoading}>...</span>}
+                </div>
+              </div>
+
               <div className={styles.metaSection}>
                 <h4 className={styles.metaLabel}>Thành viên</h4>
                 <div className={styles.avatarGroup}>

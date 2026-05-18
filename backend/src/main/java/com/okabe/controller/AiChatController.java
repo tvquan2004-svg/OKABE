@@ -2,13 +2,16 @@ package com.okabe.controller;
 
 import com.okabe.dto.request.BreakdownRequest;
 import com.okabe.dto.request.ChatRequest;
+import com.okabe.dto.request.SuggestPriorityRequest;
 import com.okabe.dto.response.ApiResponse;
 import com.okabe.dto.response.ChatResponse;
 import com.okabe.dto.response.ConversationResponse;
 import com.okabe.dto.response.MessageResponse;
+import com.okabe.dto.response.PrioritySuggestion;
 import com.okabe.dto.response.SubtaskSuggestion;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.AiChatService;
+import com.okabe.service.AiPriorityService;
 import com.okabe.service.AiTaskBreakdownService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +39,7 @@ public class AiChatController {
 
     private final AiChatService aiChatService;
     private final AiTaskBreakdownService aiTaskBreakdownService;
+    private final AiPriorityService aiPriorityService;
 
     @PostMapping("/breakdown")
     @Operation(summary = "Phân rã task thành các subtask bằng AI")
@@ -44,6 +48,15 @@ public class AiChatController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         List<SubtaskSuggestion> suggestions = aiTaskBreakdownService.breakdownTask(request.cardId());
         return ResponseEntity.ok(ApiResponse.success(suggestions));
+    }
+
+    @PostMapping("/suggest-priority")
+    @Operation(summary = "Gợi ý độ ưu tiên cho card dựa trên context")
+    public ResponseEntity<ApiResponse<PrioritySuggestion>> suggestPriority(
+            @Valid @RequestBody SuggestPriorityRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        PrioritySuggestion suggestion = aiPriorityService.suggestPriority(request.cardId());
+        return ResponseEntity.ok(ApiResponse.success(suggestion));
     }
 
     @PostMapping("/conversations")

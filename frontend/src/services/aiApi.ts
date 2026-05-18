@@ -5,6 +5,7 @@ import type {
   ChatResponse,
   ChatRequest,
   SubtaskSuggestion,
+  PrioritySuggestion,
   ApiResponse as ApiRes,
 } from '../types/ai.types';
 
@@ -55,6 +56,14 @@ export const aiApi = apiSlice.injectEndpoints({
         body: { cardId },
       }),
     }),
+
+    suggestPriority: builder.mutation<ApiRes<PrioritySuggestion>, { cardId: number }>({
+      query: ({ cardId }) => ({
+        url: '/ai/suggest-priority',
+        method: 'POST',
+        body: { cardId },
+      }),
+    }),
   }),
 });
 
@@ -65,4 +74,5 @@ export const {
   useSendMessageMutation,
   useDeleteConversationMutation,
   useBreakdownTaskMutation,
+  useSuggestPriorityMutation,
 } = aiApi;
