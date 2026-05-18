@@ -7,7 +7,9 @@ import { apiSlice } from '../../services/apiSlice';
 import { useGetBoardQuery } from '../../services/boardApi';
 import { useGetUnreadCountQuery } from '../../services/notificationApi';
 import { useGetMeQuery } from '../../services/userApi';
+import { useGetWorkspacesQuery } from '../../services/workspaceApi';
 import NotificationDropdown from './NotificationDropdown';
+import StandupModal from './StandupModal';
 import styles from './Navbar.module.css';
 
 interface NavbarProps {
@@ -22,12 +24,16 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   const authUser = useAppSelector((state) => state.auth.user);
   const user = userData || authUser;
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showStandup, setShowStandup] = useState(false);
 
   const { data: unreadCountRes } = useGetUnreadCountQuery(undefined, {
     pollingInterval: 5000,
   });
 
   const unreadCount = unreadCountRes?.data ?? 0;
+
+  const { data: workspacesRes } = useGetWorkspacesQuery();
+  const workspaces = workspacesRes?.data || [];
 
   const handleLogout = () => {
     dispatch(logout());
@@ -45,9 +51,11 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
 
   const boardIdMatch = location.pathname.match(/\/board\/(\d+)/);
   const boardId = boardIdMatch ? Number(boardIdMatch[1]) : null;
-  const { data: boardData } = useGetBoardQuery(boardId as number, { 
-    skip: !boardId 
-  });
+  const { data: boardData } = useGetBoardQuery(boardId as number, { skip: !boardId });
+  const workspaceIdMatch = location.pathname.match(/\/workspace\/(\d+)/);
+  const currentWorkspaceId = workspaceIdMatch
+    ? Number(workspaceIdMatch[1])
+    : boardData?.data.workspaceId || workspaces[0]?.id;
 
   const getPageTitle = () => {
     if (location.pathname === '/dashboard') return 'Bảng điều khiển';
@@ -57,6 +65,17 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
     }
     if (location.pathname === '/settings') return 'Cài đặt';
     return 'OKABE';
+  };
+
+  // 5PM reminder — show notification badge if after 5PM and standup not viewed today
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const currentHour = new Date().getHours();
+  const standupSeenToday = localStorage.getItem('standup_seen') === todayStr;
+  const showStandupReminder = currentHour >= 17 && !standupSeenToday;
+
+  const handleOpenStandup = () => {
+    localStorage.setItem('standup_seen', todayStr);
+    setShowStandup(true);
   };
 
   return (
@@ -69,6 +88,13 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
       </div>
 
       <div className={styles.rightSection}>
+        <div className={styles.navItem}>
+          <button className={styles.iconBtn} onClick={handleOpenStandup} title="Tổng kết ngày">
+            📋
+            {showStandupReminder && <span className={styles.badge}>!</span>}
+          </button>
+        </div>
+
         <div className={styles.navItem}>
           <button 
             className={styles.iconBtn} 
@@ -100,6 +126,13 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
           </button>
         </div>
       </div>
+
+      {showStandup && currentWorkspaceId && (
+        <StandupModal
+          workspaceId={currentWorkspaceId}
+          onClose={() => setShowStandup(false)}
+        />
+      )}
     </nav>
   );
 };

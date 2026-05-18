@@ -6,6 +6,7 @@ import type {
   ChatRequest,
   SubtaskSuggestion,
   PrioritySuggestion,
+  StandupSummary,
   ApiResponse as ApiRes,
 } from '../types/ai.types';
 
@@ -64,6 +65,22 @@ export const aiApi = apiSlice.injectEndpoints({
         body: { cardId },
       }),
     }),
+
+    getStandup: builder.query<ApiRes<StandupSummary>, { workspaceId: number; userId?: number; date?: string }>({
+      query: ({ workspaceId, userId, date }) => {
+        const params = new URLSearchParams({ workspaceId: String(workspaceId) });
+        if (userId) params.set('userId', String(userId));
+        if (date) params.set('date', date);
+        return `/ai/standup?${params}`;
+      },
+    }),
+
+    getWorkspaceStandup: builder.query<ApiRes<StandupSummary[]>, { workspaceId: number; date?: string }>({
+      query: ({ workspaceId, date }) => {
+        const params = date ? `?date=${date}` : '';
+        return `/ai/standup/workspace/${workspaceId}${params}`;
+      },
+    }),
   }),
 });
 
@@ -75,4 +92,6 @@ export const {
   useDeleteConversationMutation,
   useBreakdownTaskMutation,
   useSuggestPriorityMutation,
+  useGetStandupQuery,
+  useGetWorkspaceStandupQuery,
 } = aiApi;

@@ -40,6 +40,16 @@ export interface PrioritySuggestion {
   reason: string;
 }
 
+export interface StandupSummary {
+  userId: number;
+  userName: string;
+  avatarUrl: string | null;
+  date: string;
+  done: string;
+  inProgress: string;
+  blocked: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;

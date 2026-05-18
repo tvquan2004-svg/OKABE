@@ -8,10 +8,12 @@ import com.okabe.dto.response.ChatResponse;
 import com.okabe.dto.response.ConversationResponse;
 import com.okabe.dto.response.MessageResponse;
 import com.okabe.dto.response.PrioritySuggestion;
+import com.okabe.dto.response.StandupSummary;
 import com.okabe.dto.response.SubtaskSuggestion;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.AiChatService;
 import com.okabe.service.AiPriorityService;
+import com.okabe.service.AiStandupService;
 import com.okabe.service.AiTaskBreakdownService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +43,7 @@ public class AiChatController {
     private final AiChatService aiChatService;
     private final AiTaskBreakdownService aiTaskBreakdownService;
     private final AiPriorityService aiPriorityService;
+    private final AiStandupService aiStandupService;
 
     @PostMapping("/breakdown")
     @Operation(summary = "Phân rã task thành các subtask bằng AI")
@@ -57,6 +61,30 @@ public class AiChatController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         PrioritySuggestion suggestion = aiPriorityService.suggestPriority(request.cardId());
         return ResponseEntity.ok(ApiResponse.success(suggestion));
+    }
+
+    @GetMapping("/standup")
+    @Operation(summary = "Tạo standup summary cho một user trong ngày")
+    public ResponseEntity<ApiResponse<StandupSummary>> getStandup(
+            @RequestParam Long workspaceId,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String date,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long targetUserId = userId != null ? userId : currentUser.getId();
+        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
+        StandupSummary summary = aiStandupService.generateStandup(targetUserId, workspaceId, targetDate);
+        return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+
+    @GetMapping("/standup/workspace/{workspaceId}")
+    @Operation(summary = "Tổng hợp standup của tất cả member trong workspace")
+    public ResponseEntity<ApiResponse<List<StandupSummary>>> getWorkspaceStandup(
+            @PathVariable Long workspaceId,
+            @RequestParam(required = false) String date,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
+        List<StandupSummary> summaries = aiStandupService.generateWorkspaceStandup(workspaceId, targetDate);
+        return ResponseEntity.ok(ApiResponse.success(summaries));
     }
 
     @PostMapping("/conversations")
