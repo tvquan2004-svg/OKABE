@@ -225,7 +225,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .map(User::getUsername)
                 .orElse("there");
 
-        log.info("[SERVICE] Calling emailNotificationService.sendWorkspaceInvitationEmail synchronously...");
+        log.info("[SERVICE] Queuing workspace invitation email asynchronously for: {}", request.email());
         emailNotificationService.sendWorkspaceInvitationEmail(
             inviter,
             request.email(),
@@ -233,7 +233,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             workspace.getName(),
             token
         );
-        log.info("[SERVICE] emailNotificationService.sendWorkspaceInvitationEmail call finished.");
+        log.info("[SERVICE] Workspace invitation email queued for: {}", request.email());
     }
 
     @Override

@@ -8,28 +8,29 @@ OKABE là một ứng dụng quản lý tác vụ theo phong cách Kanban (tươ
 
 ## ✨ Tính năng nổi bật (Key Features)
 
-*   **⚡ Trải nghiệm Premium**: Giao diện Dark Mode hiện đại, hiệu ứng mượt mà và tốc độ phản hồi tức thì.
-*   **🔐 Bảo mật đa lớp**: Xác thực JWT, xác thực Email và Google OAuth 2.0 tích hợp thông minh.
-*   **📂 Quản lý Workspace**: Hỗ trợ nhiều không gian làm việc với hệ thống phân quyền OWNER/ADMIN/MEMBER.
-*   **📋 Bảng Kanban thông minh**: Kéo thả Board/List/Card linh hoạt, tùy chỉnh hình nền Board và gắn sao bảng quan trọng.
-*   **💬 Cộng tác Real-time**: Bình luận, nhắc tên (@mention) và nhận thông báo tức thời qua WebSocket.
-*   **📊 Dashboard Thống kê**: Theo dõi tổng quan tiến độ và hoạt động của tất cả các dự án.
+* **⚡ Trải nghiệm Premium**: Giao diện Dark Mode hiện đại, hiệu ứng mượt mà và tốc độ phản hồi tức thì.
+* **🔐 Bảo mật đa lớp**: Xác thực JWT, xác thực Email và Google OAuth 2.0 tích hợp thông minh.
+* **📂 Quản lý Workspace**: Hỗ trợ nhiều không gian làm việc với hệ thống phân quyền OWNER/ADMIN/MEMBER.
+* **📋 Bảng Kanban thông minh**: Kéo thả Board/List/Card linh hoạt, tùy chỉnh hình nền Board và gắn sao bảng quan trọng.
+* **💬 Cộng tác Real-time**: Bình luận, nhắc tên (@mention) và nhận thông báo tức thời qua WebSocket.
+* **📊 Dashboard Thống kê**: Theo dõi tổng quan tiến độ và hoạt động của tất cả các dự án.
 
 ---
 
 ## 🛠️ Hệ sinh thái Công nghệ (Tech Stack)
 
-| Layer | Technology |
-| :--- | :--- |
-| **Backend** | Java 17+, Spring Boot 3.4, Spring Security, Spring Data JPA, WebSocket, MySQL, Redis |
-| **Frontend** | React 18, TypeScript, Vite, Redux Toolkit, RTK Query, CSS Modules, dnd-kit |
-| **Infrastructure** | Docker & Docker Compose, Flyway (DB Migration), Cloudinary (Image Hosting), MailHog |
+| Layer                    | Technology                                                                           |
+| :----------------------- | :----------------------------------------------------------------------------------- |
+| **Backend**        | Java 17+, Spring Boot 3.4, Spring Security, Spring Data JPA, WebSocket, MySQL, Redis |
+| **Frontend**       | React 18, TypeScript, Vite, Redux Toolkit, RTK Query, CSS Modules, dnd-kit           |
+| **Infrastructure** | Docker & Docker Compose, Flyway (DB Migration), Cloudinary (Image Hosting), MailHog  |
 
 ---
 
 ## 🚀 Hướng dẫn cài đặt (Prerequisites)
 
 Yêu cầu các công cụ sau đã được cài đặt:
+
 - **Java JDK 21+**
 - **Maven 3.9+**
 - **Node.js 20+**
@@ -42,33 +43,37 @@ Yêu cầu các công cụ sau đã được cài đặt:
 ### Cách 1: Chạy từng phần cục bộ (Local Development)
 
 1. **Khởi động Database (MySQL & Redis)**:
+
    ```bash
    docker compose up mysql redis -d
    ```
-
 2. **Chạy Backend**:
+
    ```bash
    cd backend
    mvn spring-boot:run
    ```
-   *   API: `http://localhost:8080`
-   *   Swagger UI: `http://localhost:8080/swagger-ui.html`
 
+   * API: `http://localhost:8080`
+   * Swagger UI: `http://localhost:8080/swagger-ui.html`
 3. **Chạy Frontend**:
+
    ```bash
    cd frontend
    npm install
    npm run dev
    ```
-   *   App: `http://localhost:5173`
+
+   * App: `http://localhost:5173`
 
 ### Cách 2: Chạy toàn bộ với Docker Compose
 
 ```bash
 docker compose up --build -d
 ```
-*   Frontend: `http://localhost:3000`
-*   Backend: `http://localhost:8080`
+
+* Frontend: `http://localhost:3000`
+* Backend: `http://localhost:8080`
 
 ---
 
@@ -86,4 +91,5 @@ okabe/
 ---
 
 ## 📜 License
+
 MIT Copyright 2026 **OKABE Team** - *Đưa quản lý dự án lên tầm cao mới.*

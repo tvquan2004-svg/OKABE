@@ -34,16 +34,17 @@ public class EmailNotificationService {
         log.info("[EMAIL-INIT] App URL: {}, Provider: {}", appUrl, emailProvider);
     }
 
+    @Async
     public void sendWorkspaceInvitationEmail(User inviter, String recipientEmail, String recipientName, String workspaceName, String token) {
         log.info("[EMAIL] sendWorkspaceInvitationEmail called for: {}", recipientEmail);
-        
+
         Map<String, Object> vars = new HashMap<>();
         vars.put("recipientName", recipientName);
         vars.put("inviterName", inviter.getUsername());
         vars.put("workspaceName", workspaceName);
         vars.put("invitationUrl", appUrl + "/invitations/accept?token=" + token);
 
-        log.info("[EMAIL] Variables: {}", vars);
+        log.info("[EMAIL] Template variables: {}", vars);
         sendEmail(recipientEmail, "Lời mời tham gia không gian làm việc: " + workspaceName, "workspace-invitation", vars);
     }
 
