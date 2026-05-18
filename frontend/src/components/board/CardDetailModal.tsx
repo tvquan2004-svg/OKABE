@@ -39,6 +39,7 @@ import {
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
+import { useBreakdownTaskMutation } from '../../services/aiApi';
 import { FiArchive, FiCheckSquare, FiPaperclip, FiTag, FiClock, FiCalendar, FiUsers } from 'react-icons/fi';
 import CommentSection from './CommentSection';
 import styles from './CardDetailModal.module.css';
@@ -93,6 +94,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [uploadAttachment] = useUploadAttachmentMutation();
   const [deleteAttachment] = useDeleteAttachmentMutation();
   const [archiveCard] = useArchiveCardMutation();
+  const [breakdownTask] = useBreakdownTaskMutation();
   
   const { data: activitiesRes } = useGetCardActivitiesQuery(card.id);
   const activities = activitiesRes?.data || [];
@@ -187,6 +189,37 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     }
   };
 
+  const handleAiBreakdown = async () => {
+    if (!confirm('🧠 Tự động phân rã task này thành các subtask bằng AI?')) return;
+    try {
+      const res = await breakdownTask({ cardId: card.id }).unwrap();
+      const suggestions = res?.data;
+      if (!suggestions || suggestions.length === 0) {
+        alert('AI không thể phân rã task này. Vui lòng thử lại.');
+        return;
+      }
+      const checklistRes = await createChecklist({
+        cardId: card.id,
+        boardId,
+        name: '🧠 Phân rã tự động',
+      }).unwrap();
+      const checklistId = checklistRes.data.id;
+      await Promise.all(
+        suggestions.map(s =>
+          createChecklistItem({
+            checklistId,
+            boardId,
+            cardId: card.id,
+            content: `${s.title} (${s.estimatedHours}h)`,
+          }).unwrap()
+        )
+      );
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string }, message?: string };
+      alert(`Phân rã thất bại: ${error?.data?.message || error?.message || 'Lỗi kết nối'}`);
+    }
+  };
+
   const getFullUrl = getFullFileUrl;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,6 +292,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
           <div className={styles.quickActions}>
             <button className={styles.quickActionBtn} onClick={handleCreateChecklist}>
               <FiCheckSquare /> <span>Việc cần làm</span>
+            </button>
+            <button className={styles.quickActionBtn} onClick={handleAiBreakdown}>
+              🧠 <span>Phân rã</span>
             </button>
             <button className={styles.quickActionBtn} onClick={() => fileInputRef.current?.click()}>
               <FiPaperclip /> <span>Đính kèm</span>

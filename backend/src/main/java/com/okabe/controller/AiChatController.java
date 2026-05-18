@@ -1,12 +1,15 @@
 package com.okabe.controller;
 
+import com.okabe.dto.request.BreakdownRequest;
 import com.okabe.dto.request.ChatRequest;
 import com.okabe.dto.response.ApiResponse;
 import com.okabe.dto.response.ChatResponse;
 import com.okabe.dto.response.ConversationResponse;
 import com.okabe.dto.response.MessageResponse;
+import com.okabe.dto.response.SubtaskSuggestion;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.AiChatService;
+import com.okabe.service.AiTaskBreakdownService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,6 +35,16 @@ import java.util.concurrent.Executors;
 public class AiChatController {
 
     private final AiChatService aiChatService;
+    private final AiTaskBreakdownService aiTaskBreakdownService;
+
+    @PostMapping("/breakdown")
+    @Operation(summary = "Phân rã task thành các subtask bằng AI")
+    public ResponseEntity<ApiResponse<List<SubtaskSuggestion>>> breakdownTask(
+            @Valid @RequestBody BreakdownRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        List<SubtaskSuggestion> suggestions = aiTaskBreakdownService.breakdownTask(request.cardId());
+        return ResponseEntity.ok(ApiResponse.success(suggestions));
+    }
 
     @PostMapping("/conversations")
     @Operation(summary = "Tạo cuộc hội thoại mới")

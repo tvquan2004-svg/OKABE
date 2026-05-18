@@ -29,6 +29,11 @@ export interface ChatRequest {
   workspaceId?: number;
 }
 
+export interface SubtaskSuggestion {
+  title: string;
+  estimatedHours: number;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
