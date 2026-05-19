@@ -28,7 +28,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) 
       await markAsRead(n.id);
     }
     
-    // Navigate based on entity type and context
+    // Navigate based on type and entity type
     if (n.entityType === 'CARD') {
       // extraId stores boardId, entityId stores cardId
       if (n.extraId) {

@@ -154,6 +154,10 @@ function BoardPage() {
     }
   }, [cardIdFromUrl, lists]);
 
+  const highlightCommentId = searchParams.get('highlightComment')
+    ? Number(searchParams.get('highlightComment'))
+    : undefined;
+
   const handleCloseCardModal = () => {
     setSelectedCard(null);
     if (searchParams.has('cardId')) {
@@ -610,6 +614,7 @@ function BoardPage() {
           workspaceId={board.workspaceId}
           onClose={handleCloseCardModal}
           priorityColor={priorityColor}
+          highlightCommentId={highlightCommentId}
         />
       ) : null}
 

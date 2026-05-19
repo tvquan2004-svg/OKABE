@@ -2,17 +2,20 @@ package com.okabe.controller;
 
 import com.okabe.dto.request.BreakdownRequest;
 import com.okabe.dto.request.ChatRequest;
+import com.okabe.dto.request.SentimentRequest;
 import com.okabe.dto.request.SuggestPriorityRequest;
 import com.okabe.dto.response.ApiResponse;
 import com.okabe.dto.response.ChatResponse;
 import com.okabe.dto.response.ConversationResponse;
 import com.okabe.dto.response.MessageResponse;
 import com.okabe.dto.response.PrioritySuggestion;
+import com.okabe.dto.response.SentimentResult;
 import com.okabe.dto.response.StandupSummary;
 import com.okabe.dto.response.SubtaskSuggestion;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.AiChatService;
 import com.okabe.service.AiPriorityService;
+import com.okabe.service.AiSentimentService;
 import com.okabe.service.AiStandupService;
 import com.okabe.service.AiTaskBreakdownService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,6 +47,7 @@ public class AiChatController {
     private final AiTaskBreakdownService aiTaskBreakdownService;
     private final AiPriorityService aiPriorityService;
     private final AiStandupService aiStandupService;
+    private final AiSentimentService aiSentimentService;
 
     @PostMapping("/breakdown")
     @Operation(summary = "Phân rã task thành các subtask bằng AI")
@@ -74,6 +78,14 @@ public class AiChatController {
         LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
         StandupSummary summary = aiStandupService.generateStandup(targetUserId, workspaceId, targetDate);
         return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+
+    @PostMapping("/sentiment")
+    @Operation(summary = "Phân tích cảm xúc của văn bản")
+    public ResponseEntity<ApiResponse<SentimentResult>> analyzeSentiment(
+            @Valid @RequestBody SentimentRequest request) {
+        SentimentResult result = aiSentimentService.analyzeSentiment(request.text());
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/standup/workspace/{workspaceId}")

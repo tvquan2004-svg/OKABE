@@ -13,19 +13,25 @@ import com.okabe.repository.CommentRepository;
 import com.okabe.repository.UserRepository;
 import com.okabe.repository.WorkspaceMemberRepository;
 import com.okabe.security.UserPrincipal;
+import com.okabe.service.AiSentimentService;
 import com.okabe.service.CommentService;
 import com.okabe.service.EmailNotificationService;
 import com.okabe.service.NotificationService;
 import com.okabe.service.WebSocketService;
+import com.okabe.entity.enums.Role;
+import com.okabe.entity.WorkspaceMember;
 import com.okabe.util.MentionParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,6 +47,7 @@ public class CommentServiceImpl implements CommentService {
     private final NotificationService notificationService;
     private final WebSocketService webSocketService;
     private final EmailNotificationService emailNotificationService;
+    private final AiSentimentService aiSentimentService;
 
     @Override
     @Transactional
@@ -101,10 +108,14 @@ public class CommentServiceImpl implements CommentService {
         }
 
         CommentResponse response = toCommentResponse(comment);
-        
+
         // Publish WebSocket event
         webSocketService.sendToTopic("/topic/card." + cardId, "COMMENT_ADDED", response);
-        
+
+        // Analyze sentiment asynchronously (non-blocking)
+        log.debug("Triggering sentiment analysis for comment {} by user {}", comment.getId(), author.getUsername());
+        analyzeCommentSentimentAsync(comment, card, author);
+
         log.info("Comment created by {} on card {}", author.getUsername(), cardId);
         return response;
     }
@@ -205,6 +216,59 @@ public class CommentServiceImpl implements CommentService {
     private void validateWorkspaceMembership(Long workspaceId, Long userId) {
         if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
             throw new UnauthorizedException("You are not a member of this workspace");
+        }
+    }
+
+    @Async
+    public void analyzeCommentSentimentAsync(Comment comment, Card card, User author) {
+        try {
+            var result = aiSentimentService.analyzeSentiment(comment.getContent());
+            if (result.isNegative()) {
+                Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
+                List<WorkspaceMember> admins = memberRepository.findByWorkspaceId(workspaceId).stream()
+                        .filter(m -> m.getRole() == Role.OWNER || m.getRole() == Role.ADMIN)
+                        .toList();
+
+                String message = String.format(
+                        "\u26A0\uFE0F Phát hiện comment tiêu cực trong card '%s' bởi @%s",
+                        card.getTitle(), author.getUsername()
+                );
+
+                for (WorkspaceMember admin : admins) {
+                    if (admin.getUserId().equals(author.getId())) continue;
+
+                    User adminUser = admin.getUser();
+                    Long boardId = card.getTaskList().getBoard().getId();
+
+                    notificationService.createNotification(
+                            adminUser,
+                            author,
+                            "NEGATIVE_SENTIMENT",
+                            "CARD",
+                            card.getId(),
+                            boardId,
+                            message
+                    );
+
+                    webSocketService.sendToUser(
+                            adminUser.getId(),
+                            "NEGATIVE_SENTIMENT",
+                            java.util.Map.of(
+                                    "type", "NEGATIVE_SENTIMENT",
+                                    "commentId", comment.getId(),
+                                    "cardId", card.getId(),
+                                    "boardId", boardId,
+                                    "message", message
+                            )
+                    );
+                }
+                log.warn("[SENTIMENT] Negative comment detected: commentId={}, score={}, reason={}",
+                        comment.getId(), result.score(), result.reason());
+            } else {
+                log.debug("[SENTIMENT] Comment {} is {}", comment.getId(), result.sentiment());
+            }
+        } catch (Exception e) {
+            log.error("[SENTIMENT] Error analyzing sentiment for comment {}: {}", comment.getId(), e.getMessage());
         }
     }
 

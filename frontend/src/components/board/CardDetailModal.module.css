@@ -568,6 +568,20 @@
   gap: 12px;
 }
 
+.highlightSentiment {
+  padding: 8px;
+  margin: -8px;
+  border-radius: 8px;
+  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  animation: sentimentPulse 2s ease-in-out 3;
+}
+
+@keyframes sentimentPulse {
+  0%, 100% { background: rgba(239, 68, 68, 0.08); }
+  50% { background: rgba(239, 68, 68, 0.18); }
+}
+
 .activityAvatar {
   width: 32px;
   height: 32px;

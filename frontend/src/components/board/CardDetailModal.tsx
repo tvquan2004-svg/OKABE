@@ -52,6 +52,7 @@ interface CardDetailModalProps {
   onClose: () => void;
   priorityColor: (priority: string) => string;
   readOnly?: boolean;
+  highlightCommentId?: number;
 }
 
 const PRESET_COLORS = [
@@ -66,6 +67,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   onClose,
   priorityColor,
   readOnly = false,
+  highlightCommentId,
 }) => {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || '');
@@ -576,7 +578,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               <h3 className={styles.sectionTitle}>Nhận xét và hoạt động</h3>
             </div>
             
-            <CommentSection cardId={card.id} workspaceId={workspaceId} readOnly={readOnly} />
+            <CommentSection cardId={card.id} workspaceId={workspaceId} readOnly={readOnly} highlightCommentId={highlightCommentId} />
 
             <div className={styles.activityList}>
               {(showAllActivities ? activities : activities.slice(0, 5)).map((activity) => (

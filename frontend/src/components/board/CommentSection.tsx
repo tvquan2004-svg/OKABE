@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   useGetCardCommentsQuery,
   useCreateCommentMutation,
@@ -14,9 +14,10 @@ interface CommentSectionProps {
   cardId: number;
   workspaceId: number;
   readOnly?: boolean;
+  highlightCommentId?: number;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, readOnly = false }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, readOnly = false, highlightCommentId }) => {
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState('');
@@ -118,6 +119,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, re
     }
   };
 
+  const commentRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    if (highlightCommentId && commentRefs.current[highlightCommentId]) {
+      const el = commentRefs.current[highlightCommentId];
+      setTimeout(() => {
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+  }, [highlightCommentId, comments]);
+
   const renderContent = (content: string, mentions: { username: string }[] = []) => {
     if (!content) return null;
     const mentionUsernames = mentions.map(m => m.username);
@@ -190,7 +202,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, re
         ) : (
           <>
             {(showAllComments ? comments : comments.slice(0, 3)).map((comment) => (
-              <div key={comment.id} className={styles.activityItem}>
+              <div
+                key={comment.id}
+                ref={(el) => { commentRefs.current[comment.id] = el; }}
+                className={`${styles.activityItem} ${highlightCommentId === comment.id ? styles.highlightSentiment : ''}`}
+              >
                 <div className={styles.activityAvatar}>
                   {comment.author.avatarUrl ? (
                     <img src={comment.author.avatarUrl} alt={comment.author.username} />
