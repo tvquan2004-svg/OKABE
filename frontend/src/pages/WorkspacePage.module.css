@@ -62,6 +62,20 @@
   margin-top: var(--spacing-xs);
 }
 
+.wsStats {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-sm);
+}
+
+.wsStats span {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
 .headerActions {
   display: flex;
   gap: var(--spacing-sm);

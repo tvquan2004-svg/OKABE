@@ -10,6 +10,7 @@ import com.okabe.entity.enums.Role;
 import com.okabe.exception.DuplicateResourceException;
 import com.okabe.exception.ResourceNotFoundException;
 import com.okabe.exception.UnauthorizedException;
+import com.okabe.repository.BoardRepository;
 import com.okabe.repository.UserRepository;
 import com.okabe.repository.WorkspaceMemberRepository;
 import com.okabe.repository.WorkspaceRepository;
@@ -41,6 +42,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private final WorkspaceMemberRepository memberRepository;
     private final WorkspaceInvitationRepository invitationRepository;
     private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
     private final NotificationService notificationService;
     private final EmailNotificationService emailNotificationService;
 
@@ -401,6 +403,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             currentRole = Role.OWNER.name();
         }
 
+        long boardCount = boardRepository.countByWorkspaceId(workspace.getId());
+
         return WorkspaceResponse.builder()
                 .id(workspace.getId())
                 .name(workspace.getName())
@@ -414,6 +418,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                         .build())
                 .currentUserRole(currentRole)
                 .memberCount(members.size())
+                .boardCount(boardCount)
                 .createdAt(workspace.getCreatedAt())
                 .build();
     }

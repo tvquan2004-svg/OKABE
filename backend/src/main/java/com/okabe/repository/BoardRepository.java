@@ -20,6 +20,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     Board findTopByWorkspaceIdAndIsArchivedFalseOrderByPositionDesc(Long workspaceId);
 
+    long countByWorkspaceId(Long workspaceId);
+
     @org.springframework.data.jpa.repository.Query("SELECT b FROM Board b LEFT JOIN FETCH b.workspace w WHERE b.publicToken = :publicToken")
     Optional<Board> findByPublicToken(@org.springframework.data.repository.query.Param("publicToken") String publicToken);
 }

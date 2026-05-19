@@ -11,7 +11,7 @@ import {
   DragOverlay,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff, FiGrid } from 'react-icons/fi';
 import BoardArchiveZone from '../components/workspace/BoardArchiveZone';
 import {
   SortableContext,
@@ -252,6 +252,9 @@ function WorkspacePage() {
             <div className={styles.wsInfo}>
               <h1>{workspace?.name ?? 'Không gian làm việc'}</h1>
               {workspace?.description ? <p>{workspace.description}</p> : <p>Không có mô tả cho không gian này</p>}
+              <div className={styles.wsStats}>
+                <span><FiGrid size={14} /> {boards?.length ?? 0} bảng</span>
+              </div>
             </div>
             <div className={styles.headerActions}>
               <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
