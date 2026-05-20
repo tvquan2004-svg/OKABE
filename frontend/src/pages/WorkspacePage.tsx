@@ -23,6 +23,7 @@ import EntityModal from '../components/common/EntityModal';
 import MemberModal from '../components/workspace/MemberModal';
 import SortableBoardCard from '../components/workspace/SortableBoardCard';
 import CreateBoardModal from '../components/workspace/CreateBoardModal';
+import ObjectiveList from '../components/workspace/ObjectiveList';
 import {
   type Board,
   useCreateBoardMutation,
@@ -65,6 +66,7 @@ function WorkspacePage() {
   const [boardDescription, setBoardDescription] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaceDescription, setWorkspaceDescription] = useState('');
+  const [activeTab, setActiveTab] = useState<'boards' | 'okr'>('boards');
 
   const workspace = workspaceData?.data;
   const boards = boardsData?.data;
@@ -270,7 +272,27 @@ function WorkspacePage() {
         </div>
       </header>
 
+      <div className={styles.tabBar}>
+        <button
+          className={`${styles.tab} ${activeTab === 'boards' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('boards')}
+        >
+          Bảng
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'okr' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('okr')}
+        >
+          OKR
+        </button>
+      </div>
+
       <main className={styles.main}>
+        {activeTab === 'okr' ? (
+          <ObjectiveList workspaceId={id} />
+        ) : (
+        <>
+
         <div className={styles.sectionHeader}>
           <div>
             <h2>Các bảng công việc</h2>
@@ -399,6 +421,8 @@ function WorkspacePage() {
             </div>
           )}
         </div>
+        </>
+        )}
       </main>
 
       {isCreateBoardModalOpen ? (

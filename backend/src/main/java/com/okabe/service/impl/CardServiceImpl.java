@@ -751,6 +751,21 @@ public class CardServiceImpl implements CardService {
                 .build();
     }
 
+    @Override
+    public List<CardSelectionResponse> getWorkspaceCards(Long workspaceId, UserPrincipal currentUser) {
+        validateMembership(workspaceId, currentUser.getId());
+        List<Card> cards = cardRepository.findByWorkspaceId(workspaceId);
+        return cards.stream()
+                .map(c -> CardSelectionResponse.builder()
+                        .id(c.getId())
+                        .title(c.getTitle())
+                        .boardId(c.getTaskList().getBoard().getId())
+                        .boardName(c.getTaskList().getBoard().getName())
+                        .listName(c.getTaskList().getName())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private User findUserOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));

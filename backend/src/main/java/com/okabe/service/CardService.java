@@ -47,4 +47,6 @@ public interface CardService {
     CardResponse restoreCard(Long cardId, UserPrincipal currentUser);
 
     Page<CardResponse> getArchivedCards(Long boardId, int page, int size, UserPrincipal currentUser);
+
+    List<CardSelectionResponse> getWorkspaceCards(Long workspaceId, UserPrincipal currentUser);
 }

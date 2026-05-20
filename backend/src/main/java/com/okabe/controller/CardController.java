@@ -5,6 +5,7 @@ import com.okabe.dto.response.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.CardService;
 import org.springframework.data.domain.Page;
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -245,5 +246,14 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
                 cardService.getArchivedCards(boardId, page, size, currentUser)));
+    }
+
+    @GetMapping("/api/v1/workspaces/{workspaceId}/cards")
+    @Operation(summary = "Get all active cards in a workspace for selection")
+    public ResponseEntity<ApiResponse<List<CardSelectionResponse>>> getWorkspaceCards(
+            @PathVariable Long workspaceId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                cardService.getWorkspaceCards(workspaceId, currentUser)));
     }
 }

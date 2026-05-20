@@ -397,8 +397,19 @@ export const boardApi = apiSlice.injectEndpoints({
     getPublicBoard: builder.query<ApiRes<Board>, string>({
       query: (token) => `/public/boards/${token}`,
     }),
+    getWorkspaceCards: builder.query<ApiRes<CardSelection[]>, number>({
+      query: (workspaceId) => `/workspaces/${workspaceId}/cards`,
+    }),
   }),
 });
+
+export interface CardSelection {
+  id: number;
+  title: string;
+  boardId: number;
+  boardName: string;
+  listName: string;
+}
 
 export interface CommentResponse {
   id: number;
@@ -463,6 +474,7 @@ export const {
   useGetBoardAnalyticsQuery,
   useUpdateBoardVisibilityMutation,
   useGetPublicBoardQuery,
+  useGetWorkspaceCardsQuery,
 } = boardApi;
 
 export const useGetBoardsByWorkspaceQuery = useGetBoardsQuery;
