@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FiBell, FiLogOut, FiMenu } from 'react-icons/fi';
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
@@ -25,6 +25,8 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   const user = userData || authUser;
   const [showNotifications, setShowNotifications] = useState(false);
   const [showStandup, setShowStandup] = useState(false);
+  const bellBtnRef = useRef<HTMLButtonElement>(null);
+  const [notifPos, setNotifPos] = useState<{ top: number; right: number } | null>(null);
 
   const { data: unreadCountRes } = useGetUnreadCountQuery(undefined, {
     pollingInterval: 5000,
@@ -79,6 +81,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   };
 
   return (
+    <>
     <nav className={styles.navbar}>
       <div className={styles.leftSection}>
         <button className={styles.menuBtn} onClick={onMenuToggle}>
@@ -97,16 +100,23 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
 
         <div className={styles.navItem}>
           <button 
+            ref={bellBtnRef}
             className={styles.iconBtn} 
             onClick={(e) => {
               e.stopPropagation();
-              setShowNotifications(!showNotifications);
+              if (bellBtnRef.current) {
+                const rect = bellBtnRef.current.getBoundingClientRect();
+                setNotifPos({
+                  top: rect.bottom + 12,
+                  right: window.innerWidth - rect.right,
+                });
+              }
+              setShowNotifications(prev => !prev);
             }}
           >
             <FiBell />
             {unreadCount > 0 && <span className={styles.badge}>{unreadCount > 99 ? '99+' : unreadCount}</span>}
           </button>
-          {showNotifications && <NotificationDropdown onClose={() => setShowNotifications(false)} />}
         </div>
 
         <div className={styles.userSection}>
@@ -126,6 +136,14 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
           </button>
         </div>
       </div>
+    </nav>
+
+      {showNotifications && notifPos && (
+        <NotificationDropdown
+          onClose={() => setShowNotifications(false)}
+          position={notifPos}
+        />
+      )}
 
       {showStandup && currentWorkspaceId && (
         <StandupModal
@@ -133,7 +151,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
           onClose={() => setShowStandup(false)}
         />
       )}
-    </nav>
+    </>
   );
 };
 

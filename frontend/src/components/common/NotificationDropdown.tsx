@@ -10,9 +10,10 @@ import styles from './NotificationDropdown.module.css';
 
 interface NotificationDropdownProps {
   onClose: () => void;
+  position: { top: number; right: number };
 }
 
-const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) => {
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose, position }) => {
   const navigate = useNavigate();
   const { data: notificationsRes, isLoading } = useGetNotificationsQuery(
     { page: 0, size: 20 },
@@ -59,7 +60,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) 
   };
 
   return (
-    <div className={styles.dropdownContainer} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.dropdownContainer} style={{ top: position.top, right: position.right }} onClick={(e) => e.stopPropagation()}>
       <div className={styles.header}>
         <h3>Thông báo</h3>
         {notifications.length > 0 && (
