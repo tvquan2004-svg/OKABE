@@ -35,4 +35,16 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
 
     @Query("SELECT c FROM Card c JOIN c.members m WHERE m.id = :userId AND c.taskList.board.workspace.id = :workspaceId AND c.dueDate < :now AND c.isArchived = false")
     List<Card> findOverdueByUserAndWorkspace(@Param("userId") Long userId, @Param("workspaceId") Long workspaceId, @Param("now") LocalDateTime now);
+
+    @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false")
+    List<Card> findByWorkspaceId(@Param("workspaceId") Long workspaceId);
+
+    @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false AND c.updatedAt < :threshold")
+    List<Card> findStaleCardsByWorkspace(@Param("workspaceId") Long workspaceId, @Param("threshold") LocalDateTime threshold);
+
+    @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false AND c.dueDate IS NOT NULL AND c.dueDate BETWEEN :now AND :end")
+    List<Card> findDueSoonCardsByWorkspace(@Param("workspaceId") Long workspaceId, @Param("now") LocalDateTime now, @Param("end") LocalDateTime end);
+
+    @Query("SELECT c FROM Card c LEFT JOIN FETCH c.members WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false")
+    List<Card> findAllWithMembersByWorkspace(@Param("workspaceId") Long workspaceId);
 }
