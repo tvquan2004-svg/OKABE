@@ -11,7 +11,7 @@ import {
   DragOverlay,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff, FiGrid } from 'react-icons/fi';
 import BoardArchiveZone from '../components/workspace/BoardArchiveZone';
 import {
   SortableContext,
@@ -23,6 +23,7 @@ import EntityModal from '../components/common/EntityModal';
 import MemberModal from '../components/workspace/MemberModal';
 import SortableBoardCard from '../components/workspace/SortableBoardCard';
 import CreateBoardModal from '../components/workspace/CreateBoardModal';
+import ObjectiveList from '../components/workspace/ObjectiveList';
 import {
   type Board,
   useCreateBoardMutation,
@@ -65,6 +66,7 @@ function WorkspacePage() {
   const [boardDescription, setBoardDescription] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaceDescription, setWorkspaceDescription] = useState('');
+  const [activeTab, setActiveTab] = useState<'boards' | 'okr'>('boards');
 
   const workspace = workspaceData?.data;
   const boards = boardsData?.data;
@@ -252,6 +254,9 @@ function WorkspacePage() {
             <div className={styles.wsInfo}>
               <h1>{workspace?.name ?? 'Không gian làm việc'}</h1>
               {workspace?.description ? <p>{workspace.description}</p> : <p>Không có mô tả cho không gian này</p>}
+              <div className={styles.wsStats}>
+                <span><FiGrid size={14} /> {boards?.length ?? 0} bảng</span>
+              </div>
             </div>
             <div className={styles.headerActions}>
               <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
@@ -267,7 +272,27 @@ function WorkspacePage() {
         </div>
       </header>
 
+      <div className={styles.tabBar}>
+        <button
+          className={`${styles.tab} ${activeTab === 'boards' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('boards')}
+        >
+          Bảng
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'okr' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('okr')}
+        >
+          OKR
+        </button>
+      </div>
+
       <main className={styles.main}>
+        {activeTab === 'okr' ? (
+          <ObjectiveList workspaceId={id} />
+        ) : (
+        <>
+
         <div className={styles.sectionHeader}>
           <div>
             <h2>Các bảng công việc</h2>
@@ -396,6 +421,8 @@ function WorkspacePage() {
             </div>
           )}
         </div>
+        </>
+        )}
       </main>
 
       {isCreateBoardModalOpen ? (

@@ -413,6 +413,7 @@
 .itemContent {
   font-size: 14px;
   color: #e2e8f0;
+  flex: 1;
 }
 
 .itemCompleted {
@@ -420,18 +421,37 @@
   color: #64748b;
 }
 
+.editItemBtn,
 .deleteItemBtn {
-  margin-left: auto;
   background: none;
   border: none;
   color: #64748b;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s;
+  padding: 2px 4px;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.2s;
 }
 
-.checklistItem:hover .deleteItemBtn {
-  opacity: 1;
+.editItemBtn:hover,
+.deleteItemBtn:hover {
+  color: #f1f5f9;
+  background: rgba(255,255,255,0.1);
+}
+
+.editItemInput {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid #475569;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 14px;
+  color: #e2e8f0;
+  outline: none;
+}
+
+.editItemInput:focus {
+  border-color: #6366f1;
 }
 
 .addItemInput {
@@ -566,6 +586,20 @@
 .activityItem {
   display: flex;
   gap: 12px;
+}
+
+.highlightSentiment {
+  padding: 8px;
+  margin: -8px;
+  border-radius: 8px;
+  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  animation: sentimentPulse 2s ease-in-out 3;
+}
+
+@keyframes sentimentPulse {
+  0%, 100% { background: rgba(239, 68, 68, 0.08); }
+  50% { background: rgba(239, 68, 68, 0.18); }
 }
 
 .activityAvatar {
@@ -1072,4 +1106,51 @@
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+.priorityDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.priorityBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.aiPriorityBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  cursor: pointer;
+  transition: all 0.2s;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.aiPriorityBadge:hover {
+  background: rgba(167, 139, 250, 0.25);
+  border-color: rgba(167, 139, 250, 0.5);
+}
+
+.aiPriorityLoading {
+  font-size: 16px;
+  color: #64748b;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }

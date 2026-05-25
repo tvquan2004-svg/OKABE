@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { 
   FiGrid, 
   FiSettings, 
@@ -8,6 +8,8 @@ import {
   FiX
 } from 'react-icons/fi';
 import { useGetWorkspacesQuery } from '../../services/workspaceApi';
+import { useGetBoardQuery } from '../../services/boardApi';
+import SuggestionPanel from './SuggestionPanel';
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
@@ -18,8 +20,17 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }) => {
+  const location = useLocation();
   const { data: workspacesRes } = useGetWorkspacesQuery();
   const workspaces = workspacesRes?.data ?? [];
+
+  const boardIdMatch = location.pathname.match(/\/board\/(\d+)/);
+  const boardId = boardIdMatch ? Number(boardIdMatch[1]) : null;
+  const { data: boardData } = useGetBoardQuery(boardId as number, { skip: !boardId });
+  const workspaceIdMatch = location.pathname.match(/\/workspace\/(\d+)/);
+  const currentWorkspaceId = workspaceIdMatch
+    ? Number(workspaceIdMatch[1])
+    : boardData?.data?.workspaceId ?? null;
 
   return (
     <aside className={`
@@ -73,6 +84,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
             </NavLink>
           ))}
         </div>
+
+        {!isCollapsed && <SuggestionPanel workspaceId={currentWorkspaceId} />}
 
         <div className={styles.section}>
           {!isCollapsed && <span className={styles.sectionTitle}>Khác</span>}

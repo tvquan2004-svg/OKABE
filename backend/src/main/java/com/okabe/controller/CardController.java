@@ -5,6 +5,7 @@ import com.okabe.dto.response.*;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.CardService;
 import org.springframework.data.domain.Page;
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -245,5 +246,45 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
                 cardService.getArchivedCards(boardId, page, size, currentUser)));
+    }
+
+    @GetMapping("/api/v1/workspaces/{workspaceId}/cards")
+    @Operation(summary = "Get all active cards in a workspace for selection")
+    public ResponseEntity<ApiResponse<List<CardSelectionResponse>>> getWorkspaceCards(
+            @PathVariable Long workspaceId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                cardService.getWorkspaceCards(workspaceId, currentUser)));
+    }
+
+    // ─── Dependency Graph ─────────────────────────────
+
+    @PostMapping("/api/v1/cards/{cardId}/dependencies")
+    @Operation(summary = "Add dependencies to a card")
+    public ResponseEntity<ApiResponse<Void>> addDependencies(
+            @PathVariable Long cardId,
+            @Valid @RequestBody CardDependencyRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.addDependencies(cardId, request, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Dependencies added"));
+    }
+
+    @GetMapping("/api/v1/cards/{cardId}/dependency-graph")
+    @Operation(summary = "Get dependency graph for a card")
+    public ResponseEntity<ApiResponse<DependencyGraphResponse>> getDependencyGraph(
+            @PathVariable Long cardId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                cardService.getDependencyGraph(cardId, currentUser)));
+    }
+
+    @DeleteMapping("/api/v1/cards/{cardId}/dependencies/{parentCardId}")
+    @Operation(summary = "Remove a dependency from a card")
+    public ResponseEntity<ApiResponse<Void>> removeDependency(
+            @PathVariable Long cardId,
+            @PathVariable Long parentCardId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.removeDependency(cardId, parentCardId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Dependency removed"));
     }
 }

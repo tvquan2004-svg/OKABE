@@ -208,7 +208,11 @@ export const boardApi = apiSlice.injectEndpoints({
     }),
     moveCard: builder.mutation<ApiRes<CardItem>, { id: number; boardId: number; targetListId: number; position?: number }>({
       query: ({ id, boardId: _, ...body }) => ({ url: `/cards/${id}/move`, method: 'PUT', body }),
-      invalidatesTags: (_r, _e, { boardId, id }) => [{ type: 'Board', id: boardId }, { type: 'Activity', id }],
+      invalidatesTags: (_r, _e, { boardId, id }) => [
+        { type: 'Board', id: boardId },
+        { type: 'Activity', id },
+        { type: 'DependencyGraph' },
+      ],
     }),
     deleteCard: builder.mutation<ApiRes<void>, { id: number; boardId: number }>({
       query: ({ id }) => ({ url: `/cards/${id}`, method: 'DELETE' }),
@@ -397,8 +401,56 @@ export const boardApi = apiSlice.injectEndpoints({
     getPublicBoard: builder.query<ApiRes<Board>, string>({
       query: (token) => `/public/boards/${token}`,
     }),
+    getWorkspaceCards: builder.query<ApiRes<CardSelection[]>, number>({
+      query: (workspaceId) => `/workspaces/${workspaceId}/cards`,
+    }),
+    // Dependency Graph
+    getDependencyGraph: builder.query<ApiRes<DependencyGraph>, number>({
+      query: (cardId) => `/cards/${cardId}/dependency-graph`,
+      providesTags: (_r, _e, cardId) => [{ type: 'DependencyGraph', id: cardId }],
+    }),
+    addDependencies: builder.mutation<ApiRes<void>, { cardId: number; parentCardIds: number[] }>({
+      query: ({ cardId, parentCardIds }) => ({
+        url: `/cards/${cardId}/dependencies`,
+        method: 'POST',
+        body: { parentCardIds },
+      }),
+      invalidatesTags: (_r, _e, { cardId }) => [{ type: 'DependencyGraph', id: cardId }],
+    }),
+    removeDependency: builder.mutation<ApiRes<void>, { cardId: number; parentCardId: number }>({
+      query: ({ cardId, parentCardId }) => ({
+        url: `/cards/${cardId}/dependencies/${parentCardId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_r, _e, { cardId }) => [{ type: 'DependencyGraph', id: cardId }],
+    }),
   }),
 });
+
+export interface CardInfo {
+  id: number;
+  listId: number;
+  title: string;
+  priority: string;
+  isArchived: boolean;
+  dueDate: string | null;
+  listName: string;
+  boardName: string;
+}
+
+export interface DependencyGraph {
+  card: CardInfo;
+  blockedBy: CardInfo[];
+  blocking: CardInfo[];
+}
+
+export interface CardSelection {
+  id: number;
+  title: string;
+  boardId: number;
+  boardName: string;
+  listName: string;
+}
 
 export interface CommentResponse {
   id: number;
@@ -463,6 +515,10 @@ export const {
   useGetBoardAnalyticsQuery,
   useUpdateBoardVisibilityMutation,
   useGetPublicBoardQuery,
+  useGetWorkspaceCardsQuery,
+  useGetDependencyGraphQuery,
+  useAddDependenciesMutation,
+  useRemoveDependencyMutation,
 } = boardApi;
 
 export const useGetBoardsByWorkspaceQuery = useGetBoardsQuery;

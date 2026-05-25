@@ -39,7 +39,26 @@ import {
 import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
-import { FiArchive, FiCheckSquare, FiPaperclip, FiTag, FiClock, FiCalendar, FiUsers } from 'react-icons/fi';
+import { useBreakdownTaskMutation, useSuggestPriorityMutation } from '../../services/aiApi';
+import type { PrioritySuggestion } from '../../types/ai.types';
+import {
+  FiArchive,
+  FiCheckSquare,
+  FiPaperclip,
+  FiTag,
+  FiClock,
+  FiCalendar,
+  FiUsers,
+  FiGitBranch,
+} from 'react-icons/fi';
+import {
+  useGetDependencyGraphQuery,
+  useAddDependenciesMutation,
+  useRemoveDependencyMutation,
+  useGetWorkspaceCardsQuery,
+} from '../../services/boardApi';
+import type { CardInfo, CardSelection } from '../../services/boardApi';
+import DependencyGraphModal from './DependencyGraphModal';
 import CommentSection from './CommentSection';
 import styles from './CardDetailModal.module.css';
 
@@ -50,6 +69,7 @@ interface CardDetailModalProps {
   onClose: () => void;
   priorityColor: (priority: string) => string;
   readOnly?: boolean;
+  highlightCommentId?: number;
 }
 
 const PRESET_COLORS = [
@@ -62,7 +82,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   boardId,
   workspaceId,
   onClose,
+  priorityColor,
   readOnly = false,
+  highlightCommentId,
 }) => {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || '');
@@ -71,11 +93,17 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [newItemContent, setNewItemContent] = useState<{ [key: number]: string }>({});
   const [editingChecklistId, setEditingChecklistId] = useState<number | null>(null);
   const [editingChecklistName, setEditingChecklistName] = useState('');
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editingItemContent, setEditingItemContent] = useState('');
   const [showMemberPicker, setShowMemberPicker] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAllActivities, setShowAllActivities] = useState(false);
   const [memberSearch, setMemberSearch] = useState('');
+  const [showDependencies, setShowDependencies] = useState(false);
+  const [showDepGraph, setShowDepGraph] = useState(false);
+  const [showDepSearch, setShowDepSearch] = useState(false);
+  const [depSearch, setDepSearch] = useState('');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [updateCard] = useUpdateCardMutation();
@@ -93,6 +121,26 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [uploadAttachment] = useUploadAttachmentMutation();
   const [deleteAttachment] = useDeleteAttachmentMutation();
   const [archiveCard] = useArchiveCardMutation();
+  const [breakdownTask] = useBreakdownTaskMutation();
+  const [suggestPriority] = useSuggestPriorityMutation();
+  const { data: depGraphRes, isFetching: isDepFetching } = useGetDependencyGraphQuery(card.id);
+  const depGraph = depGraphRes?.data;
+
+  const getDepDotColor = (listName: string, dueDate: string | null | undefined, isArchived: boolean | undefined) => {
+    if (isArchived) return '#64748b';
+    const lower = (listName || '').toLowerCase();
+    if (['done', 'completed', 'closed', 'hoàn thành'].some(kw => lower.includes(kw))) return '#22c55e';
+    if (dueDate && new Date(dueDate) < new Date()) return '#ef4444';
+    if (['in progress', 'doing', 'in review', 'đang thực hiện'].some(kw => lower.includes(kw))) return '#f59e0b';
+    return '#64748b';
+  };
+  const [addDependencies, { isLoading: isAddingDep }] = useAddDependenciesMutation();
+  const [removeDependency, { isLoading: isRemovingDep }] = useRemoveDependencyMutation();
+  const { data: workspaceCardsRes } = useGetWorkspaceCardsQuery(workspaceId);
+  const workspaceCards = workspaceCardsRes?.data || [];
+
+  const [aiPrioritySuggestion, setAiPrioritySuggestion] = useState<PrioritySuggestion | null>(null);
+  const [aiPriorityLoading, setAiPriorityLoading] = useState(false);
   
   const { data: activitiesRes } = useGetCardActivitiesQuery(card.id);
   const activities = activitiesRes?.data || [];
@@ -109,6 +157,30 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     setStartDate(card.startDate ? card.startDate.slice(0, 16) : '');
     setDueDate(card.dueDate ? card.dueDate.slice(0, 16) : '');
   }, [card]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAiPriorityLoading(true);
+    suggestPriority({ cardId: card.id })
+      .unwrap()
+      .then(res => {
+        if (cancelled) return;
+        const suggestion = res?.data;
+        if (!suggestion) return;
+        setAiPrioritySuggestion(suggestion);
+        const isDefaultPriority = !card.priority || card.priority === 'MEDIUM';
+        if (isDefaultPriority && suggestion.suggestedPriority !== 'MEDIUM') {
+          handleUpdateCard({ priority: suggestion.suggestedPriority });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAiPrioritySuggestion(null);
+      })
+      .finally(() => {
+        if (!cancelled) setAiPriorityLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [card.id]);
 
   const handleUpdateCard = async (body: Partial<CardItem>) => {
     await updateCard({ id: card.id, boardId, body }).unwrap();
@@ -150,6 +222,14 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     await deleteChecklistItem({ itemId, boardId, cardId: card.id }).unwrap();
   };
 
+  const handleEditItem = async (itemId: number) => {
+    if (editingItemContent?.trim()) {
+      await updateChecklistItem({ itemId, boardId, cardId: card.id, content: editingItemContent.trim() }).unwrap();
+      setEditingItemId(null);
+      setEditingItemContent('');
+    }
+  };
+
   const handleAddLabel = async (labelId: number) => {
     if (!card.labels.some(l => l.id === labelId)) {
       await addLabelToCard({ cardId: card.id, labelId, boardId }).unwrap();
@@ -184,6 +264,37 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
     if (confirm('Lưu trữ thẻ này?')) {
       await archiveCard({ id: card.id, boardId }).unwrap();
       onClose();
+    }
+  };
+
+  const handleAiBreakdown = async () => {
+    if (!confirm('🧠 Tự động phân rã task này thành các subtask bằng AI?')) return;
+    try {
+      const res = await breakdownTask({ cardId: card.id }).unwrap();
+      const suggestions = res?.data;
+      if (!suggestions || suggestions.length === 0) {
+        alert('AI không thể phân rã task này. Vui lòng thử lại.');
+        return;
+      }
+      const checklistRes = await createChecklist({
+        cardId: card.id,
+        boardId,
+        name: '🧠 Phân rã tự động',
+      }).unwrap();
+      const checklistId = checklistRes.data.id;
+      await Promise.all(
+        suggestions.map(s =>
+          createChecklistItem({
+            checklistId,
+            boardId,
+            cardId: card.id,
+            content: `${s.title} (${s.estimatedHours}h)`,
+          }).unwrap()
+        )
+      );
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string }, message?: string };
+      alert(`Phân rã thất bại: ${error?.data?.message || error?.message || 'Lỗi kết nối'}`);
     }
   };
 
@@ -260,6 +371,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             <button className={styles.quickActionBtn} onClick={handleCreateChecklist}>
               <FiCheckSquare /> <span>Việc cần làm</span>
             </button>
+            <button className={styles.quickActionBtn} onClick={handleAiBreakdown}>
+              🧠 <span>Phân rã</span>
+            </button>
             <button className={styles.quickActionBtn} onClick={() => fileInputRef.current?.click()}>
               <FiPaperclip /> <span>Đính kèm</span>
             </button>
@@ -272,6 +386,9 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             <button className={styles.quickActionBtn} onClick={() => setShowMemberPicker(!showMemberPicker)}>
               <FiUsers /> <span>Thành viên</span>
             </button>
+            <button className={styles.quickActionBtn} onClick={() => setShowDependencies(!showDependencies)}>
+              <FiGitBranch /> <span>Phụ thuộc</span>
+            </button>
             <button className={styles.quickActionBtn} onClick={handleArchiveCard}>
               <FiArchive /> <span>Lưu trữ</span>
             </button>
@@ -280,8 +397,30 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
         <div className={styles.contentGrid}>
           <main className={styles.mainContent}>
-            {/* Metadata Section (Members, Labels, Due Date) */}
+            {/* Metadata Section (Members, Labels, Priority, Due Date) */}
             <div className={styles.metadataRow}>
+              <div className={styles.metaSection}>
+                <h4 className={styles.metaLabel}>Độ ưu tiên</h4>
+                <div className={styles.priorityDisplay}>
+                  <span
+                    className={styles.priorityBadge}
+                    style={{ background: priorityColor(card.priority) }}
+                  >
+                    {card.priority}
+                  </span>
+                  {aiPrioritySuggestion && aiPrioritySuggestion.suggestedPriority !== card.priority && (
+                    <span
+                      className={styles.aiPriorityBadge}
+                      title={`AI gợi ý: ${aiPrioritySuggestion.reason}`}
+                      onClick={() => handleUpdateCard({ priority: aiPrioritySuggestion.suggestedPriority })}
+                    >
+                      AI: {aiPrioritySuggestion.suggestedPriority}
+                    </span>
+                  )}
+                  {aiPriorityLoading && <span className={styles.aiPriorityLoading}>...</span>}
+                </div>
+              </div>
+
               <div className={styles.metaSection}>
                 <h4 className={styles.metaLabel}>Thành viên</h4>
                 <div className={styles.avatarGroup}>
@@ -420,10 +559,26 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                           onChange={(e) => !readOnly && handleToggleItem(item.id, e.target.checked)}
                           disabled={readOnly}
                         />
-                        <span className={`${styles.itemContent} ${item.isCompleted ? styles.itemCompleted : ''}`}>
-                          {item.content}
-                        </span>
-                        {!readOnly && <button className={styles.deleteItemBtn} onClick={() => handleDeleteItem(item.id)}><MdDelete /></button>}
+                        {editingItemId === item.id ? (
+                          <input
+                            className={styles.editItemInput}
+                            value={editingItemContent}
+                            onChange={(e) => setEditingItemContent(e.target.value)}
+                            autoFocus
+                            onBlur={() => handleEditItem(item.id)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleEditItem(item.id)}
+                          />
+                        ) : (
+                          <span className={`${styles.itemContent} ${item.isCompleted ? styles.itemCompleted : ''}`}>
+                            {item.content}
+                          </span>
+                        )}
+                        {!readOnly && (
+                          <>
+                            <button className={styles.editItemBtn} onClick={() => { setEditingItemId(item.id); setEditingItemContent(item.content); }}><MdEdit /></button>
+                            <button className={styles.deleteItemBtn} onClick={() => handleDeleteItem(item.id)}><MdDelete /></button>
+                          </>
+                        )}
                       </div>
                     ))}
                     {!readOnly && (
@@ -480,6 +635,252 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 )}
               </div>
             </div>
+            {/* Dependencies Section */}
+            {showDependencies && (
+              <div className={styles.section} style={{ marginTop: '16px' }}>
+                <div className={styles.sectionHeader}>
+                  <FiGitBranch className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Phụ thuộc</h3>
+                  {isDepFetching && <span style={{ color: '#94a3b8', fontSize: '12px', marginLeft: '8px' }}>...</span>}
+                  <button
+                    className={styles.showMoreBtn}
+                    onClick={() => depGraph && setShowDepGraph(true)}
+                    style={{ marginLeft: 'auto', fontSize: '12px' }}
+                    disabled={!depGraph}
+                  >
+                    🔗 Sơ đồ
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '24px', marginTop: '12px', minHeight: 0 }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                    <h4 style={{ color: '#ef4444', fontSize: '13px', margin: '0 0 8px', fontWeight: 600, flexShrink: 0 }}>
+                      Bị chặn bởi
+                    </h4>
+                    {!depGraph ? (
+                      <p style={{ color: '#64748b', fontSize: '13px' }}>Đang tải...</p>
+                    ) : (
+                      <div style={{ maxHeight: '240px', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}>
+                        {depGraph.blockedBy.length === 0 ? (
+                          <p style={{ color: '#64748b', fontSize: '13px' }}>Không có</p>
+                        ) : (
+                          depGraph.blockedBy.map((p: CardInfo) => (
+                            <div
+                              key={p.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 12px',
+                                background: '#0f172a',
+                                borderRadius: '8px',
+                                marginBottom: '6px',
+                                fontSize: '13px',
+                                opacity: isRemovingDep ? 0.5 : 1,
+                                transition: 'opacity 0.2s',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  borderRadius: '50%',
+                                  background: getDepDotColor(p.listName, p.dueDate, p.isArchived),
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <span style={{ flex: 1, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {p.title}
+                              </span>
+                              <span style={{ color: '#64748b', fontSize: '11px', flexShrink: 0, maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.listName}</span>
+                              {!readOnly && (
+                                <button
+                                  disabled={isRemovingDep}
+                                  onClick={async () => {
+                                    try {
+                                      await removeDependency({ cardId: card.id, parentCardId: p.id }).unwrap();
+                                    } catch {
+                                      alert('Không thể gỡ phụ thuộc');
+                                    }
+                                  }}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: isRemovingDep ? '#334155' : '#64748b',
+                                    cursor: isRemovingDep ? 'not-allowed' : 'pointer',
+                                    fontSize: '14px',
+                                    padding: '2px 4px',
+                                    flexShrink: 0,
+                                  }}
+                                  title="Gỡ phụ thuộc"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                    <h4 style={{ color: '#22c55e', fontSize: '13px', margin: '0 0 8px', fontWeight: 600, flexShrink: 0 }}>
+                      Đang chặn
+                    </h4>
+                    {!depGraph ? (
+                      <p style={{ color: '#64748b', fontSize: '13px' }}>Đang tải...</p>
+                    ) : (
+                      <div style={{ maxHeight: '240px', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}>
+                        {depGraph.blocking.length === 0 ? (
+                          <p style={{ color: '#64748b', fontSize: '13px' }}>Không có</p>
+                        ) : (
+                          depGraph.blocking.map((c: CardInfo) => (
+                            <div
+                              key={c.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 12px',
+                                background: '#0f172a',
+                                borderRadius: '8px',
+                                marginBottom: '6px',
+                                fontSize: '13px',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  borderRadius: '50%',
+                                  background: getDepDotColor(c.listName, c.dueDate, c.isArchived),
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <span style={{ flex: 1, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {c.title}
+                              </span>
+                              <span style={{ color: '#64748b', fontSize: '11px', flexShrink: 0, maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.listName}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {!readOnly && (
+                  <div style={{ marginTop: '12px' }}>
+                    {showDepSearch ? (
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          autoFocus
+                          placeholder="Tìm kiếm card để thêm phụ thuộc..."
+                          value={depSearch}
+                          onChange={(e) => setDepSearch(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            background: '#0f172a',
+                            border: '1px solid #334155',
+                            borderRadius: '8px',
+                            color: '#f1f5f9',
+                            fontSize: '13px',
+                            outline: 'none',
+                            boxSizing: 'border-box',
+                          }}
+                        />
+                        {isAddingDep && (
+                          <p style={{ padding: '8px 12px', color: '#94a3b8', fontSize: '13px', margin: 0 }}>
+                            Đang thêm...
+                          </p>
+                        )}
+                        {!isAddingDep && (
+                          <div
+                            style={{
+                              marginTop: '4px',
+                              maxHeight: '260px',
+                              overflowY: 'auto',
+                              background: '#0f172a',
+                              border: '1px solid #334155',
+                              borderRadius: '8px',
+                              scrollbarWidth: 'thin',
+                              scrollbarColor: '#334155 transparent',
+                            }}
+                          >
+                            {workspaceCards
+                              .filter((wc: CardSelection) => wc.id !== card.id)
+                              .filter((wc: CardSelection) => wc.title.toLowerCase().includes(depSearch.toLowerCase()))
+                              .map((wc: CardSelection) => (
+                                <div
+                                  key={wc.id}
+                                  onClick={async () => {
+                                    try {
+                                      await addDependencies({ cardId: card.id, parentCardIds: [wc.id] }).unwrap();
+                                      setDepSearch('');
+                                      setShowDepSearch(false);
+                                    } catch {
+                                      alert('Phát hiện vòng lặp dependency!');
+                                    }
+                                  }}
+                                  style={{
+                                    padding: '10px 12px',
+                                    cursor: 'pointer',
+                                    fontSize: '13px',
+                                    color: '#f1f5f9',
+                                    borderBottom: '1px solid #1e293b',
+                                    transition: 'background 0.15s',
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.background = '#1e293b'}
+                                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                >
+                                  <div style={{ fontWeight: 500 }}>{wc.title}</div>
+                                  <div style={{ color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
+                                    <span style={{ color: '#3b82f6' }}>{wc.boardName}</span> / {wc.listName}
+                                  </div>
+                                </div>
+                              ))}
+                            {workspaceCards.filter((wc: CardSelection) => wc.id !== card.id).filter((wc: CardSelection) => wc.title.toLowerCase().includes(depSearch.toLowerCase())).length === 0 && (
+                              <p style={{ padding: '12px', color: '#64748b', fontSize: '13px', margin: 0, textAlign: 'center' }}>
+                                Không tìm thấy card
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowDepSearch(true)}
+                        style={{
+                          padding: '6px 12px',
+                          background: '#334155',
+                          border: 'none',
+                          borderRadius: '6px',
+                          color: '#f1f5f9',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                        }}
+                      >
+                        + Thêm phụ thuộc
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Dependency Graph Modal */}
+            {showDepGraph && depGraph && (
+              <DependencyGraphModal
+                graph={depGraph}
+                onClose={() => setShowDepGraph(false)}
+                onCardClick={() => {
+                  setShowDepGraph(false);
+                }}
+              />
+            )}
+
           </main>
 
           <aside className={styles.activityColumn}>
@@ -488,7 +889,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               <h3 className={styles.sectionTitle}>Nhận xét và hoạt động</h3>
             </div>
             
-            <CommentSection cardId={card.id} workspaceId={workspaceId} readOnly={readOnly} />
+            <CommentSection cardId={card.id} workspaceId={workspaceId} readOnly={readOnly} highlightCommentId={highlightCommentId} />
 
             <div className={styles.activityList}>
               {(showAllActivities ? activities : activities.slice(0, 5)).map((activity) => (

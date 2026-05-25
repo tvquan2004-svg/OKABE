@@ -29,6 +29,27 @@ export interface ChatRequest {
   workspaceId?: number;
 }
 
+export interface SubtaskSuggestion {
+  title: string;
+  estimatedHours: number;
+}
+
+export interface PrioritySuggestion {
+  suggestedPriority: string;
+  score: number;
+  reason: string;
+}
+
+export interface StandupSummary {
+  userId: number;
+  userName: string;
+  avatarUrl: string | null;
+  date: string;
+  done: string;
+  inProgress: string;
+  blocked: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;

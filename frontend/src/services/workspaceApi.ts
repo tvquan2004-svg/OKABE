@@ -127,6 +127,20 @@ export const workspaceApi = apiSlice.injectEndpoints({
         method: 'POST',
       }),
     }),
+    acceptInvitationById: builder.mutation<ApiResponseWrapper<void>, number>({
+      query: (invitationId) => ({
+        url: `/workspaces/invitations/${invitationId}/accept`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Workspace', 'Notification'],
+    }),
+    rejectInvitationById: builder.mutation<ApiResponseWrapper<void>, number>({
+      query: (invitationId) => ({
+        url: `/workspaces/invitations/${invitationId}/reject`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Notification'],
+    }),
   }),
 });
 
@@ -142,4 +156,6 @@ export const {
   useRemoveWorkspaceMemberMutation,
   useAcceptInvitationMutation,
   useRejectInvitationMutation,
+  useAcceptInvitationByIdMutation,
+  useRejectInvitationByIdMutation,
 } = workspaceApi;

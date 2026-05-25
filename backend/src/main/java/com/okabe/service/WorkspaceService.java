@@ -43,5 +43,7 @@ public interface WorkspaceService {
     // Invitation Management
     void inviteMember(Long workspaceId, com.okabe.dto.request.AddWorkspaceMemberRequest request, UserPrincipal currentUser);
     void acceptInvitation(String token, UserPrincipal currentUser);
+    void acceptInvitationById(Long invitationId, UserPrincipal currentUser);
     void rejectInvitation(String token, UserPrincipal currentUser);
+    void rejectInvitationById(Long invitationId, UserPrincipal currentUser);
 }

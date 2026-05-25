@@ -20,6 +20,7 @@ public class WorkspaceResponse {
     private OwnerInfo owner;
     private String currentUserRole;
     private int memberCount;
+    private long boardCount;
     private LocalDateTime createdAt;
 
     @Getter

@@ -1,12 +1,23 @@
 package com.okabe.controller;
 
+import com.okabe.dto.request.BreakdownRequest;
 import com.okabe.dto.request.ChatRequest;
+import com.okabe.dto.request.SentimentRequest;
+import com.okabe.dto.request.SuggestPriorityRequest;
 import com.okabe.dto.response.ApiResponse;
 import com.okabe.dto.response.ChatResponse;
 import com.okabe.dto.response.ConversationResponse;
 import com.okabe.dto.response.MessageResponse;
+import com.okabe.dto.response.PrioritySuggestion;
+import com.okabe.dto.response.SentimentResult;
+import com.okabe.dto.response.StandupSummary;
+import com.okabe.dto.response.SubtaskSuggestion;
 import com.okabe.security.UserPrincipal;
 import com.okabe.service.AiChatService;
+import com.okabe.service.AiPriorityService;
+import com.okabe.service.AiSentimentService;
+import com.okabe.service.AiStandupService;
+import com.okabe.service.AiTaskBreakdownService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,6 +44,60 @@ import java.util.concurrent.Executors;
 public class AiChatController {
 
     private final AiChatService aiChatService;
+    private final AiTaskBreakdownService aiTaskBreakdownService;
+    private final AiPriorityService aiPriorityService;
+    private final AiStandupService aiStandupService;
+    private final AiSentimentService aiSentimentService;
+
+    @PostMapping("/breakdown")
+    @Operation(summary = "Phân rã task thành các subtask bằng AI")
+    public ResponseEntity<ApiResponse<List<SubtaskSuggestion>>> breakdownTask(
+            @Valid @RequestBody BreakdownRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        List<SubtaskSuggestion> suggestions = aiTaskBreakdownService.breakdownTask(request.cardId());
+        return ResponseEntity.ok(ApiResponse.success(suggestions));
+    }
+
+    @PostMapping("/suggest-priority")
+    @Operation(summary = "Gợi ý độ ưu tiên cho card dựa trên context")
+    public ResponseEntity<ApiResponse<PrioritySuggestion>> suggestPriority(
+            @Valid @RequestBody SuggestPriorityRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        PrioritySuggestion suggestion = aiPriorityService.suggestPriority(request.cardId());
+        return ResponseEntity.ok(ApiResponse.success(suggestion));
+    }
+
+    @GetMapping("/standup")
+    @Operation(summary = "Tạo standup summary cho một user trong ngày")
+    public ResponseEntity<ApiResponse<StandupSummary>> getStandup(
+            @RequestParam Long workspaceId,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String date,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        Long targetUserId = userId != null ? userId : currentUser.getId();
+        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
+        StandupSummary summary = aiStandupService.generateStandup(targetUserId, workspaceId, targetDate);
+        return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+
+    @PostMapping("/sentiment")
+    @Operation(summary = "Phân tích cảm xúc của văn bản")
+    public ResponseEntity<ApiResponse<SentimentResult>> analyzeSentiment(
+            @Valid @RequestBody SentimentRequest request) {
+        SentimentResult result = aiSentimentService.analyzeSentiment(request.text());
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    @GetMapping("/standup/workspace/{workspaceId}")
+    @Operation(summary = "Tổng hợp standup của tất cả member trong workspace")
+    public ResponseEntity<ApiResponse<List<StandupSummary>>> getWorkspaceStandup(
+            @PathVariable Long workspaceId,
+            @RequestParam(required = false) String date,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
+        List<StandupSummary> summaries = aiStandupService.generateWorkspaceStandup(workspaceId, targetDate);
+        return ResponseEntity.ok(ApiResponse.success(summaries));
+    }
 
     @PostMapping("/conversations")
     @Operation(summary = "Tạo cuộc hội thoại mới")

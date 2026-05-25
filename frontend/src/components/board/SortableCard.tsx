@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FiAlertCircle, FiCalendar } from 'react-icons/fi';
+import { FiAlertCircle, FiCalendar, FiArchive, FiTrash2 } from 'react-icons/fi';
 import type { CardItem } from '../../services/boardApi';
 import styles from '../../pages/BoardPage.module.css';
 import { getFullFileUrl } from '../../utils/urlHelper';
@@ -9,6 +9,8 @@ import { getFullFileUrl } from '../../utils/urlHelper';
 interface SortableCardProps {
   card: CardItem;
   onCardClick: (card: CardItem) => void;
+  onArchiveCard?: (cardId: number) => Promise<void>;
+  onDeleteCard?: (cardId: number) => Promise<void>;
   priorityColor: (priority: string) => string;
   matchedCardIds: number[] | null;
   isDragDisabled?: boolean;
@@ -17,6 +19,8 @@ interface SortableCardProps {
 const SortableCard: React.FC<SortableCardProps> = ({
   card,
   onCardClick,
+  onArchiveCard,
+  onDeleteCard,
   priorityColor,
   matchedCardIds,
   isDragDisabled = false,
@@ -61,6 +65,27 @@ const SortableCard: React.FC<SortableCardProps> = ({
       }`}
       onClick={() => onCardClick(card)}
     >
+      {!isDragDisabled && (
+        <div className={styles.cardActions}>
+          <button
+            className={styles.cardActionBtn}
+            onClick={(e) => { e.stopPropagation(); onArchiveCard?.(card.id); }}
+            title="Lưu trữ thẻ"
+          >
+            <FiArchive size={13} />
+          </button>
+          <button
+            className={styles.cardActionBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confirm('Xoá thẻ này?')) onDeleteCard?.(card.id);
+            }}
+            title="Xoá thẻ"
+          >
+            <FiTrash2 size={13} />
+          </button>
+        </div>
+      )}
       {coverImage && (
         <div className={styles.cardCover}>
           <img src={getFullUrl(coverImage)} alt="Cover" />
