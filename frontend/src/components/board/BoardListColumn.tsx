@@ -16,6 +16,8 @@ interface BoardListColumnProps {
   onArchiveList: (listId: number) => void;
   onAddCard: (listId: number, title: string) => Promise<void>;
   onCardClick: (card: CardItem) => void;
+  onArchiveCard?: (cardId: number) => Promise<void>;
+  onDeleteCard?: (cardId: number) => Promise<void>;
   priorityColor: (priority: string) => string;
   matchedCardIds: number[] | null;
   readOnly?: boolean;
@@ -28,6 +30,8 @@ function BoardListColumn({
   onArchiveList,
   onAddCard,
   onCardClick,
+  onArchiveCard,
+  onDeleteCard,
   priorityColor,
   matchedCardIds,
   readOnly = false,
@@ -91,6 +95,8 @@ function BoardListColumn({
                 key={card.id}
                 card={card}
                 onCardClick={onCardClick}
+                onArchiveCard={onArchiveCard}
+                onDeleteCard={onDeleteCard}
                 priorityColor={priorityColor}
                 matchedCardIds={matchedCardIds}
               />

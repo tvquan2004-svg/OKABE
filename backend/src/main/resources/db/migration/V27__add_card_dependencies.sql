@@ -1,0 +1,1 @@
+ALTER TABLE cards ADD COLUMN parent_ids JSON DEFAULT NULL;

@@ -223,9 +223,20 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         User inviter = userRepository.findById(currentUser.getId()).orElseThrow();
         
-        String recipientName = userRepository.findByEmail(request.email())
-                .map(User::getUsername)
-                .orElse("there");
+        String recipientName = "there";
+        java.util.Optional<User> existingUser = userRepository.findByEmail(request.email());
+        if (existingUser.isPresent()) {
+            recipientName = existingUser.get().getUsername();
+            notificationService.createNotification(
+                existingUser.get(),
+                inviter,
+                "WORKSPACE_INVITATION",
+                "WORKSPACE",
+                workspaceId,
+                invitation.getId(),
+                String.format("Bạn có lời mời tham gia không gian làm việc: %s", workspace.getName())
+            );
+        }
 
         log.info("[SERVICE] Queuing workspace invitation email asynchronously for: {}", request.email());
         emailNotificationService.sendWorkspaceInvitationEmail(
@@ -277,6 +288,55 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Transactional
     public void rejectInvitation(String token, UserPrincipal currentUser) {
         WorkspaceInvitation invitation = invitationRepository.findByToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
+
+        User user = userRepository.findById(currentUser.getId()).orElseThrow();
+        if (!user.getEmail().equalsIgnoreCase(invitation.getEmail())) {
+            throw new UnauthorizedException("You cannot reject this invitation");
+        }
+
+        invitation.setStatus("REJECTED");
+        invitationRepository.save(invitation);
+        log.info("User {} rejected invitation to workspace {}", user.getEmail(), invitation.getWorkspaceId());
+    }
+
+    @Override
+    @Transactional
+    public void acceptInvitationById(Long invitationId, UserPrincipal currentUser) {
+        WorkspaceInvitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
+
+        if (!invitation.getStatus().equals("PENDING")) {
+            throw new IllegalStateException("Invitation is no longer pending");
+        }
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            invitation.setStatus("EXPIRED");
+            invitationRepository.save(invitation);
+            throw new IllegalStateException("Invitation has expired");
+        }
+
+        User user = userRepository.findById(currentUser.getId()).orElseThrow();
+        if (!user.getEmail().equalsIgnoreCase(invitation.getEmail())) {
+            throw new UnauthorizedException("This invitation was sent to a different email address");
+        }
+
+        WorkspaceMember member = WorkspaceMember.builder()
+                .workspaceId(invitation.getWorkspaceId())
+                .userId(user.getId())
+                .role(invitation.getRole())
+                .build();
+        memberRepository.save(member);
+
+        invitation.setStatus("ACCEPTED");
+        invitationRepository.save(invitation);
+        log.info("User {} accepted invitation to workspace {}", user.getEmail(), invitation.getWorkspaceId());
+    }
+
+    @Override
+    @Transactional
+    public void rejectInvitationById(Long invitationId, UserPrincipal currentUser) {
+        WorkspaceInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
 
         User user = userRepository.findById(currentUser.getId()).orElseThrow();

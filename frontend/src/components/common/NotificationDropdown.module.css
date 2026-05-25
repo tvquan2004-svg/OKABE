@@ -204,3 +204,55 @@
   color: #f1f5f9;
   border-color: rgba(255, 255, 255, 0.2);
 }
+
+.inviteActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.acceptBtn,
+.declineBtn {
+  flex: 1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.acceptBtn {
+  background: #22c55e;
+  color: #fff;
+}
+
+.acceptBtn:hover {
+  background: #16a34a;
+}
+
+.acceptBtn:disabled,
+.declineBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.declineBtn {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #475569;
+}
+
+.declineBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+}
+
+.actionedLabel {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #22c55e;
+  padding: 4px 0;
+}

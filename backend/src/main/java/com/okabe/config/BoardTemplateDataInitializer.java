@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -34,6 +35,7 @@ public class BoardTemplateDataInitializer implements CommandLineRunner {
             
             log.info("System board templates seeded successfully.");
         }
+        seedDependencyWorkflow();
     }
 
     private void seedSoftwareSprint() {
@@ -61,7 +63,21 @@ public class BoardTemplateDataInitializer implements CommandLineRunner {
                 List.of("Today", "This Week", "Someday", "Done"));
     }
 
+    private void seedDependencyWorkflow() {
+        createSystemTemplate("Dependency Workflow",
+                "Visualize task dependencies with DAG. Lists are named to auto-color nodes.",
+                List.of("To Do", "In Progress", "Done"),
+                Map.of(
+                    0, List.of("Task A - Frontend (blocker)", "Task B - Backend (blocker)"),
+                    1, List.of("Task C - Integration (blocked by A & B)")
+                ));
+    }
+
     private void createSystemTemplate(String name, String description, List<String> listNames) {
+        createSystemTemplate(name, description, listNames, Map.of());
+    }
+
+    private void createSystemTemplate(String name, String description, List<String> listNames, Map<Integer, List<String>> listCards) {
         if (templateRepository.existsByNameAndIsSystemTrue(name)) return;
 
         BoardTemplate template = BoardTemplate.builder()
@@ -78,6 +94,17 @@ public class BoardTemplateDataInitializer implements CommandLineRunner {
                     .position(i)
                     .cards(new ArrayList<>())
                     .build();
+
+            List<String> cardTitles = listCards.getOrDefault(i, List.of());
+            for (int j = 0; j < cardTitles.size(); j++) {
+                TemplateCard card = TemplateCard.builder()
+                        .templateList(list)
+                        .title(cardTitles.get(j))
+                        .position(j)
+                        .build();
+                list.getCards().add(card);
+            }
+
             template.getLists().add(list);
         }
 

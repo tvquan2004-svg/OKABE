@@ -47,4 +47,7 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
 
     @Query("SELECT c FROM Card c LEFT JOIN FETCH c.members WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false")
     List<Card> findAllWithMembersByWorkspace(@Param("workspaceId") Long workspaceId);
+
+    @Query(value = "SELECT * FROM cards WHERE parent_ids IS NOT NULL AND JSON_CONTAINS(parent_ids, CAST(:cardId AS CHAR))", nativeQuery = true)
+    List<Card> findDependentCards(@Param("cardId") Long cardId);
 }

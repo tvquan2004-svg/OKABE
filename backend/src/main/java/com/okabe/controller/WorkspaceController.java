@@ -130,4 +130,22 @@ public class WorkspaceController {
         workspaceService.rejectInvitation(token, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation rejected"));
     }
+
+    @PostMapping("/invitations/{invitationId}/accept")
+    @Operation(summary = "Accept a workspace invitation by ID (from in-app notification)")
+    public ResponseEntity<ApiResponse<Void>> acceptInvitationById(
+            @PathVariable Long invitationId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        workspaceService.acceptInvitationById(invitationId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Invitation accepted"));
+    }
+
+    @PostMapping("/invitations/{invitationId}/reject")
+    @Operation(summary = "Reject a workspace invitation by ID (from in-app notification)")
+    public ResponseEntity<ApiResponse<Void>> rejectInvitationById(
+            @PathVariable Long invitationId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        workspaceService.rejectInvitationById(invitationId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Invitation rejected"));
+    }
 }

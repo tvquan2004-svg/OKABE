@@ -27,6 +27,7 @@
     "react-markdown": "^10.1.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.2",
+    "reactflow": "^11.11.4",
     "recharts": "^2.12.7",
     "remark-gfm": "^4.0.1",
     "sockjs-client": "^1.6.1"

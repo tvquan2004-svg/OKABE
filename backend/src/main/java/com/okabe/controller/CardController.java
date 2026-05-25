@@ -256,4 +256,35 @@ public class CardController {
         return ResponseEntity.ok(ApiResponse.success(
                 cardService.getWorkspaceCards(workspaceId, currentUser)));
     }
+
+    // ─── Dependency Graph ─────────────────────────────
+
+    @PostMapping("/api/v1/cards/{cardId}/dependencies")
+    @Operation(summary = "Add dependencies to a card")
+    public ResponseEntity<ApiResponse<Void>> addDependencies(
+            @PathVariable Long cardId,
+            @Valid @RequestBody CardDependencyRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.addDependencies(cardId, request, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Dependencies added"));
+    }
+
+    @GetMapping("/api/v1/cards/{cardId}/dependency-graph")
+    @Operation(summary = "Get dependency graph for a card")
+    public ResponseEntity<ApiResponse<DependencyGraphResponse>> getDependencyGraph(
+            @PathVariable Long cardId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(ApiResponse.success(
+                cardService.getDependencyGraph(cardId, currentUser)));
+    }
+
+    @DeleteMapping("/api/v1/cards/{cardId}/dependencies/{parentCardId}")
+    @Operation(summary = "Remove a dependency from a card")
+    public ResponseEntity<ApiResponse<Void>> removeDependency(
+            @PathVariable Long cardId,
+            @PathVariable Long parentCardId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        cardService.removeDependency(cardId, parentCardId, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Dependency removed"));
+    }
 }

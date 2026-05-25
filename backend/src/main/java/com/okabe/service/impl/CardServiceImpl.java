@@ -23,10 +23,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.okabe.repository.specification.CardSpecification;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,6 +52,7 @@ public class CardServiceImpl implements CardService {
     private final NotificationService notificationService;
     private final WebSocketService webSocketService;
     private final EmailNotificationService emailNotificationService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public Page<CardResponse> searchCards(Long boardId, CardSearchRequest request, UserPrincipal currentUser) {
@@ -222,6 +228,8 @@ public class CardServiceImpl implements CardService {
         int newPos = (request.position() != null) ? request.position() : targetCards.size();
         newPos = Math.max(0, Math.min(newPos, targetCards.size()));
 
+        boolean wasPreviouslyCompleted = isCompletedList(card.getTaskList().getName());
+
         card.setTaskList(targetList);
         card.setPosition(newPos);
 
@@ -233,6 +241,21 @@ public class CardServiceImpl implements CardService {
         
         cardRepository.saveAll(targetCards);
         card = cardRepository.save(card);
+
+        // Notify dependent cards when blocker is moved to a Done list
+        if (!wasPreviouslyCompleted && isCompletedList(targetList.getName())) {
+            List<Card> dependentCards = cardRepository.findDependentCards(cardId);
+            String message = "Dependency completed: \"" + card.getTitle() + "\"";
+            for (Card dc : dependentCards) {
+                for (User member : dc.getMembers()) {
+                    notificationService.createNotification(member, actor,
+                            "DEPENDENCY_COMPLETED", "CARD", dc.getId(), cardId, message);
+                }
+            }
+            if (!dependentCards.isEmpty()) {
+                log.info("Notified {} dependent cards of card {} completion", dependentCards.size(), cardId);
+            }
+        }
 
         log.info("Card {} moved from board {} to board {} list {} at position {}", 
             cardId, sourceBoard.getId(), targetBoard.getId(), targetList.getId(), newPos);
@@ -629,6 +652,127 @@ public class CardServiceImpl implements CardService {
                 .map(this::toCardResponse);
     }
 
+    // ─── Dependency Graph ─────────────────────────────────
+
+    @Override
+    @Transactional
+    public void addDependencies(Long cardId, CardDependencyRequest request, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateWriteAccess(card, currentUser.getId());
+
+        List<Long> newParentIds = request.parentCardIds();
+        for (Long parentId : newParentIds) {
+            if (parentId.equals(cardId)) {
+                throw new IllegalArgumentException("Card cannot depend on itself");
+            }
+            Card parentCard = cardRepository.findById(parentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Card", parentId));
+            validateWriteAccess(parentCard, currentUser.getId());
+        }
+
+        List<Long> existingIds = parseParentIds(card.getParentIds());
+        Set<Long> merged = new HashSet<>(existingIds);
+        merged.addAll(newParentIds);
+
+        List<Long> allParents = new ArrayList<>(merged);
+        if (hasCycle(cardId, allParents)) {
+            throw new IllegalStateException("Phát hiện vòng lặp dependency");
+        }
+
+        try {
+            card.setParentIds(objectMapper.writeValueAsString(allParents));
+        } catch (Exception e) {
+            log.error("Failed to serialize parent IDs", e);
+            throw new RuntimeException("Failed to save dependencies");
+        }
+        cardRepository.save(card);
+        log.info("Dependencies added to card {}: {}", cardId, allParents);
+    }
+
+    @Override
+    @Transactional
+    public void removeDependency(Long cardId, Long parentCardId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateWriteAccess(card, currentUser.getId());
+
+        List<Long> parentIds = parseParentIds(card.getParentIds());
+        parentIds.remove(parentCardId);
+
+        try {
+            card.setParentIds(parentIds.isEmpty() ? null : objectMapper.writeValueAsString(parentIds));
+        } catch (Exception e) {
+            log.error("Failed to serialize parent IDs", e);
+            throw new RuntimeException("Failed to remove dependency");
+        }
+        cardRepository.save(card);
+        log.info("Dependency removed from card {}: {}", cardId, parentCardId);
+    }
+
+    @Override
+    public DependencyGraphResponse getDependencyGraph(Long cardId, UserPrincipal currentUser) {
+        Card card = findCardOrThrow(cardId);
+        validateMembership(card, currentUser.getId());
+
+        CardInfoResponse cardInfo = toCardInfoResponse(card);
+
+        List<Long> parentIds = parseParentIds(card.getParentIds());
+        List<CardInfoResponse> blockedBy = parentIds.stream()
+                .map(id -> cardRepository.findById(id).orElse(null))
+                .filter(c -> c != null)
+                .map(this::toCardInfoResponse)
+                .collect(Collectors.toList());
+
+        List<CardInfoResponse> blocking = cardRepository.findAll().stream()
+                .filter(c -> {
+                    List<Long> ids = parseParentIds(c.getParentIds());
+                    return ids.contains(cardId);
+                })
+                .map(this::toCardInfoResponse)
+                .collect(Collectors.toList());
+
+        return DependencyGraphResponse.builder()
+                .card(cardInfo)
+                .blockedBy(blockedBy)
+                .blocking(blocking)
+                .build();
+    }
+
+    private List<Long> parseParentIds(String parentIdsJson) {
+        if (parentIdsJson == null || parentIdsJson.isBlank()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(parentIdsJson, new TypeReference<List<Long>>() {});
+        } catch (Exception e) {
+            log.error("Failed to parse parent IDs JSON: {}", parentIdsJson, e);
+            return new ArrayList<>();
+        }
+    }
+
+    private boolean hasCycle(Long cardId, List<Long> parentIds) {
+        for (Long parentId : parentIds) {
+            if (parentId.equals(cardId)) return true;
+            Card parent = cardRepository.findById(parentId).orElse(null);
+            if (parent == null) continue;
+            List<Long> grandParentIds = parseParentIds(parent.getParentIds());
+            if (hasCycle(cardId, grandParentIds)) return true;
+        }
+        return false;
+    }
+
+    private CardInfoResponse toCardInfoResponse(Card card) {
+        return CardInfoResponse.builder()
+                .id(card.getId())
+                .listId(card.getTaskList().getId())
+                .title(card.getTitle())
+                .priority(card.getPriority().name())
+                .isArchived(card.getIsArchived())
+                .dueDate(card.getDueDate())
+                .listName(card.getTaskList().getName())
+                .boardName(card.getTaskList().getBoard().getName())
+                .build();
+    }
+
     // ─── Helpers ────────────────────────────────────────
 
     private Card findCardOrThrow(Long id) {
@@ -769,5 +913,10 @@ public class CardServiceImpl implements CardService {
     private User findUserOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
+    }
+
+    private boolean isCompletedList(String name) {
+        String lower = name.toLowerCase();
+        return lower.contains("done") || lower.contains("completed") || lower.contains("closed") || lower.contains("hoàn thành");
     }
 }

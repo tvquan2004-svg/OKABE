@@ -49,4 +49,11 @@ public interface CardService {
     Page<CardResponse> getArchivedCards(Long boardId, int page, int size, UserPrincipal currentUser);
 
     List<CardSelectionResponse> getWorkspaceCards(Long workspaceId, UserPrincipal currentUser);
+
+    // Dependency Graph
+    DependencyGraphResponse getDependencyGraph(Long cardId, UserPrincipal currentUser);
+
+    void addDependencies(Long cardId, CardDependencyRequest request, UserPrincipal currentUser);
+
+    void removeDependency(Long cardId, Long parentCardId, UserPrincipal currentUser);
 }

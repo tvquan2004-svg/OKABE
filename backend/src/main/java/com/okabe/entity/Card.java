@@ -85,4 +85,7 @@ public class Card extends BaseEntity {
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Attachment> attachments = new ArrayList<>();
+
+    @Column(name = "parent_ids", columnDefinition = "JSON")
+    private String parentIds;
 }

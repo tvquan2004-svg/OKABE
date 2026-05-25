@@ -10,6 +10,7 @@ import {
   type TaskList,
   type CardItem,
   useCreateCardMutation,
+  useDeleteCardMutation,
   useCreateListMutation,
   useDeleteListMutation,
   useGetBoardQuery,
@@ -98,6 +99,7 @@ function BoardPage() {
   const [deleteList] = useDeleteListMutation();
   const [archiveList] = useArchiveListMutation();
   const [moveCard] = useMoveCardMutation();
+  const [deleteCard] = useDeleteCardMutation();
   const [archiveCard] = useArchiveCardMutation();
   const [saveAsTemplate, { isLoading: isSavingAsTemplate }] = useSaveAsTemplateMutation();
   const [archiveBoard] = useArchiveBoardMutation();
@@ -269,6 +271,24 @@ function BoardPage() {
     } catch (err: unknown) {
       const e = err as { data?: { message?: string } };
       alert(e.data?.message || 'Không thể tạo thẻ mới');
+    }
+  };
+
+  const handleArchiveCard = async (cardId: number) => {
+    try {
+      await archiveCard({ id: cardId, boardId: id }).unwrap();
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể lưu trữ thẻ');
+    }
+  };
+
+  const handleDeleteCard = async (cardId: number) => {
+    try {
+      await deleteCard({ id: cardId, boardId: id }).unwrap();
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } };
+      alert(e.data?.message || 'Không thể xoá thẻ');
     }
   };
 
@@ -526,6 +546,8 @@ function BoardPage() {
               onArchiveList={(listId) => void handleArchiveList(listId)}
               onAddCard={handleAddCard}
               onCardClick={setSelectedCard}
+              onArchiveCard={handleArchiveCard}
+              onDeleteCard={handleDeleteCard}
               priorityColor={priorityColor}
               matchedCardIds={isFiltering ? matchedCardIds : null}
             />
