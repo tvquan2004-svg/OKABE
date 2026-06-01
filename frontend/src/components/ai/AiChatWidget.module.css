@@ -11,20 +11,21 @@
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  border: none;
+  background: var(--color-primary);
+  border: 1px solid var(--color-border);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 24px rgba(79, 70, 229, 0.45);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   z-index: 9000;
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .bubble:hover {
   transform: scale(1.1);
-  box-shadow: 0 8px 32px rgba(79, 70, 229, 0.6);
+  background: var(--color-primary-hover);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .bubbleHidden {
@@ -65,9 +66,9 @@
   background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(79, 70, 229, 0.15);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 24px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   z-index: 9001;
   display: flex;
   flex-direction: column;
@@ -92,7 +93,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
@@ -105,7 +107,8 @@
 .avatar {
   width: 36px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -114,8 +117,8 @@
 }
 
 .headerTitle {
-  color: white;
-  font-weight: 600;
+  color: var(--color-text);
+  font-weight: 700;
   font-size: 15px;
 }
 
@@ -123,14 +126,14 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 
 .statusDot {
   width: 7px;
   height: 7px;
-  background: #4ade80;
+  background: #10b981;
   border-radius: 50%;
 }
 
@@ -140,10 +143,10 @@
 }
 
 .iconBtn {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  color: white;
+  color: var(--color-text-secondary);
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -151,11 +154,13 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  transition: background 0.15s ease;
+  transition: all var(--transition-fast);
 }
 
 .iconBtn:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-hover);
+  color: var(--color-text);
 }
 
 /* Messages */
@@ -174,7 +179,7 @@
 }
 
 .messages::-webkit-scrollbar-thumb {
-  background: rgba(79, 70, 229, 0.3);
+  background: var(--color-accent);
   border-radius: 4px;
 }
 
@@ -182,7 +187,7 @@
 .welcome {
   text-align: center;
   padding: 24px 16px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .welcomeIcon {
@@ -197,7 +202,7 @@
 }
 
 .welcomeText strong {
-  color: #4f46e5;
+  color: var(--color-text);
 }
 
 /* Message rows */
@@ -218,7 +223,8 @@
 .messageAvatar {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -238,14 +244,15 @@
 }
 
 .messageUser .bubble2 {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: var(--color-primary);
   color: white;
   border-radius: 18px 4px 18px 18px;
 }
 
 .messageAi .bubble2 {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 4px 18px 18px 18px;
 }
 
@@ -308,20 +315,21 @@
 }
 
 .quickPrompt {
-  background: rgba(79, 70, 229, 0.08);
-  border: 1px solid rgba(79, 70, 229, 0.2);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
-  color: #4f46e5;
+  color: var(--color-text-secondary);
   font-size: 12px;
   padding: 5px 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) ease;
   white-space: nowrap;
 }
 
 .quickPrompt:hover:not(:disabled) {
-  background: rgba(79, 70, 229, 0.15);
-  border-color: #4f46e5;
+  background: var(--color-bg-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .quickPrompt:disabled {
@@ -335,7 +343,7 @@
   align-items: flex-end;
   gap: 8px;
   padding: 12px 14px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
@@ -343,7 +351,7 @@
   flex: 1;
   min-width: 0;
   width: 100%;
-  border: 1.5px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 9px 14px;
   font-size: 14px;
@@ -357,18 +365,19 @@
 }
 
 .input:focus {
-  border-color: #4f46e5;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .input::placeholder {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .sendBtn {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: var(--color-primary);
   border: none;
   color: white;
   font-size: 18px;
@@ -377,12 +386,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast) ease;
 }
 
 .sendBtn:hover:not(:disabled) {
   transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  background: var(--color-primary-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .sendBtn:disabled {
@@ -472,12 +482,13 @@
 }
 
 .mdInlineCode {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   padding: 2px 4px;
   border-radius: 4px;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 0.9em;
-  color: #c026d3;
+  color: var(--color-primary);
 }
 
 .mdCodeBlock {

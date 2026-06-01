@@ -46,6 +46,10 @@ public class Card extends BaseEntity {
     @Column(name = "estimated_hours", precision = 5, scale = 2)
     private BigDecimal estimatedHours;
 
+    @Column(name = "total_focus_minutes")
+    @Builder.Default
+    private Integer totalFocusMinutes = 0;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

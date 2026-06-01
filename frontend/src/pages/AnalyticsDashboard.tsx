@@ -1,11 +1,11 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { 
-  FiArrowLeft, FiBarChart2, FiUsers, FiCheckCircle, FiAlertCircle, 
+import {
+  FiArrowLeft, FiBarChart2, FiUsers, FiCheckCircle, FiAlertCircle,
   FiClock, FiCalendar, FiDownload, FiActivity
 } from 'react-icons/fi';
 import { useGetBoardAnalyticsQuery, useGetBoardQuery } from '../services/boardApi';
@@ -40,8 +40,8 @@ const AnalyticsDashboard: React.FC = () => {
     // Basic CSV export logic
     const headers = ['Mục', 'Tổng cộng', 'Quá hạn', 'Hoàn thành tuần này'];
     const rows = stats.cardsByStatus.map(s => [s.listName, s.total, s.overdue, s.completedThisWeek]);
-    
-    const csvContent = "data:text/csv;charset=utf-8," 
+
+    const csvContent = "data:text/csv;charset=utf-8,"
       + headers.join(",") + "\n"
       + rows.map(e => e.join(",")).join("\n");
 
@@ -123,40 +123,40 @@ const AnalyticsDashboard: React.FC = () => {
               <AreaChart data={stats.burndown}>
                 <defs>
                   <linearGradient id="colorRemaining" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{fill: 'var(--color-text-secondary)', fontSize: 12}}
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <YAxis 
-                  tick={{fill: 'var(--color-text-secondary)', fontSize: 12}}
+                <YAxis
+                  tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
                 />
                 <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="remaining" 
+                <Area
+                  type="monotone"
+                  dataKey="remaining"
                   name="Còn lại"
-                  stroke="#3b82f6" 
-                  fillOpacity={1} 
-                  fill="url(#colorRemaining)" 
+                  stroke="#3b82f6"
+                  fillOpacity={1}
+                  fill="url(#colorRemaining)"
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="completed" 
+                <Area
+                  type="monotone"
+                  dataKey="completed"
                   name="Hoàn thành"
-                  stroke="#22c55e" 
-                  fillOpacity={0} 
+                  stroke="#22c55e"
+                  fillOpacity={0}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -186,7 +186,7 @@ const AnalyticsDashboard: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={PRIORITY_COLORS[entry.priority] || '#64748b'} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
                 />
                 <Legend />
@@ -205,18 +205,18 @@ const AnalyticsDashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stats.cardsByStatus}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis 
-                  dataKey="listName" 
-                  tick={{fill: 'var(--color-text-secondary)', fontSize: 12}}
+                <XAxis
+                  dataKey="listName"
+                  tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <YAxis 
-                  tick={{fill: 'var(--color-text-secondary)', fontSize: 12}}
+                <YAxis
+                  tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
                 />
                 <Bar dataKey="total" name="Tổng số" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -237,7 +237,7 @@ const AnalyticsDashboard: React.FC = () => {
               <BarChart data={stats.activityHeatmap}>
                 <XAxis dataKey="date" hide />
                 <YAxis hide />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
                 />
                 <Bar dataKey="count" name="Hoạt động" fill="#8b5cf6" radius={[2, 2, 0, 0]} />
@@ -283,12 +283,12 @@ const AnalyticsDashboard: React.FC = () => {
                   </td>
                   <td>
                     <div className={styles.progressBar}>
-                      <div 
-                        className={styles.progressFill} 
-                        style={{ 
+                      <div
+                        className={styles.progressFill}
+                        style={{
                           width: `${member.assignedCount > 0 ? ((member.assignedCount - member.overdueCount) / member.assignedCount) * 100 : 100}%`,
                           backgroundColor: member.overdueCount > 0 ? 'var(--color-warning)' : 'var(--color-success)'
-                        }} 
+                        }}
                       />
                     </div>
                   </td>

@@ -60,6 +60,7 @@ import {
 import type { CardInfo, CardSelection } from '../../services/boardApi';
 import DependencyGraphModal from './DependencyGraphModal';
 import CommentSection from './CommentSection';
+import PomodoroWidget from './PomodoroWidget';
 import styles from './CardDetailModal.module.css';
 
 interface CardDetailModalProps {
@@ -394,6 +395,10 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
             </button>
           </div>
         )}
+
+        <div className={styles.pomodoroRow}>
+          <PomodoroWidget cardId={card.id} cardTitle={card.title} totalFocusMinutes={card.totalFocusMinutes} />
+        </div>
 
         <div className={styles.contentGrid}>
           <main className={styles.mainContent}>

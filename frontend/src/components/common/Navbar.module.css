@@ -1,12 +1,15 @@
 .navbar {
   height: 64px;
-  background-color: var(--color-bg-secondary);
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--spacing-lg);
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 80;
 }
 
@@ -30,9 +33,10 @@
 }
 
 .pageTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--color-text);
+  letter-spacing: -0.01em;
 }
 
 .rightSection {
@@ -45,12 +49,18 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  background-color: var(--color-bg);
+  background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: var(--radius-full);
   width: 240px;
   color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+}
+
+.searchBox:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.05);
 }
 
 .searchBox input {
@@ -88,9 +98,9 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  background-color: var(--color-error);
-  color: white;
-  font-size: 10px;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  font-size: 9px;
   font-weight: 700;
   min-width: 16px;
   height: 16px;
@@ -99,7 +109,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  border: 2px solid var(--color-bg-secondary);
+  border: 2px solid var(--color-bg);
 }
 
 .userSection {
@@ -117,14 +127,15 @@
 .avatar {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text);
   overflow: hidden;
 }
 

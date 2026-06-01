@@ -5,39 +5,43 @@
 /* CSS Variables / Design Tokens */
 :root {
   /* Colors */
-  --color-primary: #6366f1;
-  --color-primary-hover: #4f46e5;
-  --color-primary-light: rgba(99, 102, 241, 0.1);
-  --color-secondary: #8b5cf6;
-  --color-accent: #06b6d4;
+  --color-primary: #111111;
+  --color-primary-hover: #000000;
+  --color-primary-light: rgba(17, 17, 17, 0.05);
+  --color-secondary: #3A3A3A;
+  --color-accent: #71717A;
 
-  /* Neutral */
-  --color-bg: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-card: #1e293b;
-  --color-bg-elevated: #334155;
-  --color-surface: #1e293b;
-  --color-border: #334155;
-  --color-border-hover: #475569;
+  /* Neutral Backgrounds */
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F9F9F9;
+  --color-bg-card: #FFFFFF;
+  --color-bg-elevated: #F4F4F5;
+  --color-surface: #FFFFFF;
+  --color-border: #EEEEEE;
+  --color-border-hover: #111111;
 
-  /* Text */
-  --color-text: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  /* Text Hierarchy */
+  --color-text: #111111;
+  --color-text-secondary: #3A3A3A;
+  --color-text-muted: #71717A;
 
-  /* Status */
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
+  /* Status (Desaturated Sophisticated Tones) */
+  --color-success: #1a5c37;
+  --color-success-light: rgba(26, 92, 55, 0.06);
+  --color-warning: #78350f;
+  --color-warning-light: rgba(120, 53, 15, 0.06);
+  --color-error: #991b1b;
+  --color-error-light: rgba(153, 27, 27, 0.06);
+  --color-info: #1e3a8a;
+  --color-info-light: rgba(30, 58, 138, 0.06);
 
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
+  /* Spacing (Increased for whitespace) */
+  --spacing-xs: 0.35rem;
+  --spacing-sm: 0.6rem;
+  --spacing-md: 1.1rem;
+  --spacing-lg: 1.75rem;
+  --spacing-xl: 2.25rem;
+  --spacing-2xl: 3.5rem;
 
   /* Typography */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -47,26 +51,26 @@
   --font-size-lg: 1.125rem;
   --font-size-xl: 1.25rem;
   --font-size-2xl: 1.5rem;
-  --font-size-3xl: 2rem;
-  --font-size-4xl: 2.5rem;
+  --font-size-3xl: 2.25rem;
+  --font-size-4xl: 3rem;
 
-  /* Radius */
-  --radius-sm: 4px;
+  /* Radius (Consistent 8px to 12px) */
+  --radius-sm: 8px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-xl: 12px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  /* Shadows (Subtle micro-shadows) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.02), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --shadow-glow: 0 0 12px rgba(17, 17, 17, 0.03);
 
   /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 250ms ease;
-  --transition-slow: 350ms ease;
+  --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Reset & Base */
@@ -86,21 +90,48 @@ html {
 body {
   font-family: var(--font-family);
   background-color: var(--color-bg);
-  color: var(--color-text);
+  color: var(--color-text-secondary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
 }
 
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-  transition: color var(--transition-fast);
+/* Headings in Deep Black and Bold */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-a:hover {
+/* Link Hover Effect (Subtle underline expanding from center) */
+a:not(.btn) {
+  color: var(--color-text);
+  text-decoration: none;
+  position: relative;
+  transition: color var(--transition-fast);
+  display: inline-block;
+}
+
+a:not(.btn)::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--color-primary);
+  transform-origin: bottom center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a:not(.btn):hover {
   color: var(--color-primary-hover);
+}
+
+a:not(.btn):hover::after {
+  transform: scaleX(1);
 }
 
 button {
@@ -108,11 +139,29 @@ button {
   font-family: inherit;
   border: none;
   outline: none;
+  transition: all var(--transition-fast);
 }
 
-input, textarea, select {
+/* Form inputs focus state (Transitions cleanly to dark gray with subtle soft outer ring glow) */
+input,
+textarea,
+select {
   font-family: inherit;
   font-size: var(--font-size-base);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  padding: 0.6rem 1rem;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.06);
 }
 
 img {
@@ -133,7 +182,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: 0.6rem 1.5rem;
   font-size: var(--font-size-sm);
   font-weight: 600;
   border-radius: var(--radius-md);
@@ -142,19 +191,20 @@ img {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: white;
-  box-shadow: var(--shadow-sm);
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  border: 1px solid var(--color-primary);
 }
 
 .btn-primary:hover {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-glow);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
 }
 

@@ -7,8 +7,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hero {
@@ -68,9 +75,20 @@
   font-size: 1.25rem;
 }
 
-.statIcon.blue { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
-.statIcon.green { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.statIcon.purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+.statIcon.blue {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
+.statIcon.green {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.statIcon.purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
 
 .statInfo {
   display: flex;
@@ -287,9 +305,17 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 0.3; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
 }
 
 /* Modal */
@@ -346,7 +372,8 @@
   color: var(--color-text-secondary);
 }
 
-.modalInput, .modalTextarea {
+.modalInput,
+.modalTextarea {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -356,7 +383,8 @@
   transition: all var(--transition-fast);
 }
 
-.modalInput:focus, .modalTextarea:focus {
+.modalInput:focus,
+.modalTextarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-light);
 }
@@ -398,30 +426,30 @@
   .pageContent {
     padding: var(--spacing-lg);
   }
-  
+
   .welcome h1 {
     font-size: 1.5rem;
   }
-  
+
   .statsBar {
     grid-template-columns: 1fr;
   }
-  
+
   .searchSection {
     flex-direction: column;
     align-items: stretch;
     gap: var(--spacing-md);
   }
-  
+
   .searchBar {
     max-width: none;
   }
-  
+
   .workspaceGrid {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);
   }
-  
+
   .wsIcon {
     width: 48px;
     height: 48px;

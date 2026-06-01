@@ -248,6 +248,7 @@ public class TaskListServiceImpl implements TaskListService {
                 .dueDate(card.getDueDate())
                 .priority(card.getPriority().name())
                 .isArchived(card.getIsArchived())
+                .totalFocusMinutes(card.getTotalFocusMinutes())
                 .createdById(card.getCreatedBy().getId())
                 .createdByName(card.getCreatedBy().getUsername())
                 .createdAt(card.getCreatedAt())
