@@ -24,6 +24,7 @@ import MemberModal from '../components/workspace/MemberModal';
 import SortableBoardCard from '../components/workspace/SortableBoardCard';
 import CreateBoardModal from '../components/workspace/CreateBoardModal';
 import ObjectiveList from '../components/workspace/ObjectiveList';
+import WorkloadHeatmap from '../components/workspace/WorkloadHeatmap';
 import {
   type Board,
   useCreateBoardMutation,
@@ -66,7 +67,7 @@ function WorkspacePage() {
   const [boardDescription, setBoardDescription] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaceDescription, setWorkspaceDescription] = useState('');
-  const [activeTab, setActiveTab] = useState<'boards' | 'okr'>('boards');
+  const [activeTab, setActiveTab] = useState<'boards' | 'okr' | 'workload'>('boards');
 
   const workspace = workspaceData?.data;
   const boards = boardsData?.data;
@@ -285,11 +286,19 @@ function WorkspacePage() {
         >
           OKR
         </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'workload' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('workload')}
+        >
+          Workload
+        </button>
       </div>
 
       <main className={styles.main}>
         {activeTab === 'okr' ? (
           <ObjectiveList workspaceId={id} />
+        ) : activeTab === 'workload' ? (
+          <WorkloadHeatmap workspaceId={id} />
         ) : (
         <>
 
