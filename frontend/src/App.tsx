@@ -16,6 +16,8 @@ import TimelineView from './pages/TimelineView';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import LandingPage from './pages/LandingPage';
 import AiChatWidget from './components/ai/AiChatWidget';
+import { FocusTimerProvider } from './contexts/FocusTimerContext';
+import GlobalFloatingTimer from './components/board/GlobalFloatingTimer';
 
 function LoginRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [searchParams] = useSearchParams();
@@ -27,7 +29,7 @@ function LoginRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
   return <LoginPage />;
 }
 
-function App() {
+function AppContent() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   return (
@@ -55,7 +57,16 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {isAuthenticated && <AiChatWidget />}
+      <GlobalFloatingTimer />
     </>
+  );
+}
+
+function App() {
+  return (
+    <FocusTimerProvider>
+      <AppContent />
+    </FocusTimerProvider>
   );
 }
 

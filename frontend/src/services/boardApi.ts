@@ -55,6 +55,7 @@ export interface CardItem {
   createdById: number;
   createdByName: string;
   createdAt: string;
+  totalFocusMinutes?: number;
   labels: Label[];
   checklists: Checklist[];
   members: User[];

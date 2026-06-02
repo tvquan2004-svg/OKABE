@@ -1,0 +1,253 @@
+.container {
+  padding: var(--spacing-lg) 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.dateRange {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.dateRange label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.dateInput {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.reassignBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.reassignBtn:hover {
+  opacity: 0.9;
+}
+
+.reassignBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.heatmapWrapper {
+  position: relative;
+  padding-top: 40px;
+}
+
+.heatmapScroll {
+  overflow-x: auto;
+  padding-bottom: var(--spacing-md);
+}
+
+.heatmapTable {
+  border-collapse: separate;
+  border-spacing: 3px;
+  min-width: 100%;
+}
+
+.heatmapTable th {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-align: center;
+  padding: 2px;
+  writing-mode: vertical-lr;
+  height: 60px;
+  white-space: nowrap;
+}
+
+.memberLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 140px;
+  padding-right: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.memberLabel img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.memberAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cell {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.cell:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+  z-index: 2;
+}
+
+.cellEmpty {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.cellLow {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.cellMedium {
+  background: rgba(34, 197, 94, 0.4);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.cellHigh {
+  background: rgba(250, 204, 21, 0.5);
+  border-color: rgba(250, 204, 21, 0.6);
+}
+
+.cellVeryHigh {
+  background: rgba(251, 146, 60, 0.5);
+  border-color: rgba(251, 146, 60, 0.6);
+}
+
+.cellOverloaded {
+  background: rgba(239, 68, 68, 0.6);
+  border-color: rgba(239, 68, 68, 0.8);
+  animation: pulseOverload 2s infinite;
+}
+
+@keyframes pulseOverload {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1); }
+}
+
+.tooltip {
+  position: fixed;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.tooltipTitle {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.tooltipHours {
+  color: var(--color-text-secondary);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xl);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.legendLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+}
+
+.legendSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.emptyState {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  text-align: center;
+  color: var(--color-text-muted);
+  margin: var(--spacing-2xl) 0;
+}
+
+.loading {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--color-text-muted);
+}
+
+.headerRow th {
+  writing-mode: horizontal-tb !important;
+  height: auto !important;
+  padding-bottom: 4px !important;
+  font-size: 0.7rem !important;
+}
+
+.weekSeparator {
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}

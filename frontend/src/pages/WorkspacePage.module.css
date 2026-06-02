@@ -6,16 +6,16 @@
 }
 
 .header {
-  background: linear-gradient(to bottom, rgba(99, 102, 241, 0.05), transparent);
+  background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
   padding: var(--spacing-xl) 0;
   margin-bottom: var(--spacing-xl);
 }
 
 .wsHeaderMain {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
+  max-width: 100%;
+  margin: 0;
+  padding: 0 var(--spacing-2xl);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
@@ -23,7 +23,7 @@
 
 .backBtn {
   width: fit-content;
-  background: var(--color-bg-secondary);
+  background: var(--color-bg);
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
   padding: var(--spacing-xs) var(--spacing-md);
@@ -51,9 +51,8 @@
   font-size: var(--font-size-3xl);
   font-weight: 800;
   margin: 0;
-  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
 }
 
 .wsInfo p {
@@ -85,9 +84,9 @@
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--color-border);
-  padding: 0 var(--spacing-lg);
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0 var(--spacing-2xl);
+  max-width: 100%;
+  margin: 0;
 }
 
 .tab {
@@ -113,9 +112,9 @@
 }
 
 .main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
+  max-width: 100%;
+  margin: 0;
+  padding: 0 var(--spacing-2xl);
 }
 
 .sectionHeader {
@@ -188,7 +187,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   padding: 0.6rem 1.2rem;
@@ -196,23 +195,23 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .toggleArchivedBtn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
   border-color: var(--color-primary);
 }
 
 .archivedBoardCard {
   position: relative;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   overflow: hidden;
   height: 140px;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base) ease;
   filter: grayscale(0.8);
   opacity: 0.6;
 }
@@ -220,7 +219,7 @@
 .archivedBoardCard:hover {
   filter: grayscale(0);
   opacity: 1;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--color-bg);
   border-color: var(--board-accent);
   transform: translateY(-4px);
 }
@@ -248,7 +247,7 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: white;
+  color: var(--color-text);
 }
 
 .archivedActions {
@@ -260,15 +259,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   padding: 0.5rem 0.8rem;
   border-radius: var(--radius-md);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .archiveActionBtn:hover {

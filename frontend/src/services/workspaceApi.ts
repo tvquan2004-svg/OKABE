@@ -53,6 +53,24 @@ interface UpdateMemberRoleRequest {
   role: string;
 }
 
+export interface DayWorkload {
+  date: string;
+  cardCount: number;
+  totalHours: number;
+  overloaded: boolean;
+}
+
+export interface MemberWorkload {
+  userId: number;
+  userName: string;
+  avatarUrl: string | null;
+  workload: DayWorkload[];
+}
+
+export interface WorkloadResponse {
+  members: MemberWorkload[];
+}
+
 export const workspaceApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getWorkspaces: builder.query<ApiResponseWrapper<Workspace[]>, void>({
@@ -141,6 +159,10 @@ export const workspaceApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Notification'],
     }),
+    getWorkload: builder.query<ApiResponseWrapper<WorkloadResponse>, { workspaceId: number; from: string; to: string }>({
+      query: ({ workspaceId, from, to }) => `/workspaces/${workspaceId}/workload?from=${from}&to=${to}`,
+      providesTags: (_result, _error, { workspaceId }) => [{ type: 'Workload', id: workspaceId }],
+    }),
   }),
 });
 
@@ -158,4 +180,5 @@ export const {
   useRejectInvitationMutation,
   useAcceptInvitationByIdMutation,
   useRejectInvitationByIdMutation,
+  useGetWorkloadQuery,
 } = workspaceApi;

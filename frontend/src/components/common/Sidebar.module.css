@@ -67,10 +67,7 @@
 .logoText {
   font-size: var(--font-size-base);
   font-weight: 800;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-text);
   letter-spacing: 1px;
   white-space: nowrap;
 }
@@ -86,13 +83,13 @@
 }
 
 .toggleBtn {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-bg);
   color: var(--color-text-secondary);
   font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3px;
+  padding: 4px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   transition: all var(--transition-fast);
@@ -137,7 +134,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px var(--spacing-md);
+  padding: 8px var(--spacing-md);
   color: var(--color-text-secondary);
   transition: all var(--transition-fast);
   text-decoration: none;
@@ -157,7 +154,7 @@
 }
 
 .navItem.active {
-  background: linear-gradient(90deg, var(--color-primary-light) 0%, transparent 100%);
+  background-color: var(--color-bg-elevated);
   color: var(--color-primary);
   border-left-color: var(--color-primary);
   font-weight: 700;
@@ -173,8 +170,9 @@
 .wsIcon {
   width: 24px;
   height: 24px;
-  background: linear-gradient(135deg, var(--color-bg-elevated), var(--color-border));
-  color: var(--color-text);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -187,11 +185,14 @@
 
 .navItem:hover .wsIcon {
   transform: scale(1.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .navItem.active .wsIcon {
-  background: var(--color-primary);
-  color: white;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #FFFFFF;
 }
 
 .collapsed .navItem {

@@ -81,7 +81,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onNavigateToSecurity 
         <div className={styles.avatarSection}>
           <div className={styles.avatarWrapper}>
             <img 
-              src={avatarUrl || `https://ui-avatars.com/api/?name=${username}&background=6366f1&color=fff`} 
+              src={avatarUrl || `https://ui-avatars.com/api/?name=${username}&background=111111&color=fff`} 
               alt={username} 
               className={`${styles.avatar} ${isUploading ? styles.avatarLoading : ''}`}
             />

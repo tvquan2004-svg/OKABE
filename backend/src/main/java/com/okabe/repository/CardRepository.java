@@ -50,4 +50,24 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
 
     @Query(value = "SELECT * FROM cards WHERE parent_ids IS NOT NULL AND JSON_CONTAINS(parent_ids, CAST(:cardId AS CHAR))", nativeQuery = true)
     List<Card> findDependentCards(@Param("cardId") Long cardId);
+
+    @Query(value = """
+            SELECT cm.user_id, DATE(c.due_date) AS work_date,
+                   COUNT(DISTINCT c.id) AS card_count,
+                   COALESCE(SUM(c.estimated_hours), COUNT(DISTINCT c.id) * 2) AS total_hours
+            FROM card_members cm
+            JOIN cards c ON cm.card_id = c.id
+            JOIN lists l ON c.list_id = l.id
+            JOIN boards b ON l.board_id = b.id
+            WHERE b.workspace_id = :workspaceId
+              AND c.due_date >= :from
+              AND c.due_date < :to
+              AND c.is_archived = false
+            GROUP BY cm.user_id, DATE(c.due_date)
+            ORDER BY cm.user_id, work_date
+            """, nativeQuery = true)
+    List<Object[]> findWorkloadByWorkspaceAndDateRange(
+            @Param("workspaceId") Long workspaceId,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
 }

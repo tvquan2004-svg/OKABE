@@ -26,6 +26,8 @@ public class CardResponse {
     private String createdByName;
     private LocalDateTime createdAt;
     
+    private Integer totalFocusMinutes;
+
     // Phase 2 fields
     private List<LabelResponse> labels;
     private List<ChecklistResponse> checklists;

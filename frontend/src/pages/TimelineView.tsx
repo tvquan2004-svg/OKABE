@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
+import {
   FiArrowLeft,
   FiChevronLeft,
   FiChevronRight
 } from 'react-icons/fi';
-import { 
-  useGetBoardQuery, 
-  CardItem 
+import {
+  useGetBoardQuery,
+  CardItem
 } from '../services/boardApi';
 import CardDetailModal from '../components/board/CardDetailModal';
 import styles from './TimelineView.module.css';
@@ -84,7 +84,7 @@ const TimelineView: React.FC = () => {
 
     const start = card.startDate ? new Date(card.startDate) : new Date(card.dueDate!);
     const end = card.dueDate ? new Date(card.dueDate) : new Date(card.startDate!);
-    
+
     const actualEnd = end < start ? start : end;
 
     const leftDiff = (start.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24);
@@ -147,10 +147,10 @@ const TimelineView: React.FC = () => {
             {cards.map(card => {
               const dateObj = card.startDate ? new Date(card.startDate) : (card.dueDate ? new Date(card.dueDate) : null);
               const dateStr = dateObj ? dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '';
-              
+
               return (
-                <div 
-                  key={card.id} 
+                <div
+                  key={card.id}
                   className={styles.sidebarRow}
                   onClick={() => setSelectedCard(card)}
                 >
@@ -190,10 +190,10 @@ const TimelineView: React.FC = () => {
                   {timelineDays.map((_, idx) => (
                     <div key={idx} className={styles.gridLine} style={{ left: idx * DAY_WIDTH }} />
                   ))}
-                  
+
                   {/* Task Bar */}
-                  <div 
-                    className={styles.taskBar} 
+                  <div
+                    className={styles.taskBar}
                     style={getTaskBarStyle(card)}
                     onClick={() => setSelectedCard(card)}
                   >
@@ -213,13 +213,13 @@ const TimelineView: React.FC = () => {
           workspaceId={board.workspaceId}
           onClose={() => setSelectedCard(null)}
           priorityColor={(p) => {
-             switch (p.toUpperCase()) {
-                case 'CRITICAL': return '#ef4444';
-                case 'HIGH': return '#f59e0b';
-                case 'MEDIUM': return '#3b82f6';
-                case 'LOW': return '#22c55e';
-                default: return '#64748b';
-              }
+            switch (p.toUpperCase()) {
+              case 'CRITICAL': return '#ef4444';
+              case 'HIGH': return '#f59e0b';
+              case 'MEDIUM': return '#3b82f6';
+              case 'LOW': return '#22c55e';
+              default: return '#64748b';
+            }
           }}
         />
       )}

@@ -4,6 +4,7 @@ import com.okabe.entity.enums.Priority;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,6 +42,13 @@ public class Card extends BaseEntity {
 
     @Column(name = "start_date")
     private LocalDateTime startDate;
+
+    @Column(name = "estimated_hours", precision = 5, scale = 2)
+    private BigDecimal estimatedHours;
+
+    @Column(name = "total_focus_minutes")
+    @Builder.Default
+    private Integer totalFocusMinutes = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

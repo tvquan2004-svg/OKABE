@@ -481,6 +481,7 @@ public class BoardServiceImpl implements BoardService {
                 .startDate(card.getStartDate())
                 .priority(card.getPriority() != null ? card.getPriority().name() : "MEDIUM")
                 .isArchived(card.getIsArchived())
+                .totalFocusMinutes(card.getTotalFocusMinutes())
                 .createdById(card.getCreatedBy() != null ? card.getCreatedBy().getId() : null)
                 .createdByName(card.getCreatedBy() != null ? card.getCreatedBy().getUsername() : "Hệ thống")
                 .createdAt(card.getCreatedAt())

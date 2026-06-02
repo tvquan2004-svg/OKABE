@@ -1,7 +1,8 @@
 .calendarContainer {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px); /* Navbar height */
+  height: calc(100vh - 64px);
+  /* Navbar height */
   padding: var(--spacing-lg);
   background-color: var(--color-bg);
   overflow: hidden;
@@ -87,12 +88,15 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-template-rows: repeat(6, 1fr);
-  background-color: var(--color-border); /* Grid line color */
-  gap: 1px; /* Gap acts as border */
+  background-color: var(--color-border);
+  /* Grid line color */
+  gap: 1px;
+  /* Gap acts as border */
 }
 
 .dayCell {
-  background-color: var(--color-bg); /* Reset cell background */
+  background-color: var(--color-bg);
+  /* Reset cell background */
   padding: var(--spacing-xs);
   display: flex;
   flex-direction: column;
@@ -171,7 +175,8 @@
 }
 
 .mobileList {
-  display: none; /* Hide on desktop */
+  display: none;
+  /* Hide on desktop */
 }
 
 /* Mobile View */

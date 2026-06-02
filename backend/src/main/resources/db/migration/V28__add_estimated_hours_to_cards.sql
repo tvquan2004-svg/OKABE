@@ -1,0 +1,1 @@
+ALTER TABLE cards ADD COLUMN estimated_hours DECIMAL(5,2) DEFAULT NULL AFTER due_date;
