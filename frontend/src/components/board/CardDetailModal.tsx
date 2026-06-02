@@ -40,6 +40,7 @@ import {
   useGetWorkspaceMembersQuery,
 } from '../../services/workspaceApi';
 import { useBreakdownTaskMutation, useSuggestPriorityMutation } from '../../services/aiApi';
+import { useAppSelector } from '../../hooks/useRedux';
 import type { PrioritySuggestion } from '../../types/ai.types';
 import {
   FiArchive,
@@ -61,6 +62,7 @@ import type { CardInfo, CardSelection } from '../../services/boardApi';
 import DependencyGraphModal from './DependencyGraphModal';
 import CommentSection from './CommentSection';
 import PomodoroWidget from './PomodoroWidget';
+import ErrorBoundary from '../common/ErrorBoundary';
 import styles from './CardDetailModal.module.css';
 
 interface CardDetailModalProps {
@@ -151,6 +153,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   const { data: workspaceMembersData } = useGetWorkspaceMembersQuery(workspaceId);
   const workspaceMembers = workspaceMembersData?.data || [];
+  const currentUserId = useAppSelector(state => state.auth.user?.id);
 
   useEffect(() => {
     setTitle(card.title);
@@ -396,9 +399,13 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
           </div>
         )}
 
-        <div className={styles.pomodoroRow}>
-          <PomodoroWidget cardId={card.id} cardTitle={card.title} totalFocusMinutes={card.totalFocusMinutes} />
-        </div>
+        {currentUserId && card.members.some(m => m.id === currentUserId) && (
+          <div className={styles.pomodoroRow}>
+            <ErrorBoundary>
+              <PomodoroWidget cardId={card.id} cardTitle={card.title} totalFocusMinutes={card.totalFocusMinutes} />
+            </ErrorBoundary>
+          </div>
+        )}
 
         <div className={styles.contentGrid}>
           <main className={styles.mainContent}>

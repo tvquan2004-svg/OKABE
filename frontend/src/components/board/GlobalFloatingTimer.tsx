@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useFocusTimer } from '../../contexts/FocusTimerContext';
 import styles from './GlobalFloatingTimer.module.css';
 
@@ -17,6 +17,17 @@ function GlobalFloatingTimer() {
       initialized.current = true;
     }
   }, []);
+
+  const minutes = Math.floor(state.remaining / 60);
+  const seconds = state.remaining % 60;
+  const totalSec = state.duration;
+  const progressFraction = totalSec > 0 ? (totalSec - state.remaining) / totalSec : 0;
+  const offset = CIRCUMFERENCE * (1 - progressFraction);
+  const isLow = state.remaining <= 300;
+  const isPaused = state.isPaused;
+
+  const ringRatio = totalSec > 0 ? state.remaining / totalSec : 1;
+  const ringColor = ringRatio > 0.5 ? 'var(--color-primary)' : ringRatio > 0.25 ? '#f59e0b' : '#ef4444';
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setDragging(true);
@@ -41,21 +52,6 @@ function GlobalFloatingTimer() {
   }, [dragging, dragOffset]);
 
   if (!state.isRunning && !state.isPaused) return null;
-
-  const minutes = Math.floor(state.remaining / 60);
-  const seconds = state.remaining % 60;
-  const totalSec = state.duration;
-  const progressFraction = totalSec > 0 ? (totalSec - state.remaining) / totalSec : 0;
-  const offset = CIRCUMFERENCE * (1 - progressFraction);
-  const isLow = state.remaining <= 300;
-  const isPaused = state.isPaused;
-
-  const ringColor = useMemo(() => {
-    const ratio = state.remaining / totalSec;
-    if (ratio > 0.5) return 'var(--color-primary)';
-    if (ratio > 0.25) return '#f59e0b';
-    return '#ef4444';
-  }, [state.remaining, totalSec]);
 
   return (
     <div
