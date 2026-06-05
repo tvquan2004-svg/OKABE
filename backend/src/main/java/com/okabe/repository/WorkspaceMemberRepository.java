@@ -22,4 +22,10 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     boolean existsByWorkspaceIdAndEmail(@org.springframework.data.repository.query.Param("workspaceId") Long workspaceId, @org.springframework.data.repository.query.Param("email") String email);
 
     boolean existsByWorkspaceIdAndUserIdAndRoleIn(Long workspaceId, Long userId, List<Role> roles);
+
+    @org.springframework.data.jpa.repository.Query("SELECT wm FROM WorkspaceMember wm JOIN FETCH wm.user WHERE wm.userId = :userId")
+    List<WorkspaceMember> findByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT wm FROM WorkspaceMember wm JOIN FETCH wm.user WHERE wm.workspaceId IN :workspaceIds")
+    List<WorkspaceMember> findByWorkspaceIdIn(@org.springframework.data.repository.query.Param("workspaceIds") List<Long> workspaceIds);
 }

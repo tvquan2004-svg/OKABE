@@ -18,6 +18,7 @@ import LandingPage from './pages/LandingPage';
 import AiChatWidget from './components/ai/AiChatWidget';
 import { FocusTimerProvider } from './contexts/FocusTimerContext';
 import GlobalFloatingTimer from './components/board/GlobalFloatingTimer';
+import { CommandPalette } from './components/common/CommandPalette';
 
 function LoginRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [searchParams] = useSearchParams();
@@ -57,6 +58,7 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {isAuthenticated && <AiChatWidget />}
+      {isAuthenticated && <CommandPalette />}
       <GlobalFloatingTimer />
     </>
   );
