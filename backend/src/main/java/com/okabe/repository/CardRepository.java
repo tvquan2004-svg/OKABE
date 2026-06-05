@@ -31,7 +31,8 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
 
     List<Card> findByIsArchivedFalseAndDueDateBetweenAndNotificationSentFalse(LocalDateTime start, LocalDateTime end);
 
-    List<Card> findByTaskListBoardIdAndIsArchivedFalse(Long boardId);
+    @Query("SELECT c FROM Card c JOIN FETCH c.taskList LEFT JOIN FETCH c.members WHERE c.taskList.board.id = :boardId AND c.isArchived = false")
+    List<Card> findByTaskListBoardIdAndIsArchivedFalse(@Param("boardId") Long boardId);
 
     @Query("SELECT c FROM Card c JOIN c.members m WHERE m.id = :userId AND c.taskList.board.workspace.id = :workspaceId AND c.dueDate < :now AND c.isArchived = false")
     List<Card> findOverdueByUserAndWorkspace(@Param("userId") Long userId, @Param("workspaceId") Long workspaceId, @Param("now") LocalDateTime now);
@@ -45,7 +46,7 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
     @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false AND c.dueDate IS NOT NULL AND c.dueDate BETWEEN :now AND :end")
     List<Card> findDueSoonCardsByWorkspace(@Param("workspaceId") Long workspaceId, @Param("now") LocalDateTime now, @Param("end") LocalDateTime end);
 
-    @Query("SELECT c FROM Card c LEFT JOIN FETCH c.members WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false")
+    @Query("SELECT c FROM Card c JOIN FETCH c.taskList LEFT JOIN FETCH c.members WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false")
     List<Card> findAllWithMembersByWorkspace(@Param("workspaceId") Long workspaceId);
 
     @Query(value = "SELECT * FROM cards WHERE parent_ids IS NOT NULL AND JSON_CONTAINS(parent_ids, CAST(:cardId AS CHAR))", nativeQuery = true)

@@ -40,6 +40,7 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/ws/**",
             "/api/v1/public/**",
+            "/api/v1/lunar/**",
             "/api/v1/admin/test/**"   // Dev-only: trigger scheduled jobs manually
     };
 

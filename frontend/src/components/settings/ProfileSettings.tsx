@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiCamera, FiMail, FiUser, FiShield, FiArrowRight, FiUploadCloud } from 'react-icons/fi';
 import { useGetMeQuery, useUpdateProfileMutation, useUploadAvatarMutation } from '../../services/userApi';
+import { getFullFileUrl } from '../../utils/urlHelper';
 import styles from './ProfileSettings.module.css';
 
 interface ProfileSettingsProps {
@@ -12,6 +13,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onNavigateToSecurity 
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [uploadAvatar, { isLoading: isUploading }] = useUploadAvatarMutation();
 
+  const [avatarError, setAvatarError] = useState(false);
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -81,9 +83,10 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onNavigateToSecurity 
         <div className={styles.avatarSection}>
           <div className={styles.avatarWrapper}>
             <img 
-              src={avatarUrl || `https://ui-avatars.com/api/?name=${username}&background=111111&color=fff`} 
+              src={avatarError || !avatarUrl ? `https://ui-avatars.com/api/?name=${username}&background=111111&color=fff` : getFullFileUrl(avatarUrl)} 
               alt={username} 
               className={`${styles.avatar} ${isUploading ? styles.avatarLoading : ''}`}
+              onError={() => setAvatarError(true)}
             />
             <button 
               className={styles.cameraBtn} 

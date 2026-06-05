@@ -183,6 +183,20 @@
             <artifactId>bucket4j_jdk17-lettuce</artifactId>
             <version>8.11.1</version>
         </dependency>
+
+        <!-- Apache POI for Excel export -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+
+        <!-- Flying Saucer for PDF export -->
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>flying-saucer-pdf</artifactId>
+            <version>9.13.0</version>
+        </dependency>
     </dependencies>
 
     <build>

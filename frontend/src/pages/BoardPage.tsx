@@ -24,7 +24,7 @@ import {
 } from '../services/boardApi';
 import { BoardFilter } from '../components/board/BoardFilter';
 import BackgroundPicker from '../components/board/BackgroundPicker';
-import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity, FiTrash2, FiShare2 } from 'react-icons/fi';
+import { FiSettings, FiImage, FiCopy, FiArchive, FiCalendar, FiPieChart, FiChevronLeft, FiClock, FiActivity, FiTrash2, FiShare2, FiDownload } from 'react-icons/fi';
 import { useSaveAsTemplateMutation } from '../services/templateApi';
 import ShareBoardModal from '../components/board/ShareBoardModal';
 import { 
@@ -33,6 +33,7 @@ import {
 import ArchivedItemsPanel from '../components/board/ArchivedItemsPanel';
 import BoardActivitySidebar from '../components/board/BoardActivitySidebar';
 import { useGetWorkspaceQuery, useGetWorkspaceMembersQuery } from '../services/workspaceApi';
+import { downloadExport } from '../utils/reportExport';
 import styles from './BoardPage.module.css';
 import {
   DndContext,
@@ -141,6 +142,7 @@ function BoardPage() {
   const [editingList, setEditingList] = useState<TaskList | null>(null);
   const [listName, setListName] = useState('');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   
   // Phase 2: Card Detail Modal State
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
@@ -507,6 +509,40 @@ function BoardPage() {
               >
                 <FiArchive /> <span>Đã lưu trữ</span>
               </button>
+              <div style={{ position: 'relative' }}>
+                <button 
+                  className="btn btn-outline" 
+                  style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} 
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                >
+                  <FiDownload /> <span>Xuất báo cáo</span>
+                </button>
+                {showExportMenu && (
+                  <div 
+                    style={{
+                      position: 'absolute', top: '100%', right: 0, zIndex: 100,
+                      background: '#2a2a3d', borderRadius: 8, overflow: 'hidden',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: 160,
+                    }}
+                    onClick={() => setShowExportMenu(false)}
+                  >
+                    <button 
+                      className="btn btn-outline" 
+                      style={{ width: '100%', justifyContent: 'flex-start', borderRadius: 0, border: 'none', color: 'white', padding: '10px 16px' }}
+                      onClick={() => downloadExport(`/api/v1/boards/${id}/export?format=pdf`, `board_${id}_report.pdf`)}
+                    >
+                      PDF
+                    </button>
+                    <button 
+                      className="btn btn-outline" 
+                      style={{ width: '100%', justifyContent: 'flex-start', borderRadius: 0, border: 'none', color: 'white', padding: '10px 16px' }}
+                      onClick={() => downloadExport(`/api/v1/boards/${id}/export?format=excel`, `board_${id}_report.xlsx`)}
+                    >
+                      Excel
+                    </button>
+                  </div>
+                )}
+              </div>
               <button 
                 className="btn btn-outline" 
                 style={{ color: '#ff4d4f', borderColor: 'rgba(255,77,79,0.2)' }} 

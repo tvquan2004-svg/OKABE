@@ -11,7 +11,7 @@ import {
   DragOverlay,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff, FiGrid } from 'react-icons/fi';
+import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff, FiGrid, FiDownload } from 'react-icons/fi';
 import BoardArchiveZone from '../components/workspace/BoardArchiveZone';
 import {
   SortableContext,
@@ -39,6 +39,7 @@ import {
   useGetWorkspaceQuery,
   useUpdateWorkspaceMutation,
 } from '../services/workspaceApi';
+import { downloadExport } from '../utils/reportExport';
 import styles from './WorkspacePage.module.css';
 
 function WorkspacePage() {
@@ -68,6 +69,12 @@ function WorkspacePage() {
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaceDescription, setWorkspaceDescription] = useState('');
   const [activeTab, setActiveTab] = useState<'boards' | 'okr' | 'workload'>('boards');
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exportFrom, setExportFrom] = useState(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [exportTo, setExportTo] = useState(() => new Date().toISOString().split('T')[0]);
 
   const workspace = workspaceData?.data;
   const boards = boardsData?.data;
@@ -263,6 +270,58 @@ function WorkspacePage() {
               <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
                 Thành viên ({workspace?.memberCount ?? 0})
               </button>
+              {canManageWorkspace ? (
+                <div style={{ position: 'relative' }}>
+                  <button className="btn btn-outline" onClick={() => setShowExportMenu(!showExportMenu)}>
+                    <FiDownload /> <span>Xuất báo cáo</span>
+                  </button>
+                  {showExportMenu && (
+                    <div 
+                      style={{
+                        position: 'absolute', top: '100%', right: 0, zIndex: 100,
+                        background: '#2a2a3d', borderRadius: 8, overflow: 'hidden',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: 240, padding: 12,
+                      }}
+                    >
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <input 
+                      type="date" value={exportFrom} 
+                      onChange={e => setExportFrom(e.target.value)}
+                      style={{ flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid #444', background: '#1e1e2e', color: '#fff', fontSize: 12 }}
+                    />
+                    <span style={{ color: '#999', lineHeight: '30px' }}>→</span>
+                    <input 
+                      type="date" value={exportTo} 
+                      onChange={e => setExportTo(e.target.value)}
+                      style={{ flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid #444', background: '#1e1e2e', color: '#fff', fontSize: 12 }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button 
+                      className="btn btn-outline" 
+                      style={{ flex: 1, justifyContent: 'center', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}
+                      onClick={() => {
+                        setShowExportMenu(false);
+                        downloadExport(`/api/v1/workspaces/${id}/export?format=pdf&from=${exportFrom}&to=${exportTo}`, `workspace_${id}_report.pdf`);
+                      }}
+                    >
+                      PDF
+                    </button>
+                    <button 
+                      className="btn btn-outline" 
+                      style={{ flex: 1, justifyContent: 'center', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}
+                      onClick={() => {
+                        setShowExportMenu(false);
+                        downloadExport(`/api/v1/workspaces/${id}/export?format=excel&from=${exportFrom}&to=${exportTo}`, `workspace_${id}_report.xlsx`);
+                      }}
+                    >
+                      Excel
+                    </button>
+                  </div>
+                </div>
+              )}
+              </div>
+              ) : null}
               {canManageWorkspace ? (
                 <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
                   Thiết lập

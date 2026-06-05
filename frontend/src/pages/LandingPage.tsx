@@ -42,8 +42,64 @@ const LandingPage: React.FC = () => {
         </div>
         <div className={styles.heroImage}>
           <div className={styles.cssIllustration}>
-            <div className={styles.glassCard}></div>
-            <div className={styles.glassCardSmall}></div>
+            <div className={styles.glassCard}>
+              <div className={styles.mockHeader}>
+                <div className={styles.mockTitle}>
+                  <div className={styles.mockDots}>
+                    <span className={`${styles.mockDot} ${styles.mockDotRed}`} />
+                    <span className={`${styles.mockDot} ${styles.mockDotYellow}`} />
+                    <span className={`${styles.mockDot} ${styles.mockDotGreen}`} />
+                  </div>
+                  <span>Giới thiệu OKABE</span>
+                </div>
+              </div>
+              <div className={styles.mockList}>
+                <div className={styles.mockCard}>
+                  <div className={styles.mockCardText}>Hệ thống Quản lý Dự án</div>
+                  <p className={styles.mockCardDesc}>Không gian số tinh gọn giúp kết nối thành viên và theo dõi tiến độ công việc tức thì.</p>
+                  <div className={styles.mockCardMeta}>
+                    <span className={`${styles.mockTag} ${styles.mockTagBlue}`}>Tổng quan</span>
+                    <div className={styles.mockAvatars}>
+                      <span className={styles.mockAvatar}>O</span>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.mockCard}>
+                  <div className={styles.mockCardText}>Tối ưu hóa năng suất</div>
+                  <p className={styles.mockCardDesc}>Tích hợp bảng Kanban kéo thả, quản lý mục tiêu OKR, lịch biểu và sơ đồ Gantt.</p>
+                  <div className={styles.mockProgressContainer}>
+                    <div className={styles.mockProgressBar} style={{ width: '85%' }} />
+                  </div>
+                  <div className={styles.mockCardMeta}>
+                    <span className={`${styles.mockTag} ${styles.mockTagGreen}`}>Tính năng</span>
+                    <div className={styles.mockAvatars}>
+                      <span className={styles.mockAvatar}>Q</span>
+                      <span className={styles.mockAvatar}>M</span>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.mockCard}>
+                  <div className={styles.mockCardText}>Mã nguồn mở & Tự do</div>
+                  <p className={styles.mockCardDesc}>Nền tảng miễn phí dành cho các nhóm khởi nghiệp, nhà phát triển trẻ và cộng đồng.</p>
+                  <div className={styles.mockCardMeta}>
+                    <span className={`${styles.mockTag} ${styles.mockTagOrange}`}>Giá trị</span>
+                    <div className={styles.mockAvatars}>
+                      <span className={styles.mockAvatar}>F</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className={styles.glassCardSmall}>
+              <div className={styles.mockSmallTitle}>Tiến độ dự án</div>
+              <div className={styles.mockMetric}>85%</div>
+              <div className={styles.mockGraph}>
+                <span className={styles.mockBar} style={{ height: '30%' }} />
+                <span className={styles.mockBar} style={{ height: '45%' }} />
+                <span className={styles.mockBar} style={{ height: '65%' }} />
+                <span className={`${styles.mockBar} ${styles.mockBarActive}`} />
+              </div>
+            </div>
             <div className={styles.circle1}></div>
             <div className={styles.circle2}></div>
           </div>

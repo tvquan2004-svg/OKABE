@@ -8,6 +8,7 @@ import {
 import { useGetWorkspaceMembersQuery } from '../../services/workspaceApi';
 import { useAppSelector } from '../../hooks/useRedux';
 import { MdSend, MdEdit, MdDelete } from 'react-icons/md';
+import { UserAvatar } from '../common/UserAvatar';
 import styles from './CardDetailModal.module.css';
 
 interface CommentSectionProps {
@@ -151,11 +152,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, re
       {!readOnly && (
         <div className={styles.commentInputWrapper}>
           <div className={styles.activityAvatar}>
-            {currentUser?.avatarUrl ? (
-              <img src={currentUser.avatarUrl} alt={currentUser.username} />
-            ) : (
-              currentUser?.username?.charAt(0).toUpperCase() || 'U'
-            )}
+            <UserAvatar avatarUrl={currentUser?.avatarUrl} username={currentUser?.username || 'U'} size={32} />
           </div>
           <div className={styles.inputArea}>
             <textarea
@@ -175,7 +172,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, re
                     onClick={() => insertMention(member.username)}
                   >
                     <div className={styles.avatarCircleSmall}>
-                      {member.avatarUrl ? <img src={member.avatarUrl} alt={member.username} /> : member.username.charAt(0).toUpperCase()}
+                      <UserAvatar avatarUrl={member.avatarUrl} username={member.username} size={24} />
                     </div>
                     <span>{member.username}</span>
                   </div>
@@ -208,11 +205,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, workspaceId, re
                 className={`${styles.activityItem} ${highlightCommentId === comment.id ? styles.highlightSentiment : ''}`}
               >
                 <div className={styles.activityAvatar}>
-                  {comment.author.avatarUrl ? (
-                    <img src={comment.author.avatarUrl} alt={comment.author.username} />
-                  ) : (
-                    comment.author.username.charAt(0).toUpperCase()
-                  )}
+                  <UserAvatar avatarUrl={comment.author.avatarUrl} username={comment.author.username} size={32} />
                 </div>
                 <div className={styles.commentBubble}>
                   <div className={styles.activityHeader}>
