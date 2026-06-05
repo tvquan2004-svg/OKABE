@@ -43,6 +43,64 @@
   gap: var(--spacing-sm);
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.lunarToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  position: relative;
+  padding: 6px 12px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  user-select: none;
+}
+
+.lunarToggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggleSlider {
+  width: 36px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  position: relative;
+  transition: background var(--transition-fast);
+}
+
+.toggleSlider::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+  top: 2px;
+  left: 2px;
+  transition: all var(--transition-fast);
+}
+
+.lunarToggle input:checked + .toggleSlider {
+  background: var(--color-primary);
+}
+
+.lunarToggle input:checked + .toggleSlider::after {
+  background: white;
+  left: 18px;
+}
+
 .filterBar {
   display: flex;
   gap: var(--spacing-md);
@@ -109,6 +167,14 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+.holidayCell {
+  background-color: rgba(255, 0, 0, 0.06);
+}
+
+.holidayCell:hover {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
 .dayCellHeader {
   display: flex;
   justify-content: flex-end;
@@ -133,9 +199,33 @@
   color: white;
 }
 
+.holidayCell .dayNumber {
+  color: var(--color-error);
+  font-weight: 700;
+}
+
+.isToday.holidayCell .dayNumber {
+  background: var(--color-error);
+  color: white;
+}
+
 .notCurrentMonth {
   opacity: 0.3;
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.lunarText {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  text-align: right;
+  padding: 0 4px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.holidayLunarText {
+  color: var(--color-error);
+  font-weight: 600;
 }
 
 .cardList {
@@ -179,6 +269,12 @@
   /* Hide on desktop */
 }
 
+.mobileLunar {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
 /* Mobile View */
 @media (max-width: 768px) {
   .calendarContainer {
@@ -189,6 +285,11 @@
   .calendarHeader {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .headerRight {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .calendarGridWrapper {

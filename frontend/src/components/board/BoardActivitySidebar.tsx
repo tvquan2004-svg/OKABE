@@ -1,6 +1,7 @@
 import React from 'react';
-import { FiX, FiActivity, FiUser, FiClock, FiCheckCircle, FiPlusCircle, FiArrowRight, FiFileText } from 'react-icons/fi';
+import { FiX, FiActivity, FiClock, FiCheckCircle, FiPlusCircle, FiArrowRight, FiFileText } from 'react-icons/fi';
 import { useGetBoardActivitiesQuery } from '../../services/boardApi';
+import { UserAvatar } from '../common/UserAvatar';
 import styles from './BoardActivitySidebar.module.css';
 
 interface BoardActivitySidebarProps {
@@ -73,13 +74,7 @@ const BoardActivitySidebar: React.FC<BoardActivitySidebarProps> = ({ boardId, is
                   onClick={() => activity.cardId && onCardClick(activity.cardId)}
                 >
                   <div className={styles.avatarWrapper}>
-                    {activity.avatarUrl ? (
-                      <img src={activity.avatarUrl} alt={activity.username} className={styles.avatar} />
-                    ) : (
-                      <div className={styles.avatarPlaceholder}>
-                        <FiUser />
-                      </div>
-                    )}
+                    <UserAvatar avatarUrl={activity.avatarUrl} username={activity.username} size={32} className={styles.avatar} />
                     <div className={styles.actionBadge}>
                       {getActionIcon(activity.actionType)}
                     </div>

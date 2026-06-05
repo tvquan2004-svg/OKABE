@@ -5,6 +5,7 @@ import {
   type DayWorkload,
 } from '../../services/workspaceApi';
 import { FiRefreshCw } from 'react-icons/fi';
+import { UserAvatar } from '../common/UserAvatar';
 import styles from './WorkloadHeatmap.module.css';
 
 interface WorkloadHeatmapProps {
@@ -130,13 +131,7 @@ function WorkloadHeatmap({ workspaceId }: WorkloadHeatmapProps) {
                   <tr key={member.userId}>
                     <td>
                       <div className={styles.memberLabel}>
-                        {member.avatarUrl ? (
-                          <img src={member.avatarUrl} alt={member.userName} />
-                        ) : (
-                          <div className={styles.memberAvatar}>
-                            {member.userName.charAt(0).toUpperCase()}
-                          </div>
-                        )}
+                        <UserAvatar avatarUrl={member.avatarUrl} username={member.userName} size={24} />
                         {member.userName}
                       </div>
                     </td>

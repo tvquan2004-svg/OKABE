@@ -6,6 +6,7 @@ import {
   useUpdateWorkspaceMemberRoleMutation,
   type WorkspaceMember,
 } from '../../services/workspaceApi';
+import { UserAvatar } from '../common/UserAvatar';
 import styles from './MemberModal.module.css';
 
 interface MemberModalProps {
@@ -67,15 +68,6 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -128,11 +120,7 @@ const MemberModal = ({ workspaceId, onClose, currentUserRole }: MemberModalProps
                   <div key={member.userId} className={styles.memberItem}>
                     <div className={styles.memberInfo}>
                       <div className={styles.avatar}>
-                        {member.avatarUrl ? (
-                          <img src={member.avatarUrl} alt={member.username} className={styles.avatarImg} />
-                        ) : (
-                          getInitials(member.username)
-                        )}
+                        <UserAvatar avatarUrl={member.avatarUrl} username={member.username} size={40} className={styles.avatarImg} />
                       </div>
                       <div className={styles.userDetails}>
                         <h4>{member.username}</h4>

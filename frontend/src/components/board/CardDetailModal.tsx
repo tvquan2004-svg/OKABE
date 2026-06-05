@@ -20,6 +20,7 @@ import {
   useArchiveCardMutation,
 } from '../../services/boardApi';
 import { getFullFileUrl } from '../../utils/urlHelper';
+import { UserAvatar } from '../common/UserAvatar';
 import {
   MdAttachFile,
   MdDelete,
@@ -443,11 +444,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                       title={`${member.username} (click để gỡ)`}
                       onClick={() => !readOnly && handleUnassignMember(member.id)}
                     >
-                      {member.avatarUrl ? (
-                        <img src={member.avatarUrl} alt={member.username} />
-                      ) : (
-                        member.username.charAt(0).toUpperCase()
-                      )}
+                      <UserAvatar avatarUrl={member.avatarUrl} username={member.username} size={28} />
                     </div>
                   ))}
                   {!readOnly && (
@@ -907,11 +904,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               {(showAllActivities ? activities : activities.slice(0, 5)).map((activity) => (
                 <div key={activity.id} className={styles.activityItem}>
                   <div className={styles.activityAvatar}>
-                    {activity.avatarUrl ? (
-                      <img src={activity.avatarUrl} alt={activity.username} />
-                    ) : (
-                      activity.username.charAt(0).toUpperCase()
-                    )}
+                    <UserAvatar avatarUrl={activity.avatarUrl} username={activity.username} size={32} />
                   </div>
                   <div className={styles.activityTextWrapper}>
                     <div className={styles.activityHeader}>
@@ -964,7 +957,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                   .map(m => (
                     <div key={m.userId} className={styles.popoverMemberItem} onClick={() => handleAssignMember(m.userId)}>
                       <div className={styles.popoverAvatar}>
-                        {m.avatarUrl ? <img src={m.avatarUrl} alt={m.username} /> : m.username.charAt(0).toUpperCase()}
+                        <UserAvatar avatarUrl={m.avatarUrl} username={m.username} size={28} />
                       </div>
                       <span className={styles.popoverName}>{m.username}</span>
                       {card.members.some(cm => cm.id === m.userId) && <span className={styles.checkMark}>✔</span>}

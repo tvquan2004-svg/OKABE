@@ -10,6 +10,7 @@ import { useGetMeQuery } from '../../services/userApi';
 import { useGetWorkspacesQuery } from '../../services/workspaceApi';
 import NotificationDropdown from './NotificationDropdown';
 import StandupModal from './StandupModal';
+import { UserAvatar } from './UserAvatar';
 import styles from './Navbar.module.css';
 
 interface NavbarProps {
@@ -121,13 +122,12 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
 
         <div className={styles.userSection}>
           <div className={styles.userInfo}>
-            <div className={styles.avatar}>
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.username} className={styles.avatarImg} />
-              ) : (
-                user?.username?.charAt(0).toUpperCase()
-              )}
-            </div>
+            <UserAvatar
+              avatarUrl={user?.avatarUrl}
+              username={user?.username || ''}
+              size={32}
+              className={styles.avatar}
+            />
             <span className={styles.username}>{user?.username}</span>
           </div>
           <div className={styles.divider}></div>

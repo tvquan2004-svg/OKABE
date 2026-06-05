@@ -8,6 +8,7 @@ import {
   FiArrowLeft, FiBarChart2, FiUsers, FiCheckCircle, FiAlertCircle,
   FiClock, FiCalendar, FiDownload, FiActivity
 } from 'react-icons/fi';
+import { UserAvatar } from '../components/common/UserAvatar';
 import { useGetBoardAnalyticsQuery, useGetBoardQuery } from '../services/boardApi';
 import styles from './AnalyticsDashboard.module.css';
 
@@ -269,11 +270,7 @@ const AnalyticsDashboard: React.FC = () => {
                 <tr key={member.userId}>
                   <td>
                     <div className={styles.memberCell}>
-                      {member.avatarUrl ? (
-                        <img src={member.avatarUrl} alt={member.username} className={styles.avatar} />
-                      ) : (
-                        <div className={styles.avatarFallback}>{member.username.charAt(0).toUpperCase()}</div>
-                      )}
+                      <UserAvatar avatarUrl={member.avatarUrl} username={member.username} size={28} className={styles.avatar} />
                       <span>{member.username}</span>
                     </div>
                   </td>
