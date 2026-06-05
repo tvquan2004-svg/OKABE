@@ -40,6 +40,9 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
     @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false")
     List<Card> findByWorkspaceId(@Param("workspaceId") Long workspaceId);
 
+    @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id IN :workspaceIds AND c.isArchived = false")
+    List<Card> findByWorkspaceIdIn(@Param("workspaceIds") List<Long> workspaceIds);
+
     @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false AND c.updatedAt < :threshold")
     List<Card> findStaleCardsByWorkspace(@Param("workspaceId") Long workspaceId, @Param("threshold") LocalDateTime threshold);
 
