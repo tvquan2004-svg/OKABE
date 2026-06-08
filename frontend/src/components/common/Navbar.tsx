@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiBell, FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiBell, FiLogOut, FiMenu, FiSettings } from 'react-icons/fi';
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
 import { logout } from '../../features/auth/authSlice';
 import { apiSlice } from '../../services/apiSlice';
@@ -26,7 +26,9 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   const user = userData || authUser;
   const [showNotifications, setShowNotifications] = useState(false);
   const [showStandup, setShowStandup] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const bellBtnRef = useRef<HTMLButtonElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [notifPos, setNotifPos] = useState<{ top: number; right: number } | null>(null);
 
   const { data: unreadCountRes } = useGetUnreadCountQuery(undefined, {
@@ -51,6 +53,18 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
     }
     return () => window.removeEventListener('click', handleClickOutside);
   }, [showNotifications]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    if (showUserMenu) {
+      window.addEventListener('click', handleClickOutside);
+    }
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [showUserMenu]);
 
   const boardIdMatch = location.pathname.match(/\/board\/(\d+)/);
   const boardId = boardIdMatch ? Number(boardIdMatch[1]) : null;
@@ -120,20 +134,35 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
           </button>
         </div>
 
-        <div className={styles.userSection}>
-          <div className={styles.userInfo}>
+        <div className={styles.userMenu} ref={userMenuRef}>
+          <button 
+            className={styles.userMenuTrigger}
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
             <UserAvatar
               avatarUrl={user?.avatarUrl}
               username={user?.username || ''}
               size={32}
               className={styles.avatar}
             />
-            <span className={styles.username}>{user?.username}</span>
-          </div>
-          <div className={styles.divider}></div>
-          <button onClick={handleLogout} className={styles.logoutBtn} title="Đăng xuất">
-            <FiLogOut />
           </button>
+          {showUserMenu && (
+            <div className={styles.userDropdown}>
+              <button 
+                className={styles.dropdownItem}
+                onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+              >
+                <FiSettings /> Cài đặt
+              </button>
+              <div className={styles.dropdownDivider} />
+              <button 
+                className={styles.dropdownItem}
+                onClick={handleLogout}
+              >
+                <FiLogOut /> Đăng xuất
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

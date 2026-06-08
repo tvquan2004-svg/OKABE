@@ -112,18 +112,6 @@
   border: 2px solid var(--color-bg);
 }
 
-.userSection {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
 .avatar {
   width: 32px;
   height: 32px;
@@ -145,32 +133,94 @@
   object-fit: cover;
 }
 
-.username {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
+/* ── User Menu / Avatar Dropdown ── */
 
-.divider {
-  width: 1px;
-  height: 24px;
-  background-color: var(--color-border);
-}
-
-.logoutBtn {
-  background: none;
-  color: var(--color-text-muted);
-  font-size: 1.25rem;
-  padding: 6px;
-  border-radius: var(--radius-sm);
+.userMenu {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
-.logoutBtn:hover {
+.userMenuTrigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  transition: box-shadow var(--transition-fast);
+}
+
+.userMenuTrigger:hover {
+  box-shadow: 0 0 0 2px var(--color-border-hover);
+}
+
+.userMenuTrigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.userDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 4px;
+  z-index: 200;
+  animation: dropdownFadeIn 0.12s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.dropdownItem svg {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.dropdownItem:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  color: var(--color-text);
+}
+
+.dropdownItem:last-child:hover {
   color: var(--color-error);
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.dropdownDivider {
+  height: 1px;
+  margin: 4px 8px;
+  background-color: var(--color-border);
 }
 
 @media (max-width: 768px) {
@@ -183,10 +233,6 @@
   }
   
   .searchBox {
-    display: none;
-  }
-  
-  .username {
     display: none;
   }
   
