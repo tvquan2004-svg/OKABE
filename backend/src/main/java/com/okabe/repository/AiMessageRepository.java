@@ -9,11 +9,10 @@ import java.util.List;
 
 public interface AiMessageRepository extends JpaRepository<AiMessage, Long> {
 
+    // Tìm tất cả tin nhắn trong cuộc hội thoại, sắp xếp theo thời gian tạo tăng dần
     List<AiMessage> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
 
-    /**
-     * Lấy N messages gần nhất để làm context (tránh overflow context window).
-     */
+    // Native query: lấy N tin nhắn gần nhất để làm context (tránh overflow context window)
     @Query(value = """
             SELECT * FROM ai_messages
             WHERE conversation_id = :conversationId

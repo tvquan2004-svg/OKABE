@@ -16,6 +16,6 @@ public class PublicBoardController {
 
     @GetMapping("/{token}")
     public ResponseEntity<ApiResponse<BoardPublicDto>> getPublicBoard(@PathVariable String token) {
-        return ResponseEntity.ok(ApiResponse.success(boardService.getPublicBoard(token)));
+        return ResponseEntity.ok(ApiResponse.success(boardService.getPublicBoard(token))); // Lấy bảng công khai theo token
     }
 }

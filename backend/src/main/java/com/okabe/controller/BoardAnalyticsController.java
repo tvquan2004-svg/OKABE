@@ -27,6 +27,6 @@ public class BoardAnalyticsController {
     public ResponseEntity<ApiResponse<BoardAnalyticsResponse>> getBoardAnalytics(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(boardAnalyticsService.getBoardAnalytics(id, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(boardAnalyticsService.getBoardAnalytics(id, currentUser))); // Lấy dữ liệu thống kê bảng
     }
 }

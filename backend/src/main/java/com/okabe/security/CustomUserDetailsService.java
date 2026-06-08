@@ -18,15 +18,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        return UserPrincipal.from(user);
+        User user = userRepository.findByEmail(email) // Tìm user theo email
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email)); // Ném lỗi nếu không tìm thấy
+        return UserPrincipal.from(user); // Chuyển đổi User thành UserPrincipal
     }
 
     @Transactional(readOnly = true)
     public UserDetails loadUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
-        return UserPrincipal.from(user);
+        User user = userRepository.findById(id) // Tìm user theo ID
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id)); // Ném lỗi nếu không tìm thấy
+        return UserPrincipal.from(user); // Chuyển đổi User thành UserPrincipal
     }
 }

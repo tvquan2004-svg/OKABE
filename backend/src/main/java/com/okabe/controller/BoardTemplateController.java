@@ -28,7 +28,7 @@ public class BoardTemplateController {
     public ResponseEntity<ApiResponse<List<BoardTemplateResponse>>> getAllTemplates(
             @RequestParam(required = false) Long workspaceId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(templateService.getAllTemplates(workspaceId, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(templateService.getAllTemplates(workspaceId, currentUser))); // Lấy danh sách template bảng
     }
 
     @GetMapping("/{id}")
@@ -36,7 +36,7 @@ public class BoardTemplateController {
     public ResponseEntity<ApiResponse<BoardTemplateResponse>> getTemplate(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(templateService.getTemplate(id, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(templateService.getTemplate(id, currentUser))); // Lấy chi tiết template
     }
 
     @DeleteMapping("/{id}")
@@ -44,7 +44,7 @@ public class BoardTemplateController {
     public ResponseEntity<ApiResponse<Void>> deleteTemplate(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        templateService.deleteTemplate(id, currentUser);
+        templateService.deleteTemplate(id, currentUser); // Xoá template
         return ResponseEntity.ok(ApiResponse.success(null, "Template deleted successfully"));
     }
 
@@ -54,6 +54,6 @@ public class BoardTemplateController {
             @PathVariable Long boardId,
             @Valid @RequestBody SaveAsTemplateRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(templateService.saveAsTemplate(boardId, request, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(templateService.saveAsTemplate(boardId, request, currentUser))); // Lưu bảng hiện tại thành template
     }
 }

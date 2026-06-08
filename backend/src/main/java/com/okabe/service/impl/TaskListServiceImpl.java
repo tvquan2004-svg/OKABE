@@ -35,246 +35,246 @@ public class TaskListServiceImpl implements TaskListService {
 
     @Override
     public List<ListResponse> getListsByBoard(Long boardId, UserPrincipal currentUser) {
-        Board board = findBoardOrThrow(boardId);
-        validateMembership(board, currentUser.getId());
+        Board board = findBoardOrThrow(boardId); // Tìm bảng theo ID
+        validateMembership(board, currentUser.getId()); // Kiểm tra quyền thành viên
 
-        return taskListRepository.findByBoardIdAndIsArchivedFalseOrderByPositionAsc(boardId)
-                .stream().map(this::toListResponse).toList();
+        return taskListRepository.findByBoardIdAndIsArchivedFalseOrderByPositionAsc(boardId) // Lấy danh sách cột
+                .stream().map(this::toListResponse).toList(); // Chuyển đổi và trả về
     }
 
     @Override
     @Transactional
     public ListResponse createList(Long boardId, CreateListRequest request, UserPrincipal currentUser) {
-        Board board = findBoardOrThrow(boardId);
-        validateWriteAccess(board, currentUser.getId());
+        Board board = findBoardOrThrow(boardId); // Tìm bảng
+        validateWriteAccess(board, currentUser.getId()); // Kiểm tra quyền ghi
 
-        int nextPosition = taskListRepository.countByBoardIdAndIsArchivedFalse(boardId);
+        int nextPosition = taskListRepository.countByBoardIdAndIsArchivedFalse(boardId); // Lấy vị trí tiếp theo
 
         TaskList taskList = TaskList.builder()
-                .board(board)
-                .name(request.name())
-                .position(nextPosition)
-                .build();
+                .board(board) // Gán bảng
+                .name(request.name()) // Gán tên cột
+                .position(nextPosition) // Gán vị trí
+                .build(); // Xây dựng TaskList
 
-        taskList = taskListRepository.save(taskList);
-        log.info("List created: {} in board {}", taskList.getName(), boardId);
+        taskList = taskListRepository.save(taskList); // Lưu cột mới
+        log.info("List created: {} in board {}", taskList.getName(), boardId); // Ghi log
         
-        ListResponse response = toListResponse(taskList);
-        webSocketService.broadcastToBoard(boardId, "LIST_CREATED", response, currentUser.getId());
+        ListResponse response = toListResponse(taskList); // Chuyển đổi sang response
+        webSocketService.broadcastToBoard(boardId, "LIST_CREATED", response, currentUser.getId()); // Broadcast WebSocket
         
-        return response;
+        return response; // Trả về phản hồi
     }
 
     @Override
     @Transactional
     public ListResponse updateList(Long listId, UpdateListRequest request, UserPrincipal currentUser) {
-        TaskList taskList = findListOrThrow(listId);
-        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+        TaskList taskList = findListOrThrow(listId); // Tìm cột
+        validateWriteAccess(taskList.getBoard(), currentUser.getId()); // Kiểm tra quyền
 
-        if (request.name() != null) taskList.setName(request.name());
-        if (request.isArchived() != null) taskList.setIsArchived(request.isArchived());
+        if (request.name() != null) taskList.setName(request.name()); // Cập nhật tên
+        if (request.isArchived() != null) taskList.setIsArchived(request.isArchived()); // Cập nhật trạng thái archive
 
-        taskList = taskListRepository.save(taskList);
-        ListResponse response = toListResponse(taskList);
-        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_UPDATED", response, currentUser.getId());
+        taskList = taskListRepository.save(taskList); // Lưu thay đổi
+        ListResponse response = toListResponse(taskList); // Chuyển đổi
+        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_UPDATED", response, currentUser.getId()); // Broadcast
         
-        return response;
+        return response; // Trả về phản hồi
     }
 
     @Override
     @Transactional
     public void reorderLists(Long boardId, ReorderListRequest request, UserPrincipal currentUser) {
-        Board board = findBoardOrThrow(boardId);
-        validateWriteAccess(board, currentUser.getId());
+        Board board = findBoardOrThrow(boardId); // Tìm bảng
+        validateWriteAccess(board, currentUser.getId()); // Kiểm tra quyền
 
-        List<Long> orderedIds = request.orderedIds();
-        for (int i = 0; i < orderedIds.size(); i++) {
-            TaskList taskList = findListOrThrow(orderedIds.get(i));
-            taskList.setPosition(i);
-            taskListRepository.save(taskList);
+        List<Long> orderedIds = request.orderedIds(); // Lấy danh sách ID đã sắp xếp
+        for (int i = 0; i < orderedIds.size(); i++) { // Duyệt danh sách
+            TaskList taskList = findListOrThrow(orderedIds.get(i)); // Tìm cột
+            taskList.setPosition(i); // Cập nhật vị trí
+            taskListRepository.save(taskList); // Lưu thay đổi
         }
-        log.info("Lists reordered in board {}", boardId);
-        webSocketService.broadcastToBoard(boardId, "LIST_REORDERED", orderedIds, currentUser.getId());
+        log.info("Lists reordered in board {}", boardId); // Ghi log
+        webSocketService.broadcastToBoard(boardId, "LIST_REORDERED", orderedIds, currentUser.getId()); // Broadcast
     }
 
     @Override
     @Transactional
     public void deleteList(Long listId, UserPrincipal currentUser) {
-        TaskList taskList = findListOrThrow(listId);
-        Long boardId = taskList.getBoard().getId();
-        taskListRepository.delete(taskList);
-        log.info("List deleted: {}", listId);
-        webSocketService.broadcastToBoard(boardId, "LIST_DELETED", listId, currentUser.getId());
+        TaskList taskList = findListOrThrow(listId); // Tìm cột
+        Long boardId = taskList.getBoard().getId(); // Lấy board ID
+        taskListRepository.delete(taskList); // Xóa cột
+        log.info("List deleted: {}", listId); // Ghi log
+        webSocketService.broadcastToBoard(boardId, "LIST_DELETED", listId, currentUser.getId()); // Broadcast
     }
 
     @Override
     @Transactional
     public ListResponse archiveList(Long listId, UserPrincipal currentUser) {
-        TaskList taskList = findListOrThrow(listId);
-        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+        TaskList taskList = findListOrThrow(listId); // Tìm cột
+        validateWriteAccess(taskList.getBoard(), currentUser.getId()); // Kiểm tra quyền
 
-        taskList.setIsArchived(true);
-        taskList = taskListRepository.save(taskList);
+        taskList.setIsArchived(true); // Đánh dấu archived
+        taskList = taskListRepository.save(taskList); // Lưu thay đổi
 
         // Cascade archive to cards
-        List<Card> cards = cardRepository.findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(listId);
-        for (Card card : cards) {
-            card.setIsArchived(true);
+        List<Card> cards = cardRepository.findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(listId); // Lấy card chưa archive
+        for (Card card : cards) { // Duyệt từng card
+            card.setIsArchived(true); // Đánh dấu archived
         }
-        cardRepository.saveAll(cards);
+        cardRepository.saveAll(cards); // Lưu tất cả card
 
-        log.info("List and its cards archived: {}", listId);
-        ListResponse response = toListResponse(taskList);
-        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_ARCHIVED", listId, currentUser.getId());
-        return response;
+        log.info("List and its cards archived: {}", listId); // Ghi log
+        ListResponse response = toListResponse(taskList); // Chuyển đổi
+        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_ARCHIVED", listId, currentUser.getId()); // Broadcast
+        return response; // Trả về phản hồi
     }
 
     @Override
     @Transactional
     public ListResponse restoreList(Long listId, UserPrincipal currentUser) {
-        TaskList taskList = findListOrThrow(listId);
-        validateWriteAccess(taskList.getBoard(), currentUser.getId());
+        TaskList taskList = findListOrThrow(listId); // Tìm cột
+        validateWriteAccess(taskList.getBoard(), currentUser.getId()); // Kiểm tra quyền
 
         // Reset position to end
-        TaskList lastList = taskListRepository.findTopByBoardIdAndIsArchivedFalseOrderByPositionDesc(taskList.getBoard().getId());
-        int nextPosition = lastList == null ? 0 : lastList.getPosition() + 1;
+        TaskList lastList = taskListRepository.findTopByBoardIdAndIsArchivedFalseOrderByPositionDesc(taskList.getBoard().getId()); // Tìm cột cuối
+        int nextPosition = lastList == null ? 0 : lastList.getPosition() + 1; // Tính vị trí tiếp theo
 
-        taskList.setIsArchived(false);
-        taskList.setPosition(nextPosition);
-        taskList = taskListRepository.save(taskList);
+        taskList.setIsArchived(false); // Bỏ archive
+        taskList.setPosition(nextPosition); // Đặt vị trí mới
+        taskList = taskListRepository.save(taskList); // Lưu thay đổi
 
         // Restore cards
-        List<Card> archivedCards = cardRepository.findByTaskListIdAndIsArchivedTrueOrderByPositionAsc(listId);
-        for (Card card : archivedCards) {
-            card.setIsArchived(false);
+        List<Card> archivedCards = cardRepository.findByTaskListIdAndIsArchivedTrueOrderByPositionAsc(listId); // Lấy card đã archive
+        for (Card card : archivedCards) { // Duyệt từng card
+            card.setIsArchived(false); // Bỏ archive
         }
-        cardRepository.saveAll(archivedCards);
+        cardRepository.saveAll(archivedCards); // Lưu tất cả
 
-        log.info("List and its cards restored: {}", listId);
-        ListResponse response = toListResponse(taskList);
-        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_RESTORED", response, currentUser.getId());
-        return response;
+        log.info("List and its cards restored: {}", listId); // Ghi log
+        ListResponse response = toListResponse(taskList); // Chuyển đổi
+        webSocketService.broadcastToBoard(taskList.getBoard().getId(), "LIST_RESTORED", response, currentUser.getId()); // Broadcast
+        return response; // Trả về phản hồi
     }
 
     @Override
     public List<ListResponse> getArchivedLists(Long boardId, UserPrincipal currentUser) {
-        Board board = findBoardOrThrow(boardId);
-        validateMembership(board, currentUser.getId());
-        return taskListRepository.findByBoardIdAndIsArchivedTrueOrderByPositionAsc(boardId)
-                .stream().map(this::toListResponse).toList();
+        Board board = findBoardOrThrow(boardId); // Tìm bảng
+        validateMembership(board, currentUser.getId()); // Kiểm tra quyền
+        return taskListRepository.findByBoardIdAndIsArchivedTrueOrderByPositionAsc(boardId) // Lấy cột đã archive
+                .stream().map(this::toListResponse).toList(); // Chuyển đổi và trả về
     }
 
     // ─── Helpers ────────────────────────────────────────
 
     private Board findBoardOrThrow(Long id) {
-        return boardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Board", id));
+        return boardRepository.findById(id) // Tìm bảng theo ID
+                .orElseThrow(() -> new ResourceNotFoundException("Board", id)); // Ném lỗi nếu không tìm thấy
     }
 
     private TaskList findListOrThrow(Long id) {
-        return taskListRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("List", id));
+        return taskListRepository.findById(id) // Tìm cột theo ID
+                .orElseThrow(() -> new ResourceNotFoundException("List", id)); // Ném lỗi nếu không tìm thấy
     }
 
     private void validateMembership(Board board, Long userId) {
-        if (!memberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), userId)) {
-            throw new UnauthorizedException("You are not a member of this workspace");
+        if (!memberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), userId)) { // Kiểm tra thành viên
+            throw new UnauthorizedException("You are not a member of this workspace"); // Ném lỗi
         }
     }
 
     private void validateWriteAccess(Board board, Long userId) {
-        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn( // Kiểm tra quyền ghi
                 board.getWorkspace().getId(), userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN, com.okabe.entity.enums.Role.MEMBER));
-        if (!hasAccess) {
-            throw new UnauthorizedException("You do not have permission to perform this action");
+        if (!hasAccess) { // Nếu không có quyền
+            throw new UnauthorizedException("You do not have permission to perform this action"); // Ném lỗi
         }
     }
 
     private void validateAdminAccess(Board board, Long userId) {
-        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
+        boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn( // Kiểm tra quyền admin
                 board.getWorkspace().getId(), userId, List.of(com.okabe.entity.enums.Role.OWNER, com.okabe.entity.enums.Role.ADMIN));
-        if (!hasAccess) {
-            throw new UnauthorizedException("Only OWNER or ADMIN can perform this action");
+        if (!hasAccess) { // Nếu không có quyền
+            throw new UnauthorizedException("Only OWNER or ADMIN can perform this action"); // Ném lỗi
         }
     }
 
     private ListResponse toListResponse(TaskList taskList) {
-        List<Card> cards = cardRepository
+        List<Card> cards = cardRepository // Lấy card trong cột
                 .findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(taskList.getId());
 
         return ListResponse.builder()
-                .id(taskList.getId())
-                .boardId(taskList.getBoard().getId())
-                .name(taskList.getName())
-                .position(taskList.getPosition())
-                .cards(cards.stream().map(this::toCardResponse).toList())
-                .build();
+                .id(taskList.getId()) // Gán ID cột
+                .boardId(taskList.getBoard().getId()) // Gán ID bảng
+                .name(taskList.getName()) // Gán tên cột
+                .position(taskList.getPosition()) // Gán vị trí
+                .cards(cards.stream().map(this::toCardResponse).toList()) // Gán danh sách card
+                .build(); // Xây dựng ListResponse
     }
 
     private CardResponse toCardResponse(Card card) {
-        List<LabelResponse> labelResponses = card.getLabels().stream()
+        List<LabelResponse> labelResponses = card.getLabels().stream() // Chuyển đổi labels
                 .map(l -> LabelResponse.builder()
-                        .id(l.getId())
-                        .boardId(l.getBoard().getId())
-                        .name(l.getName())
-                        .color(l.getColor())
-                        .build())
-                .collect(Collectors.toList());
+                        .id(l.getId()) // Gán ID label
+                        .boardId(l.getBoard().getId()) // Gán ID bảng
+                        .name(l.getName()) // Gán tên
+                        .color(l.getColor()) // Gán màu
+                        .build()) // Xây dựng LabelResponse
+                .collect(Collectors.toList()); // Thu thập thành danh sách
 
-        List<ChecklistResponse> checklistResponses = card.getChecklists().stream()
+        List<ChecklistResponse> checklistResponses = card.getChecklists().stream() // Chuyển đổi checklists
                 .map(c -> ChecklistResponse.builder()
-                        .id(c.getId())
-                        .cardId(card.getId())
-                        .name(c.getName())
-                        .position(c.getPosition())
-                        .items(c.getItems().stream()
+                        .id(c.getId()) // Gán ID
+                        .cardId(card.getId()) // Gán ID thẻ
+                        .name(c.getName()) // Gán tên
+                        .position(c.getPosition()) // Gán vị trí
+                        .items(c.getItems().stream() // Chuyển đổi items
                                 .map(i -> ChecklistItemResponse.builder()
-                                        .id(i.getId())
-                                        .checklistId(c.getId())
-                                        .content(i.getContent())
-                                        .isCompleted(i.getIsCompleted())
-                                        .position(i.getPosition())
-                                        .build())
-                                .collect(Collectors.toList()))
-                        .build())
-                .collect(Collectors.toList());
+                                        .id(i.getId()) // Gán ID item
+                                        .checklistId(c.getId()) // Gán ID checklist
+                                        .content(i.getContent()) // Gán nội dung
+                                        .isCompleted(i.getIsCompleted()) // Gán trạng thái
+                                        .position(i.getPosition()) // Gán vị trí
+                                        .build()) // Xây dựng ChecklistItemResponse
+                                .collect(Collectors.toList())) // Thu thập items
+                        .build()) // Xây dựng ChecklistResponse
+                .collect(Collectors.toList()); // Thu thập checklists
 
         return CardResponse.builder()
-                .id(card.getId())
-                .listId(card.getTaskList().getId())
-                .title(card.getTitle())
-                .description(card.getDescription())
-                .position(card.getPosition())
-                .dueDate(card.getDueDate())
-                .priority(card.getPriority().name())
-                .isArchived(card.getIsArchived())
-                .totalFocusMinutes(card.getTotalFocusMinutes())
-                .createdById(card.getCreatedBy().getId())
-                .createdByName(card.getCreatedBy().getUsername())
-                .createdAt(card.getCreatedAt())
-                .labels(labelResponses)
-                .checklists(checklistResponses)
-                .members(card.getMembers().stream()
+                .id(card.getId()) // Gán ID card
+                .listId(card.getTaskList().getId()) // Gán ID list
+                .title(card.getTitle()) // Gán tiêu đề
+                .description(card.getDescription()) // Gán mô tả
+                .position(card.getPosition()) // Gán vị trí
+                .dueDate(card.getDueDate()) // Gán hạn chót
+                .priority(card.getPriority().name()) // Gán độ ưu tiên
+                .isArchived(card.getIsArchived()) // Gán trạng thái archive
+                .totalFocusMinutes(card.getTotalFocusMinutes()) // Gán tổng phút focus
+                .createdById(card.getCreatedBy().getId()) // Gán ID người tạo
+                .createdByName(card.getCreatedBy().getUsername()) // Gán tên người tạo
+                .createdAt(card.getCreatedAt()) // Gán thời gian tạo
+                .labels(labelResponses) // Gán labels
+                .checklists(checklistResponses) // Gán checklists
+                .members(card.getMembers().stream() // Chuyển đổi members
                         .map(m -> UserResponse.builder()
-                                .id(m.getId())
-                                .username(m.getUsername())
-                                .email(m.getEmail())
-                                .avatarUrl(m.getAvatarUrl())
-                                .build())
-                        .collect(Collectors.toList()))
-                .attachments(card.getAttachments().stream()
+                                .id(m.getId()) // Gán ID
+                                .username(m.getUsername()) // Gán tên
+                                .email(m.getEmail()) // Gán email
+                                .avatarUrl(m.getAvatarUrl()) // Gán avatar
+                                .build()) // Xây dựng UserResponse
+                        .collect(Collectors.toList())) // Thu thập members
+                .attachments(card.getAttachments().stream() // Chuyển đổi attachments
                         .map(a -> AttachmentResponse.builder()
-                                .id(a.getId())
-                                .cardId(card.getId())
-                                .uploadedById(a.getUploadedBy().getId())
-                                .uploadedByUsername(a.getUploadedBy().getUsername())
-                                .filename(a.getFilename())
-                                .url(a.getStorageKey())
-                                .fileSize(a.getFileSize())
-                                .mimeType(a.getMimeType())
-                                .createdAt(a.getCreatedAt())
-                                .build())
-                        .collect(Collectors.toList()))
-                .build();
+                                .id(a.getId()) // Gán ID
+                                .cardId(card.getId()) // Gán ID thẻ
+                                .uploadedById(a.getUploadedBy().getId()) // Gán ID người tải
+                                .uploadedByUsername(a.getUploadedBy().getUsername()) // Gán tên người tải
+                                .filename(a.getFilename()) // Gán tên file
+                                .url(a.getStorageKey()) // Gán URL
+                                .fileSize(a.getFileSize()) // Gán kích thước
+                                .mimeType(a.getMimeType()) // Gán loại MIME
+                                .createdAt(a.getCreatedAt()) // Gán thời gian tạo
+                                .build()) // Xây dựng AttachmentResponse
+                        .collect(Collectors.toList())) // Thu thập attachments
+                .build(); // Xây dựng CardResponse
     }
 }

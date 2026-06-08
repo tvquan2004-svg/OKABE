@@ -28,7 +28,7 @@ public class WorkloadController {
             @RequestParam LocalDate from,
             @RequestParam LocalDate to,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        WorkloadResponse workload = workloadService.getWorkload(workspaceId, from, to, currentUser);
+        WorkloadResponse workload = workloadService.getWorkload(workspaceId, from, to, currentUser); // Tính toán workload heatmap
         return ResponseEntity.ok(ApiResponse.success(workload));
     }
 }

@@ -20,6 +20,6 @@ public class BoardVisibilityController {
             @PathVariable Long id,
             @RequestParam boolean isPublic,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(boardService.updateVisibility(id, isPublic, currentUser));
+        return ResponseEntity.ok(boardService.updateVisibility(id, isPublic, currentUser)); // Cập nhật trạng thái công khai của bảng
     }
 }

@@ -47,20 +47,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Cấu hình CORS
+                .csrf(csrf -> csrf.disable()) // Tắt CSRF vì API sử dụng JWT
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không tạo session, dùng JWT stateless
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/2fa/validate").permitAll()
-                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/v1/auth/2fa/validate").permitAll() // Cho phép xác thực 2FA không cần token
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll() // Cho phép truy cập các endpoint công khai
+                        .anyRequest().authenticated() // Các request còn lại yêu cầu xác thực
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Thêm filter JWT trước filter mặc định
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized: Token expired or invalid\"}");
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED); // Trả về 401
+                            response.setContentType("application/json"); // Định dạng JSON
+                            response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized: Token expired or invalid\"}"); // Nội dung lỗi
                         })
                 );
 
@@ -69,11 +69,11 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // Mã hoá mật khẩu bằng BCrypt
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+        return config.getAuthenticationManager(); // Lấy AuthenticationManager từ cấu hình Spring
     }
 }

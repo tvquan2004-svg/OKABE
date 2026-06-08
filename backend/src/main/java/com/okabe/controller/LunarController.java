@@ -28,7 +28,7 @@ public class LunarController {
     @Operation(summary = "Get lunar date for a Gregorian date")
     public ResponseEntity<ApiResponse<LunarDateResponse>> getLunarDate(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(ApiResponse.success(lunarDateService.getLunarDate(date)));
+        return ResponseEntity.ok(ApiResponse.success(lunarDateService.getLunarDate(date))); // Lấy ngày âm lịch tương ứng
     }
 
     @GetMapping("/month")
@@ -36,6 +36,6 @@ public class LunarController {
     public ResponseEntity<ApiResponse<LunarMonthResponse>> getLunarMonth(
             @RequestParam int month,
             @RequestParam int year) {
-        return ResponseEntity.ok(ApiResponse.success(lunarDateService.getLunarMonth(month, year)));
+        return ResponseEntity.ok(ApiResponse.success(lunarDateService.getLunarMonth(month, year))); // Lấy toàn bộ ngày âm trong tháng
     }
 }

@@ -5,11 +5,11 @@ import lombok.*;
 
 @Getter
 @Setter
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class SaveAsTemplateRequest {
-    @NotBlank(message = "Template name is required")
-    private String name;
-    private String description;
+    @NotBlank(message = "Template name is required") // Tên mẫu không được để trống
+    private String name; // Tên của mẫu bảng
+    private String description; // Mô tả mẫu (không bắt buộc)
 }

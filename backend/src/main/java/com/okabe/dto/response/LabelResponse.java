@@ -6,12 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class LabelResponse {
-    private Long id;
-    private Long boardId;
-    private String name;
-    private String color;
+    private Long id; // ID nhãn
+    private Long boardId; // ID bảng chứa nhãn
+    private String name; // Tên nhãn
+    private String color; // Mã màu
 }

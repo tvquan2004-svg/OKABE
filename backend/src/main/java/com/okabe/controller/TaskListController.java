@@ -32,8 +32,8 @@ public class TaskListController {
             @RequestParam(required = false, defaultValue = "false") boolean archived,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         List<ListResponse> lists = archived 
-                ? taskListService.getArchivedLists(boardId, currentUser)
-                : taskListService.getListsByBoard(boardId, currentUser);
+                ? taskListService.getArchivedLists(boardId, currentUser) // Lấy danh sách đã ẩn
+                : taskListService.getListsByBoard(boardId, currentUser); // Lấy danh sách đang hoạt động
         return ResponseEntity.ok(ApiResponse.success(lists));
     }
 
@@ -44,7 +44,7 @@ public class TaskListController {
             @Valid @RequestBody CreateListRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(taskListService.createList(boardId, request, currentUser),
+                .body(ApiResponse.success(taskListService.createList(boardId, request, currentUser), // Tạo danh sách mới
                         "List created"));
     }
 
@@ -55,7 +55,7 @@ public class TaskListController {
             @Valid @RequestBody UpdateListRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                taskListService.updateList(id, request, currentUser)));
+                taskListService.updateList(id, request, currentUser))); // Cập nhật danh sách
     }
 
     @PutMapping("/api/v1/boards/{boardId}/lists/reorder")
@@ -64,7 +64,7 @@ public class TaskListController {
             @PathVariable Long boardId,
             @Valid @RequestBody ReorderListRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        taskListService.reorderLists(boardId, request, currentUser);
+        taskListService.reorderLists(boardId, request, currentUser); // Sắp xếp lại thứ tự danh sách
         return ResponseEntity.ok(ApiResponse.success(null, "Lists reordered"));
     }
 
@@ -73,7 +73,7 @@ public class TaskListController {
     public ResponseEntity<ApiResponse<Void>> deleteList(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        taskListService.deleteList(id, currentUser);
+        taskListService.deleteList(id, currentUser); // Xoá danh sách
         return ResponseEntity.ok(ApiResponse.success(null, "List deleted"));
     }
 
@@ -83,7 +83,7 @@ public class TaskListController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                taskListService.archiveList(id, currentUser), "List archived"));
+                taskListService.archiveList(id, currentUser), "List archived")); // Ẩn danh sách
     }
 
     @PutMapping("/api/v1/lists/{id}/restore")
@@ -92,6 +92,6 @@ public class TaskListController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                taskListService.restoreList(id, currentUser), "List restored"));
+                taskListService.restoreList(id, currentUser), "List restored")); // Khôi phục danh sách từ trạng thái ẩn
     }
 }

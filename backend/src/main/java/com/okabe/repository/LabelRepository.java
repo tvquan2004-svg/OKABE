@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface LabelRepository extends JpaRepository<Label, Long> {
+    // Tìm tất cả nhãn của board
     List<Label> findByBoardId(Long boardId);
 }

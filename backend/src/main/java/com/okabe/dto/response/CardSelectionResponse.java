@@ -6,13 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardSelectionResponse {
-    private Long id;
-    private String title;
-    private Long boardId;
-    private String boardName;
-    private String listName;
+    private Long id; // ID thẻ
+    private String title; // Tiêu đề thẻ
+    private Long boardId; // ID bảng chứa thẻ
+    private String boardName; // Tên bảng
+    private String listName; // Tên danh sách
 }

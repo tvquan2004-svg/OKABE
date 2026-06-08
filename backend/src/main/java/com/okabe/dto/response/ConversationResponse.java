@@ -8,14 +8,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder // Hỗ trợ builder pattern
+@JsonInclude(JsonInclude.Include.NON_NULL) // Không bao gồm trường null trong JSON
 public class ConversationResponse {
-    private Long id;
-    private String title;
-    private Long boardId;
-    private Long workspaceId;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private List<MessageResponse> messages;
+    private Long id; // ID cuộc trò chuyện
+    private String title; // Tiêu đề cuộc trò chuyện
+    private Long boardId; // ID bảng liên quan
+    private Long workspaceId; // ID workspace liên quan
+    private LocalDateTime createdAt; // Thời gian tạo
+    private LocalDateTime updatedAt; // Thời gian cập nhật
+    private List<MessageResponse> messages; // Danh sách tin nhắn
 }

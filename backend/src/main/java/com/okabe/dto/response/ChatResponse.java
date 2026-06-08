@@ -7,11 +7,11 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder // Hỗ trợ builder pattern
+@JsonInclude(JsonInclude.Include.NON_NULL) // Không bao gồm trường null trong JSON
 public class ChatResponse {
-    private Long conversationId;
-    private Long messageId;
-    private String reply;
-    private LocalDateTime createdAt;
+    private Long conversationId; // ID cuộc trò chuyện
+    private Long messageId; // ID tin nhắn phản hồi
+    private String reply; // Nội dung trả lời từ AI
+    private LocalDateTime createdAt; // Thời gian phản hồi
 }

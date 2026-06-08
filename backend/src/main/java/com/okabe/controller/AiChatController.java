@@ -54,7 +54,7 @@ public class AiChatController {
     public ResponseEntity<ApiResponse<List<SubtaskSuggestion>>> breakdownTask(
             @Valid @RequestBody BreakdownRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        List<SubtaskSuggestion> suggestions = aiTaskBreakdownService.breakdownTask(request.cardId());
+        List<SubtaskSuggestion> suggestions = aiTaskBreakdownService.breakdownTask(request.cardId()); // Phân rã task thành subtask bằng AI
         return ResponseEntity.ok(ApiResponse.success(suggestions));
     }
 
@@ -63,7 +63,7 @@ public class AiChatController {
     public ResponseEntity<ApiResponse<PrioritySuggestion>> suggestPriority(
             @Valid @RequestBody SuggestPriorityRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        PrioritySuggestion suggestion = aiPriorityService.suggestPriority(request.cardId());
+        PrioritySuggestion suggestion = aiPriorityService.suggestPriority(request.cardId()); // AI gợi ý độ ưu tiên dựa trên ngữ cảnh
         return ResponseEntity.ok(ApiResponse.success(suggestion));
     }
 
@@ -74,9 +74,9 @@ public class AiChatController {
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String date,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        Long targetUserId = userId != null ? userId : currentUser.getId();
-        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
-        StandupSummary summary = aiStandupService.generateStandup(targetUserId, workspaceId, targetDate);
+        Long targetUserId = userId != null ? userId : currentUser.getId(); // Mặc định là user hiện tại
+        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now(); // Mặc định là hôm nay
+        StandupSummary summary = aiStandupService.generateStandup(targetUserId, workspaceId, targetDate); // AI tạo standup summary
         return ResponseEntity.ok(ApiResponse.success(summary));
     }
 
@@ -84,7 +84,7 @@ public class AiChatController {
     @Operation(summary = "Phân tích cảm xúc của văn bản")
     public ResponseEntity<ApiResponse<SentimentResult>> analyzeSentiment(
             @Valid @RequestBody SentimentRequest request) {
-        SentimentResult result = aiSentimentService.analyzeSentiment(request.text());
+        SentimentResult result = aiSentimentService.analyzeSentiment(request.text()); // Phân tích cảm xúc văn bản
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -94,8 +94,8 @@ public class AiChatController {
             @PathVariable Long workspaceId,
             @RequestParam(required = false) String date,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now();
-        List<StandupSummary> summaries = aiStandupService.generateWorkspaceStandup(workspaceId, targetDate);
+        LocalDate targetDate = date != null ? LocalDate.parse(date) : LocalDate.now(); // Mặc định là hôm nay
+        List<StandupSummary> summaries = aiStandupService.generateWorkspaceStandup(workspaceId, targetDate); // Tổng hợp standup toàn workspace
         return ResponseEntity.ok(ApiResponse.success(summaries));
     }
 
@@ -107,7 +107,7 @@ public class AiChatController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
-                        aiChatService.createConversation(boardId, workspaceId, currentUser),
+                        aiChatService.createConversation(boardId, workspaceId, currentUser), // Tạo cuộc hội thoại mới với AI
                         "Đã tạo cuộc hội thoại mới"));
     }
 
@@ -118,7 +118,7 @@ public class AiChatController {
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                aiChatService.getConversations(page, size, currentUser)));
+                aiChatService.getConversations(page, size, currentUser))); // Lấy danh sách cuộc hội thoại
     }
 
     @GetMapping("/conversations/{conversationId}/messages")
@@ -127,7 +127,7 @@ public class AiChatController {
             @PathVariable Long conversationId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                aiChatService.getMessages(conversationId, currentUser)));
+                aiChatService.getMessages(conversationId, currentUser))); // Lấy tin nhắn trong cuộc hội thoại
     }
 
     @PostMapping("/chat")
@@ -136,7 +136,7 @@ public class AiChatController {
             @Valid @RequestBody ChatRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                aiChatService.sendMessage(request, currentUser)));
+                aiChatService.sendMessage(request, currentUser))); // Gửi tin nhắn đến AI và nhận phản hồi
     }
 
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -145,22 +145,22 @@ public class AiChatController {
             @Valid @RequestBody ChatRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        SseEmitter emitter = new SseEmitter(120_000L); // 2 min timeout
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        SseEmitter emitter = new SseEmitter(120_000L); // Tạo SSE emitter với timeout 2 phút
+        ExecutorService executor = Executors.newSingleThreadExecutor(); // Thread riêng để stream response
 
         executor.execute(() -> {
             try {
-                Long conversationId = aiChatService.streamMessage(request, currentUser, token -> {
+                Long conversationId = aiChatService.streamMessage(request, currentUser, token -> { // Stream AI trả lời token-by-token
                     try {
                         emitter.send(SseEmitter.event()
-                                .name("token")
+                                .name("token") // Gửi từng token qua SSE
                                 .data(token));
                     } catch (IOException e) {
                         emitter.completeWithError(e);
                     }
                 });
 
-                // Send conversation ID as final event
+                // Gửi conversation ID khi kết thúc
                 emitter.send(SseEmitter.event()
                         .name("done")
                         .data(conversationId));
@@ -170,11 +170,11 @@ public class AiChatController {
                 try {
                     emitter.send(SseEmitter.event()
                             .name("error")
-                            .data("Lỗi kết nối AI"));
+                            .data("Lỗi kết nối AI")); // Thông báo lỗi cho client
                 } catch (IOException ignored) {}
                 emitter.completeWithError(e);
             } finally {
-                executor.shutdown();
+                executor.shutdown(); // Dọn dẹp thread
             }
         });
 
@@ -186,7 +186,7 @@ public class AiChatController {
     public ResponseEntity<ApiResponse<Void>> deleteConversation(
             @PathVariable Long conversationId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        aiChatService.deleteConversation(conversationId, currentUser);
+        aiChatService.deleteConversation(conversationId, currentUser); // Xoá cuộc hội thoại
         return ResponseEntity.ok(ApiResponse.success(null, "Đã xoá cuộc hội thoại"));
     }
 }

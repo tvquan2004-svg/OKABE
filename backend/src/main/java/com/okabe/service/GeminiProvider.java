@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * HTTP client for Groq API (OpenAI-compatible format).
- * Free tier: 14,400 req/day, no credit card required.
+ * HTTP client cho Groq API (định dạng tương thích OpenAI).
+ * Free tier: 14,400 req/day, không cần credit card.
  * Docs: https://console.groq.com/docs/openai
  */
 @Service
@@ -45,11 +45,9 @@ public class GeminiProvider {
                 .build();
     }
 
-    // ─── Non-streaming (Phase 1 compatibility) ────────────────────────────────
+    // ─── Non-streaming ────────────────────────────────────────────────────────
 
-    /**
-     * Calls Groq Chat Completion API (blocking, returns full reply).
-     */
+    // Gọi Groq Chat Completion API (blocking, trả về toàn bộ phản hồi)
     public String generateContent(String systemPrompt, List<Map<String, String>> messages) {
         List<Map<String, String>> allMessages = buildMessageList(systemPrompt, messages);
 
@@ -81,15 +79,7 @@ public class GeminiProvider {
 
     // ─── Streaming ────────────────────────────────────────────────────────────
 
-    /**
-     * Calls Groq Chat Completion with stream=true.
-     * Invokes onToken for each text chunk, then onComplete when done.
-     *
-     * @param systemPrompt system prompt
-     * @param messages     conversation history
-     * @param onToken      called with each text fragment
-     * @param onComplete   called with the full assembled text when stream ends
-     */
+    // Gọi Groq Chat Completion với stream=true, gọi onToken cho mỗi chunk, onComplete khi kết thúc
     public void streamContent(
             String systemPrompt,
             List<Map<String, String>> messages,
@@ -142,6 +132,7 @@ public class GeminiProvider {
 
     // ─── Private helpers ──────────────────────────────────────────────────────
 
+    // Xây dựng danh sách messages bao gồm system prompt và lịch sử hội thoại
     private List<Map<String, String>> buildMessageList(String systemPrompt, List<Map<String, String>> messages) {
         List<Map<String, String>> all = new ArrayList<>();
         all.add(Map.of("role", "system", "content", systemPrompt));
@@ -152,6 +143,7 @@ public class GeminiProvider {
         return all;
     }
 
+    // Trích xuất nội dung từ phản hồi JSON của Groq
     @SuppressWarnings("unchecked")
     private String extractTextFromChoice(Map<String, Object> response) {
         if (response == null) return "Xin lỗi, không nhận được phản hồi từ AI.";
@@ -165,6 +157,7 @@ public class GeminiProvider {
         }
     }
 
+    // Trích xuất token từ chunk JSON trong streaming response
     @SuppressWarnings("unchecked")
     private String extractTokenFromChunk(String jsonChunk) {
         try {
@@ -175,11 +168,11 @@ public class GeminiProvider {
             if (delta == null) return null;
             return (String) delta.get("content");
         } catch (Exception e) {
-            return null; // Silently skip malformed chunks
+            return null; // Bỏ qua chunk lỗi
         }
     }
 
-    /** Groq uses OpenAI roles: user / assistant / system */
+    // Groq sử dụng OpenAI roles: user / assistant / system
     private String mapRole(String role) {
         return "ASSISTANT".equalsIgnoreCase(role) ? "assistant" : "user";
     }

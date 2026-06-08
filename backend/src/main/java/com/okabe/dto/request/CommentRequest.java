@@ -8,12 +8,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentRequest {
     
-    @NotBlank(message = "Comment content is required")
-    @Size(max = 2000, message = "Comment must not exceed 2000 characters")
-    private String content;
+    @NotBlank(message = "Comment content is required") // Nội dung bình luận không được để trống
+    @Size(max = 2000, message = "Comment must not exceed 2000 characters") // Giới hạn 2000 ký tự
+    private String content; // Nội dung bình luận
 }

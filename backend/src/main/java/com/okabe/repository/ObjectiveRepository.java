@@ -9,7 +9,9 @@ import java.util.List;
 @Repository
 public interface ObjectiveRepository extends JpaRepository<Objective, Long> {
 
+    // Tìm tất cả objective của workspace
     List<Objective> findByWorkspaceId(Long workspaceId);
 
+    // Tìm objective của workspace theo quý, sắp xếp theo thời gian tạo giảm dần
     List<Objective> findByWorkspaceIdAndQuarterOrderByCreatedAtDesc(Long workspaceId, String quarter);
 }

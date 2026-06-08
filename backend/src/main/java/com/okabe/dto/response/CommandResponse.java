@@ -6,11 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommandResponse {
-    private String type;
-    private String message;
-    private Object data;
+    private String type; // Loại phản hồi lệnh
+    private String message; // Thông báo kết quả
+    private Object data; // Dữ liệu bổ sung (nếu có)
 }

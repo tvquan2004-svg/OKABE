@@ -10,33 +10,33 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkloadResponse {
 
-    private List<MemberWorkload> members;
+    private List<MemberWorkload> members; // Danh sách khối lượng công việc theo thành viên
 
     @Data
-    @Builder
+    @Builder // Hỗ trợ builder pattern
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class MemberWorkload {
-        private Long userId;
-        private String userName;
-        private String avatarUrl;
-        private List<DayWorkload> workload;
+    public static class MemberWorkload { // Khối lượng công việc của một thành viên
+        private Long userId; // ID thành viên
+        private String userName; // Tên thành viên
+        private String avatarUrl; // Ảnh đại diện
+        private List<DayWorkload> workload; // Chi tiết theo ngày
     }
 
     @Data
-    @Builder
+    @Builder // Hỗ trợ builder pattern
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DayWorkload {
-        @JsonFormat(pattern = "yyyy-MM-dd")
-        private LocalDate date;
-        private int cardCount;
-        private double totalHours;
-        private boolean isOverloaded;
+    public static class DayWorkload { // Khối lượng công việc trong ngày
+        @JsonFormat(pattern = "yyyy-MM-dd") // Định dạng ngày
+        private LocalDate date; // Ngày
+        private int cardCount; // Số thẻ
+        private double totalHours; // Tổng số giờ
+        private boolean isOverloaded; // Có quá tải không
     }
 }

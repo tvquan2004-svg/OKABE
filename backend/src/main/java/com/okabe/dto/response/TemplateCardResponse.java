@@ -4,12 +4,12 @@ import lombok.*;
 
 @Getter
 @Setter
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class TemplateCardResponse {
-    private Long id;
-    private String title;
-    private String description;
-    private Integer position;
+    private Long id; // ID thẻ mẫu
+    private String title; // Tiêu đề thẻ mẫu
+    private String description; // Mô tả thẻ mẫu
+    private Integer position; // Vị trí
 }

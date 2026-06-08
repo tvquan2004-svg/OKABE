@@ -29,37 +29,37 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        String adminEmail = "admin@okabe.com";
+        String adminEmail = "admin@okabe.com"; // Email mặc định của tài khoản admin
         
-        if (userRepository.existsByEmail(adminEmail)) {
+        if (userRepository.existsByEmail(adminEmail)) { // Nếu admin đã tồn tại thì bỏ qua
             log.info("Admin account already exists.");
             return;
         }
 
         // Create Admin User
         User adminUser = User.builder()
-                .email(adminEmail)
-                .username("Admin User")
-                .password(passwordEncoder.encode("admin123"))
-                .provider("LOCAL")
-                .isActive(true)
+                .email(adminEmail) // Email admin
+                .username("Admin User") // Tên hiển thị
+                .password(passwordEncoder.encode("admin123")) // Mã hoá mật khẩu trước khi lưu
+                .provider("LOCAL") // Nhà cung cấp xác thực nội bộ
+                .isActive(true) // Kích hoạt tài khoản
                 .build();
                 
-        adminUser = userRepository.save(adminUser);
+        adminUser = userRepository.save(adminUser); // Lưu admin vào DB
         log.info("Created admin user: admin@okabe.com / admin123");
 
         // Find the first workspace to add them to, to test RBAC
-        List<Workspace> workspaces = workspaceRepository.findAll();
-        if (!workspaces.isEmpty()) {
-            Workspace firstWorkspace = workspaces.get(0);
+        List<Workspace> workspaces = workspaceRepository.findAll(); // Lấy tất cả workspace
+        if (!workspaces.isEmpty()) { // Nếu có ít nhất một workspace
+            Workspace firstWorkspace = workspaces.get(0); // Lấy workspace đầu tiên
             
-            if (!memberRepository.existsByWorkspaceIdAndUserId(firstWorkspace.getId(), adminUser.getId())) {
+            if (!memberRepository.existsByWorkspaceIdAndUserId(firstWorkspace.getId(), adminUser.getId())) { // Nếu admin chưa là thành viên
                 WorkspaceMember member = WorkspaceMember.builder()
-                        .workspaceId(firstWorkspace.getId())
-                        .userId(adminUser.getId())
-                        .role(Role.ADMIN) // Give them ADMIN role
+                        .workspaceId(firstWorkspace.getId()) // Gán workspace
+                        .userId(adminUser.getId()) // Gán user admin
+                        .role(Role.ADMIN) // Give them ADMIN role // Gán quyền ADMIN để kiểm tra RBAC
                         .build();
-                memberRepository.save(member);
+                memberRepository.save(member); // Lưu member vào DB
                 log.info("Added Admin user to workspace '{}' with role ADMIN", firstWorkspace.getName());
             }
         }

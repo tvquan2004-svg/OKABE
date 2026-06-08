@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChecklistResponse {
-    private Long id;
-    private Long cardId;
-    private String name;
-    private Integer position;
-    private List<ChecklistItemResponse> items;
+    private Long id; // ID checklist
+    private Long cardId; // ID thẻ chứa checklist
+    private String name; // Tên checklist
+    private Integer position; // Vị trí trong thẻ
+    private List<ChecklistItemResponse> items; // Danh sách các mục
 }

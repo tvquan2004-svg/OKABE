@@ -9,7 +9,10 @@ import java.util.Optional;
 
 @Repository
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
+    // Tìm token xác thực email theo token string
     Optional<EmailVerificationToken> findByToken(String token);
+    // Tìm token xác thực email theo user
     Optional<EmailVerificationToken> findByUser(User user);
+    // Xoá token xác thực email của user
     void deleteByUser(User user);
 }
