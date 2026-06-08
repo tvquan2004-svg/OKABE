@@ -24,4 +24,8 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
 
     // Tìm workspace theo danh sách id
     List<Workspace> findByIdIn(List<Long> ids);
+
+    // Tìm workspace theo từ khóa, lọc ngay trong database
+    @Query("SELECT w FROM Workspace w WHERE w.id IN :workspaceIds AND (LOWER(w.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(w.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Workspace> searchByKeyword(@Param("workspaceIds") List<Long> workspaceIds, @Param("keyword") String keyword);
 }

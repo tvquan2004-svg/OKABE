@@ -55,6 +55,10 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
     @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id IN :workspaceIds AND c.isArchived = false")
     List<Card> findByWorkspaceIdIn(@Param("workspaceIds") List<Long> workspaceIds);
 
+    // Tìm thẻ theo từ khóa, kèm taskList + board để tránh N+1, lọc ngay trong database
+    @Query("SELECT c FROM Card c JOIN FETCH c.taskList tl JOIN FETCH tl.board WHERE c.taskList.board.workspace.id IN :workspaceIds AND c.isArchived = false AND (LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Card> searchByKeyword(@Param("workspaceIds") List<Long> workspaceIds, @Param("keyword") String keyword);
+
     // Tìm thẻ chưa được cập nhật trong một khoảng thời gian (thẻ cũ/ngưng trệ)
     @Query("SELECT c FROM Card c WHERE c.taskList.board.workspace.id = :workspaceId AND c.isArchived = false AND c.updatedAt < :threshold")
     List<Card> findStaleCardsByWorkspace(@Param("workspaceId") Long workspaceId, @Param("threshold") LocalDateTime threshold);

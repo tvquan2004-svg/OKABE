@@ -34,4 +34,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     // Tìm board theo danh sách workspaceIds, kèm workspace
     @org.springframework.data.jpa.repository.Query("SELECT b FROM Board b JOIN FETCH b.workspace WHERE b.workspace.id IN :workspaceIds")
     List<Board> findByWorkspaceIdIn(@org.springframework.data.repository.query.Param("workspaceIds") List<Long> workspaceIds);
+
+    // Tìm board theo từ khóa, lọc ngay trong database
+    @org.springframework.data.jpa.repository.Query("SELECT b FROM Board b JOIN FETCH b.workspace WHERE b.workspace.id IN :workspaceIds AND (LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Board> searchByKeyword(@org.springframework.data.repository.query.Param("workspaceIds") List<Long> workspaceIds, @org.springframework.data.repository.query.Param("keyword") String keyword);
 }
