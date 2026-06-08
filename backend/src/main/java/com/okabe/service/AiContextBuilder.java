@@ -15,8 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Builds context-aware system prompt data from the database
- * to inject into AI conversations based on the user's current view.
+ * Xây dựng context cho AI từ database dựa trên ngữ cảnh hiện tại của user (board, workspace).
  */
 @Service
 @RequiredArgsConstructor
@@ -27,14 +26,12 @@ public class AiContextBuilder {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    /**
-     * Builds a context string for the given user, optionally scoped to a board or workspace.
-     */
+    // Xây dựng context string cho user, có thể giới hạn theo board hoặc workspace
     public String buildContext(Long userId, Long boardId, Long workspaceId) {
         StringBuilder ctx = new StringBuilder();
 
         try {
-            // Upcoming cards (next 7 days) assigned to user
+            // Thẻ sắp đến hạn trong 7 ngày tới được gán cho user
             List<String> upcoming = jdbcTemplate.queryForList("""
                     SELECT CONCAT(c.title, ' (hạn: ', DATE_FORMAT(c.due_date, '%d/%m/%Y'), ', list: ', l.name, ')')
                     FROM cards c
@@ -47,7 +44,7 @@ public class AiContextBuilder {
                     LIMIT 10
                     """, String.class, userId);
 
-            // Overdue cards assigned to user
+            // Thẻ quá hạn được gán cho user
             List<String> overdue = jdbcTemplate.queryForList("""
                     SELECT CONCAT(c.title, ' (hạn: ', DATE_FORMAT(c.due_date, '%d/%m/%Y'), ', list: ', l.name, ')')
                     FROM cards c
@@ -70,12 +67,12 @@ public class AiContextBuilder {
                 upcoming.forEach(t -> ctx.append("- ").append(t).append("\n"));
             }
 
-            // Board-specific context
+            // Context theo board
             if (boardId != null) {
                 appendBoardContext(ctx, boardId);
             }
             
-            // Workspace members context
+            // Context theo workspace
             if (workspaceId != null) {
                 appendWorkspaceMembers(ctx, workspaceId);
             }
@@ -87,9 +84,10 @@ public class AiContextBuilder {
         return ctx.toString();
     }
 
+    // Thêm trạng thái board (các cột và thẻ) vào context
     private void appendBoardContext(StringBuilder ctx, Long boardId) {
         try {
-            // Fetch list names and card titles
+            // Lấy tên danh sách và tiêu đề thẻ
             List<java.util.Map<String, Object>> rows = jdbcTemplate.queryForList("""
                     SELECT l.name as list_name, c.title as card_title
                     FROM lists l
@@ -127,6 +125,7 @@ public class AiContextBuilder {
         }
     }
 
+    // Thêm danh sách thành viên workspace vào context
     private void appendWorkspaceMembers(StringBuilder ctx, Long workspaceId) {
         if (workspaceId == null) return;
         try {

@@ -25,7 +25,7 @@ public class SuggestionController {
     public ResponseEntity<ApiResponse<List<SuggestionResponse>>> getSuggestions(
             @PathVariable Long workspaceId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        List<SuggestionResponse> suggestions = suggestionService.getSuggestions(workspaceId, currentUser);
+        List<SuggestionResponse> suggestions = suggestionService.getSuggestions(workspaceId, currentUser); // Lấy gợi ý thông minh cho workspace
         return ResponseEntity.ok(ApiResponse.success(suggestions));
     }
 
@@ -36,7 +36,7 @@ public class SuggestionController {
             @RequestParam(required = false) Long cardId,
             @RequestParam Long workspaceId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        suggestionService.dismissSuggestion(type, cardId, workspaceId, currentUser);
+        suggestionService.dismissSuggestion(type, cardId, workspaceId, currentUser); // Tắt gợi ý
         return ResponseEntity.ok(ApiResponse.success(null, "Suggestion dismissed"));
     }
 }

@@ -49,8 +49,6 @@ function SortableBoardCard({
       {...attributes}
       {...listeners}
     >
-      <div className={styles.glassEffect} />
-      <div className={styles.colorBar} />
       <div className={styles.content}>
         <div className={styles.headerRow}>
           <h3 className={styles.title}>{board.name}</h3>
@@ -62,7 +60,7 @@ function SortableBoardCard({
                 onClick={(event) => onEdit(board, event)}
                 title="Chỉnh sửa bảng"
               >
-                <FiEdit2 size={14} />
+                <FiEdit2 size={13} />
               </button>
               <button
                 type="button"
@@ -70,7 +68,7 @@ function SortableBoardCard({
                 onClick={(event) => onDelete(board.id, event)}
                 title="Xóa bảng"
               >
-                <FiTrash2 size={14} />
+                <FiTrash2 size={13} />
               </button>
             </div>
           ) : null}
@@ -79,18 +77,18 @@ function SortableBoardCard({
         {board.description ? (
           <p className={styles.description}>{board.description}</p>
         ) : (
-          <p className={styles.descriptionPlaceholder}>Không có mô tả cho bảng này</p>
+          <p className={styles.descPlaceholder}>Không có mô tả</p>
         )}
 
         <div className={styles.stats}>
-          <div className={styles.statItem}>
-            <FiLayers size={14} />
-            <span>{board.listCount ?? 0} danh sách</span>
-          </div>
-          <div className={styles.statItem}>
-            <FiCheckSquare size={14} />
-            <span>{board.totalCards ?? 0} thẻ</span>
-          </div>
+          <span className={styles.statItem}>
+            <FiLayers size={12} />
+            {board.listCount ?? 0} danh sách
+          </span>
+          <span className={styles.statItem}>
+            <FiCheckSquare size={12} />
+            {board.totalCards ?? 0} thẻ
+          </span>
         </div>
       </div>
     </div>

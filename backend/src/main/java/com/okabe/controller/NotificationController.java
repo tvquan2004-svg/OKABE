@@ -27,14 +27,14 @@ public class NotificationController {
     public ResponseEntity<ApiResponse<Page<NotificationResponse>>> getNotifications(
             @PageableDefault(size = 20) Pageable pageable,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(notificationService.getNotifications(currentUser, pageable)));
+        return ResponseEntity.ok(ApiResponse.success(notificationService.getNotifications(currentUser, pageable))); // Lấy danh sách thông báo của user
     }
 
     @GetMapping("/unread-count")
     @Operation(summary = "Get unread notification count")
     public ResponseEntity<ApiResponse<Long>> getUnreadCount(
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(notificationService.getUnreadCount(currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(notificationService.getUnreadCount(currentUser))); // Lấy số lượng thông báo chưa đọc
     }
 
     @PutMapping("/{id}/read")
@@ -42,7 +42,7 @@ public class NotificationController {
     public ResponseEntity<ApiResponse<Void>> markAsRead(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        notificationService.markAsRead(id, currentUser);
+        notificationService.markAsRead(id, currentUser); // Đánh dấu thông báo đã đọc
         return ResponseEntity.ok(ApiResponse.success(null, "Notification marked as read"));
     }
 
@@ -50,7 +50,7 @@ public class NotificationController {
     @Operation(summary = "Mark all notifications as read")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        notificationService.markAllAsRead(currentUser);
+        notificationService.markAllAsRead(currentUser); // Đánh dấu tất cả thông báo đã đọc
         return ResponseEntity.ok(ApiResponse.success(null, "All notifications marked as read"));
     }
 }

@@ -6,8 +6,8 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "checklists")
+@Entity // Đánh dấu là entity JPA
+@Table(name = "checklists") // Ánh xạ đến bảng checklists
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,23 +15,23 @@ import java.util.List;
 @Builder
 public class Checklist extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id // Khóa chính
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Tự động tăng
+    private Long id; // ID duy nhất của checklist
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id", nullable = false)
-    private Card card;
+    @ManyToOne(fetch = FetchType.LAZY) // Nhiều checklist thuộc về một thẻ
+    @JoinColumn(name = "card_id", nullable = false) // Khoá ngoại đến bảng cards
+    private Card card; // Thẻ chứa checklist
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false, length = 100) // Tên checklist (bắt buộc)
+    private String name; // Tên của checklist (VD: "Các bước cần làm")
 
-    @Column(nullable = false)
+    @Column(nullable = false) // Vị trí sắp xếp (bắt buộc)
     @Builder.Default
-    private Integer position = 0;
+    private Integer position = 0; // Vị trí của checklist trong thẻ
 
-    @OneToMany(mappedBy = "checklist", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("position ASC")
+    @OneToMany(mappedBy = "checklist", cascade = CascadeType.ALL, orphanRemoval = true) // Một checklist có nhiều mục con
+    @OrderBy("position ASC") // Sắp xếp các mục theo vị trí tăng dần
     @Builder.Default
-    private List<ChecklistItem> items = new ArrayList<>();
+    private List<ChecklistItem> items = new ArrayList<>(); // Danh sách các mục trong checklist
 }

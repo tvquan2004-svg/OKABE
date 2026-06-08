@@ -5,12 +5,12 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class TemplateListResponse {
-    private Long id;
-    private String name;
-    private Integer position;
-    private List<TemplateCardResponse> cards;
+    private Long id; // ID danh sách mẫu
+    private String name; // Tên danh sách mẫu
+    private Integer position; // Vị trí
+    private List<TemplateCardResponse> cards; // Danh sách thẻ mẫu
 }

@@ -13,14 +13,14 @@ public class AsyncConfig {
 
     @Bean("taskExecutor")
     public Executor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("async-");
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(30);
-        executor.initialize();
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor(); // Tạo executor để chạy các tác vụ bất đồng bộ
+        executor.setCorePoolSize(2); // Số luồng tối thiểu trong pool
+        executor.setMaxPoolSize(5); // Số luồng tối đa trong pool
+        executor.setQueueCapacity(100); // Dung lượng hàng đợi khi tất cả luồng đều bận
+        executor.setThreadNamePrefix("async-"); // Tiền tố đặt tên cho các luồng async
+        executor.setWaitForTasksToCompleteOnShutdown(true); // Chờ tác vụ đang chạy hoàn thành trước khi tắt
+        executor.setAwaitTerminationSeconds(30); // Thời gian tối đa chờ tác vụ hoàn thành khi tắt
+        executor.initialize(); // Khởi tạo executor sau khi cấu hình xong
         return executor;
     }
 }

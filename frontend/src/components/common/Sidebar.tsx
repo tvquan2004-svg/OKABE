@@ -2,7 +2,6 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   FiGrid, 
-  FiSettings, 
   FiChevronLeft, 
   FiChevronRight,
   FiX
@@ -54,23 +53,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
       </div>
 
       <nav className={styles.nav}>
-        <div className={styles.section}>
-          {!isCollapsed && <span className={styles.sectionTitle}>Chung</span>}
-          <NavLink 
-            to="/dashboard" 
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-            onClick={onCloseMobile}
-            title="Bảng điều khiển"
-          >
-            <FiGrid />
-            {!isCollapsed && <span>Bảng điều khiển</span>}
-          </NavLink>
-        </div>
+        <NavLink 
+          to="/dashboard" 
+          className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+          onClick={onCloseMobile}
+          title="Bảng điều khiển"
+        >
+          <FiGrid />
+          {!isCollapsed && <span>Bảng điều khiển</span>}
+        </NavLink>
 
         <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            {!isCollapsed && <span className={styles.sectionTitle}>Không gian làm việc</span>}
-          </div>
           {workspaces.map(ws => (
             <NavLink 
               key={ws.id}
@@ -86,28 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobileOpen, 
         </div>
 
         {!isCollapsed && <SuggestionPanel workspaceId={currentWorkspaceId} />}
-
-        <div className={styles.section}>
-          {!isCollapsed && <span className={styles.sectionTitle}>Khác</span>}
-          <NavLink 
-            to="/settings" 
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-            onClick={onCloseMobile}
-            title="Cài đặt"
-          >
-            <FiSettings />
-            {!isCollapsed && <span>Cài đặt</span>}
-          </NavLink>
-        </div>
       </nav>
-
-      <div className={styles.footer}>
-        {!isCollapsed && (
-          <div className={styles.footerInfo}>
-            <p className={styles.version}>phiên bản v1.0.0</p>
-          </div>
-        )}
-      </div>
     </aside>
   );
 };

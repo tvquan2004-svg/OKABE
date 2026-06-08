@@ -9,7 +9,9 @@ import java.util.List;
 @Repository
 public interface KeyResultRepository extends JpaRepository<KeyResult, Long> {
 
+    // Tìm tất cả key result của một objective
     List<KeyResult> findByObjectiveId(Long objectiveId);
 
+    // Xoá tất cả key result của một objective
     void deleteByObjectiveId(Long objectiveId);
 }

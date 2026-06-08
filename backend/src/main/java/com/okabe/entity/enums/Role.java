@@ -1,7 +1,7 @@
 package com.okabe.entity.enums;
 
 public enum Role {
-    OWNER,
-    ADMIN,
-    MEMBER
+    OWNER,  // Chủ sở hữu không gian làm việc
+    ADMIN,  // Quản trị viên
+    MEMBER  // Thành viên thông thường
 }

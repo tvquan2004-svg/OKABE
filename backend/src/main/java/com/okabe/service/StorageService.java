@@ -4,17 +4,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface StorageService {
-    /**
-     * Uploads a file and returns its storage key/URL.
-     * @param file The file to upload.
-     * @return The storage key or URL.
-     * @throws IOException If upload fails.
-     */
+    // Upload file và trả về storage key hoặc URL
     String upload(MultipartFile file) throws IOException;
 
-    /**
-     * Deletes a file by its storage key/URL.
-     * @param key The storage key or URL.
-     */
+    // Xoá file theo storage key hoặc URL
     void delete(String key);
 }

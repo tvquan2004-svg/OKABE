@@ -8,16 +8,16 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardInfoResponse {
-    private Long id;
-    private Long listId;
-    private String title;
-    private String priority;
-    private Boolean isArchived;
-    private LocalDateTime dueDate;
-    private String listName;
-    private String boardName;
+    private Long id; // ID thẻ
+    private Long listId; // ID danh sách chứa thẻ
+    private String title; // Tiêu đề thẻ
+    private String priority; // Mức độ ưu tiên
+    private Boolean isArchived; // Đã lưu trữ?
+    private LocalDateTime dueDate; // Hạn chót
+    private String listName; // Tên danh sách
+    private String boardName; // Tên bảng
 }

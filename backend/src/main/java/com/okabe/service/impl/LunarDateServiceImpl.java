@@ -34,56 +34,56 @@ public class LunarDateServiceImpl implements LunarDateService {
 
     @Override
     public LunarDateResponse getLunarDate(LocalDate gregorianDate) {
-        LunarCalendarUtil.LunarDate lunar = LunarCalendarUtil.solarToLunar(gregorianDate);
-        return buildResponse(gregorianDate, lunar);
+        LunarCalendarUtil.LunarDate lunar = LunarCalendarUtil.solarToLunar(gregorianDate); // Chuyển đổi ngày dương lịch sang âm lịch
+        return buildResponse(gregorianDate, lunar); // Xây dựng và trả về phản hồi
     }
 
     @Override
     public LunarMonthResponse getLunarMonth(int month, int year) {
-        LocalDate firstDay = LocalDate.of(year, month, 1);
-        int daysInMonth = firstDay.lengthOfMonth();
+        LocalDate firstDay = LocalDate.of(year, month, 1); // Ngày đầu tháng
+        int daysInMonth = firstDay.lengthOfMonth(); // Số ngày trong tháng
 
-        List<LunarDateResponse> days = new ArrayList<>();
-        for (int d = 1; d <= daysInMonth; d++) {
-            LocalDate date = LocalDate.of(year, month, d);
-            days.add(getLunarDate(date));
+        List<LunarDateResponse> days = new ArrayList<>(); // Khởi tạo danh sách ngày
+        for (int d = 1; d <= daysInMonth; d++) { // Duyệt từng ngày trong tháng
+            LocalDate date = LocalDate.of(year, month, d); // Tạo đối tượng ngày
+            days.add(getLunarDate(date)); // Thêm thông tin âm lịch vào danh sách
         }
 
-        return LunarMonthResponse.builder()
-            .month(month)
-            .year(year)
-            .days(days)
-            .build();
+        return LunarMonthResponse.builder() // Xây dựng phản hồi
+            .month(month) // Gán tháng
+            .year(year) // Gán năm
+            .days(days) // Gán danh sách ngày
+            .build(); // Xây dựng LunarMonthResponse
     }
 
     private LunarDateResponse buildResponse(LocalDate gregorianDate, LunarCalendarUtil.LunarDate lunar) {
-        int conventionalYear = LunarCalendarUtil.getConventionalYear(gregorianDate);
+        int conventionalYear = LunarCalendarUtil.getConventionalYear(gregorianDate); // Lấy năm âm lịch quy ước
 
-        String holidayName = findHoliday(gregorianDate, lunar);
+        String holidayName = findHoliday(gregorianDate, lunar); // Tìm tên ngày lễ
         return LunarDateResponse.builder()
-            .lunarDay(lunar.getDay())
-            .lunarMonth(lunar.getMonth())
-            .lunarYear(conventionalYear)
-            .holiday(holidayName != null)
-            .holidayName(holidayName)
-            .build();
+            .lunarDay(lunar.getDay()) // Gán ngày âm lịch
+            .lunarMonth(lunar.getMonth()) // Gán tháng âm lịch
+            .lunarYear(conventionalYear) // Gán năm âm lịch
+            .holiday(holidayName != null) // Đánh dấu có ngày lễ
+            .holidayName(holidayName) // Gán tên ngày lễ
+            .build(); // Xây dựng LunarDateResponse
     }
 
     private String findHoliday(LocalDate gregorianDate, LunarCalendarUtil.LunarDate lunar) {
-        for (Holiday h : HOLIDAYS) {
-            if (h.solarDay != null && h.solarMonth != null) {
-                if (gregorianDate.getDayOfMonth() == h.solarDay
-                    && gregorianDate.getMonthValue() == h.solarMonth) {
-                    return h.name;
+        for (Holiday h : HOLIDAYS) { // Duyệt danh sách ngày lễ
+            if (h.solarDay != null && h.solarMonth != null) { // Nếu là lễ dương lịch
+                if (gregorianDate.getDayOfMonth() == h.solarDay // So khớp ngày
+                    && gregorianDate.getMonthValue() == h.solarMonth) { // So khớp tháng
+                    return h.name; // Trả về tên ngày lễ
                 }
             }
-            if (h.lunarDay != null && h.lunarMonth != null) {
-                if (lunar.getDay() == h.lunarDay && lunar.getMonth() == h.lunarMonth) {
-                    return h.name;
+            if (h.lunarDay != null && h.lunarMonth != null) { // Nếu là lễ âm lịch
+                if (lunar.getDay() == h.lunarDay && lunar.getMonth() == h.lunarMonth) { // So khớp ngày tháng âm lịch
+                    return h.name; // Trả về tên ngày lễ
                 }
             }
         }
-        return null;
+        return null; // Không tìm thấy ngày lễ
     }
 
     private record Holiday(Integer solarDay, Integer solarMonth,

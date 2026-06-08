@@ -7,8 +7,8 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
-public class WorkspaceMemberId implements Serializable {
-    private Long workspaceId;
-    private Long userId;
+@EqualsAndHashCode // Tự động tạo equals và hashCode
+public class WorkspaceMemberId implements Serializable { // Lớp khoá chính hợp thành
+    private Long workspaceId; // Thành phần khoá: ID không gian làm việc
+    private Long userId; // Thành phần khoá: ID người dùng
 }

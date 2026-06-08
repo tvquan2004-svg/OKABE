@@ -9,16 +9,16 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentResponse {
-    private Long id;
-    private Long cardId;
-    private UserResponse author;
-    private String content;
-    private Boolean isEdited;
-    private Set<UserResponse> mentions;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Long id; // ID bình luận
+    private Long cardId; // ID thẻ được bình luận
+    private UserResponse author; // Người viết bình luận
+    private String content; // Nội dung bình luận
+    private Boolean isEdited; // Đã chỉnh sửa?
+    private Set<UserResponse> mentions; // Danh sách người được đề cập
+    private LocalDateTime createdAt; // Thời gian tạo
+    private LocalDateTime updatedAt; // Thời gian cập nhật
 }

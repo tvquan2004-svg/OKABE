@@ -29,7 +29,7 @@ public class AttachmentController {
             @PathVariable Long cardId,
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserPrincipal currentUser) throws IOException {
-        return ResponseEntity.ok(ApiResponse.success(attachmentService.uploadAttachment(cardId, file, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(attachmentService.uploadAttachment(cardId, file, currentUser))); // Upload file đính kèm
     }
 
     @GetMapping("/cards/{cardId}/attachments")
@@ -37,7 +37,7 @@ public class AttachmentController {
     public ResponseEntity<ApiResponse<List<AttachmentResponse>>> getCardAttachments(
             @PathVariable Long cardId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(attachmentService.getCardAttachments(cardId, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(attachmentService.getCardAttachments(cardId, currentUser))); // Lấy danh sách file đính kèm
     }
 
     @DeleteMapping("/attachments/{attachmentId}")
@@ -45,7 +45,7 @@ public class AttachmentController {
     public ResponseEntity<ApiResponse<Void>> deleteAttachment(
             @PathVariable Long attachmentId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        attachmentService.deleteAttachment(attachmentId, currentUser);
+        attachmentService.deleteAttachment(attachmentId, currentUser); // Xoá file đính kèm
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

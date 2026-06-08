@@ -10,35 +10,22 @@ import java.util.List;
 
 public interface AiChatService {
 
-    /**
-     * Creates a new conversation for the user.
-     */
+    // Tạo cuộc hội thoại mới cho user
     ConversationResponse createConversation(Long boardId, Long workspaceId, UserPrincipal currentUser);
 
-    /**
-     * Returns paginated list of conversations for the current user.
-     */
+    // Lấy danh sách cuộc hội thoại của user (có phân trang)
     List<ConversationResponse> getConversations(int page, int size, UserPrincipal currentUser);
 
-    /**
-     * Returns all messages in a conversation (user must own it).
-     */
+    // Lấy tất cả tin nhắn trong cuộc hội thoại (user phải là chủ sở hữu)
     List<MessageResponse> getMessages(Long conversationId, UserPrincipal currentUser);
 
-    /**
-     * Sends a message and returns the AI reply.
-     */
+    // Gửi tin nhắn và nhận phản hồi từ AI
     ChatResponse sendMessage(ChatRequest request, UserPrincipal currentUser);
 
-    /**
-     * Streams the AI reply using SSE — calls onToken for each chunk.
-     * Returns the conversation ID (created if new).
-     */
+    // Stream phản hồi AI qua SSE, gọi onToken cho mỗi chunk, trả về conversationId
     Long streamMessage(ChatRequest request, UserPrincipal currentUser,
                        java.util.function.Consumer<String> onToken);
 
-    /**
-     * Deletes a conversation and all its messages.
-     */
+    // Xoá cuộc hội thoại và tất cả tin nhắn trong đó
     void deleteConversation(Long conversationId, UserPrincipal currentUser);
 }

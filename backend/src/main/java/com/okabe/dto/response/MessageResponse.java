@@ -8,11 +8,11 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder // Hỗ trợ builder pattern
+@JsonInclude(JsonInclude.Include.NON_NULL) // Không bao gồm trường null trong JSON
 public class MessageResponse {
-    private Long id;
-    private MessageRole role;
-    private String content;
-    private LocalDateTime createdAt;
+    private Long id; // ID tin nhắn
+    private MessageRole role; // Vai trò người gửi (USER, ASSISTANT, SYSTEM)
+    private String content; // Nội dung tin nhắn
+    private LocalDateTime createdAt; // Thời gian gửi
 }

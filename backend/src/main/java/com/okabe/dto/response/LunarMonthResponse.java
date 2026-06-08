@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class LunarMonthResponse {
-    private int month;
-    private int year;
-    private List<LunarDateResponse> days;
+    private int month; // Tháng
+    private int year; // Năm
+    private List<LunarDateResponse> days; // Danh sách ngày trong tháng âm lịch
 }

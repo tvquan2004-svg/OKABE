@@ -14,17 +14,18 @@ import java.util.List;
 
 public class CardSpecification {
 
+    // Tạo Specification để lọc thẻ theo các tiêu chí tìm kiếm (board, keyword, người được gán, nhãn, ưu tiên, ngày đến hạn, quá hạn)
     public static Specification<Card> filterByRequest(Long boardId, CardSearchRequest request) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Filter by board (via TaskList)
+            // Lọc theo board (thông qua taskList)
             predicates.add(cb.equal(root.get("taskList").get("board").get("id"), boardId));
             
-            // Only non-archived cards
+            // Chỉ lấy thẻ chưa lưu trữ
             predicates.add(cb.equal(root.get("isArchived"), false));
 
-            // Keyword search (title OR description)
+            // Tìm kiếm theo từ khóa (tiêu đề HOẶC mô tả)
             if (request.keyword() != null && !request.keyword().isBlank()) {
                 String keyword = "%" + request.keyword().toLowerCase() + "%";
                 predicates.add(cb.or(
@@ -33,24 +34,24 @@ public class CardSpecification {
                 ));
             }
 
-            // Assignees filter
+            // Lọc theo người được gán
             if (request.assigneeIds() != null && !request.assigneeIds().isEmpty()) {
                 Join<Card, User> membersJoin = root.join("members");
                 predicates.add(membersJoin.get("id").in(request.assigneeIds()));
             }
 
-            // Labels filter
+            // Lọc theo nhãn
             if (request.labelIds() != null && !request.labelIds().isEmpty()) {
                 Join<Card, Label> labelsJoin = root.join("labels");
                 predicates.add(labelsJoin.get("id").in(request.labelIds()));
             }
 
-            // Priorities filter
+            // Lọc theo mức ưu tiên
             if (request.priorities() != null && !request.priorities().isEmpty()) {
                 predicates.add(root.get("priority").in(request.priorities()));
             }
 
-            // Due date range
+            // Lọc theo khoảng ngày đến hạn
             if (request.dueDateFrom() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("dueDate"), request.dueDateFrom().atStartOfDay()));
             }
@@ -58,12 +59,12 @@ public class CardSpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("dueDate"), request.dueDateTo().atTime(23, 59, 59)));
             }
 
-            // Overdue filter
+            // Lọc thẻ quá hạn
             if (Boolean.TRUE.equals(request.isOverdue())) {
                 predicates.add(cb.lessThan(root.get("dueDate"), LocalDateTime.now()));
             }
 
-            // Avoid duplicates when joining
+            // Tránh trùng lặp khi JOIN
             query.distinct(true);
 
             return cb.and(predicates.toArray(new Predicate[0]));

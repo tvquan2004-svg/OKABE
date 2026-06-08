@@ -9,41 +9,41 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkspaceResponse {
-    private Long id;
-    private String name;
-    private String slug;
-    private String description;
-    private OwnerInfo owner;
-    private String currentUserRole;
-    private int memberCount;
-    private long boardCount;
-    private LocalDateTime createdAt;
+    private Long id; // ID workspace
+    private String name; // Tên workspace
+    private String slug; // Slug URL
+    private String description; // Mô tả
+    private OwnerInfo owner; // Thông tin chủ sở hữu
+    private String currentUserRole; // Vai trò người dùng hiện tại
+    private int memberCount; // Số lượng thành viên
+    private long boardCount; // Số lượng bảng
+    private LocalDateTime createdAt; // Thời gian tạo
 
     @Getter
-    @Builder
+    @Builder // Hỗ trợ builder pattern
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class OwnerInfo {
-        private Long id;
-        private String username;
-        private String email;
-        private String avatarUrl;
+    public static class OwnerInfo { // Thông tin chủ sở hữu
+        private Long id; // ID người dùng
+        private String username; // Tên người dùng
+        private String email; // Email
+        private String avatarUrl; // Ảnh đại diện
     }
 
     @Getter
-    @Builder
+    @Builder // Hỗ trợ builder pattern
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class MemberInfo {
-        private Long userId;
-        private String username;
-        private String email;
-        private String avatarUrl;
-        private String role;
-        private LocalDateTime joinedAt;
+    public static class MemberInfo { // Thông tin thành viên
+        private Long userId; // ID thành viên
+        private String username; // Tên thành viên
+        private String email; // Email
+        private String avatarUrl; // Ảnh đại diện
+        private String role; // Vai trò
+        private LocalDateTime joinedAt; // Thời gian tham gia
     }
 }

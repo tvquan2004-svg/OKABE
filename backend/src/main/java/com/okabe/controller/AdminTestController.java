@@ -29,7 +29,7 @@ public class AdminTestController {
     @Operation(summary = "Manually trigger the due-date email notification scheduler")
     public ResponseEntity<ApiResponse<String>> triggerDueSoon() {
         log.warn("[AdminTest] Manually triggering due-date notification scheduler...");
-        scheduledNotificationService.checkCardsDueSoon();
+        scheduledNotificationService.checkCardsDueSoon(); // Kích hoạt kiểm tra thẻ sắp đến hạn
         return ResponseEntity.ok(ApiResponse.success(null, "Scheduler triggered successfully. Check logs and email inbox."));
     }
 }

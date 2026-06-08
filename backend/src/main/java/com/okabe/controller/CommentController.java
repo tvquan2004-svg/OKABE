@@ -31,7 +31,7 @@ public class CommentController {
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(commentService.createComment(cardId, request, currentUser)));
+                .body(ApiResponse.success(commentService.createComment(cardId, request, currentUser))); // Tạo bình luận trên thẻ
     }
 
     @PutMapping("/api/v1/comments/{id}")
@@ -40,7 +40,7 @@ public class CommentController {
             @PathVariable Long id,
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(commentService.updateComment(id, request, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(commentService.updateComment(id, request, currentUser))); // Cập nhật bình luận
     }
 
     @DeleteMapping("/api/v1/comments/{id}")
@@ -48,7 +48,7 @@ public class CommentController {
     public ResponseEntity<ApiResponse<Void>> deleteComment(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        commentService.deleteComment(id, currentUser);
+        commentService.deleteComment(id, currentUser); // Xoá bình luận
         return ResponseEntity.ok(ApiResponse.success(null, "Comment deleted"));
     }
 
@@ -57,6 +57,6 @@ public class CommentController {
     public ResponseEntity<ApiResponse<Page<CommentResponse>>> getCardComments(
             @PathVariable Long cardId,
             @PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.success(commentService.getCardComments(cardId, pageable)));
+        return ResponseEntity.ok(ApiResponse.success(commentService.getCardComments(cardId, pageable))); // Lấy danh sách bình luận của thẻ
     }
 }

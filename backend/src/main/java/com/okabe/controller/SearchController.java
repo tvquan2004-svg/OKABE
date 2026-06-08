@@ -29,6 +29,6 @@ public class SearchController {
     public ResponseEntity<ApiResponse<List<SearchResultItem>>> globalSearch(
             @RequestParam String q,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(searchService.globalSearch(q, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(searchService.globalSearch(q, currentUser))); // Tìm kiếm toàn bộ dữ liệu (boards, cards, members, workspaces)
     }
 }

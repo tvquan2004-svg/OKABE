@@ -29,6 +29,6 @@ public class CommandController {
     public ResponseEntity<ApiResponse<CommandResponse>> execute(
             @Valid @RequestBody CommandRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(commandService.execute(request.command(), currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(commandService.execute(request.command(), currentUser))); // Thực thi slash command
     }
 }

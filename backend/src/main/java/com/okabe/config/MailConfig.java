@@ -22,34 +22,34 @@ public class MailConfig {
 
     @Bean
     public JavaMailSender javaMailSender(MailProperties mailProperties) {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost(mailProperties.getHost());
-        mailSender.setPort(mailProperties.getPort());
-        mailSender.setUsername(mailProperties.getUsername());
-        mailSender.setPassword(normalizePassword(mailProperties));
-        mailSender.setProtocol(mailProperties.getProtocol());
-        Charset defaultEncoding = mailProperties.getDefaultEncoding();
-        if (defaultEncoding != null) {
-            mailSender.setDefaultEncoding(defaultEncoding.name());
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl(); // Tạo đối tượng gửi mail JavaMail
+        mailSender.setHost(mailProperties.getHost()); // Đặt host SMTP từ cấu hình
+        mailSender.setPort(mailProperties.getPort()); // Đặt cổng SMTP từ cấu hình
+        mailSender.setUsername(mailProperties.getUsername()); // Đặt tên đăng nhập SMTP
+        mailSender.setPassword(normalizePassword(mailProperties)); // Đặt mật khẩu (đã chuẩn hoá)
+        mailSender.setProtocol(mailProperties.getProtocol()); // Đặt giao thức (smtp/smtps)
+        Charset defaultEncoding = mailProperties.getDefaultEncoding(); // Lấy encoding mặc định
+        if (defaultEncoding != null) { // Nếu có cấu hình encoding
+            mailSender.setDefaultEncoding(defaultEncoding.name()); // Đặt encoding cho mail
         }
-        mailSender.setJavaMailProperties(toJavaMailProperties(mailProperties));
+        mailSender.setJavaMailProperties(toJavaMailProperties(mailProperties)); // Chuyển các thuộc tính mail bổ sung
         return mailSender;
     }
 
     private Properties toJavaMailProperties(MailProperties mailProperties) {
-        Properties properties = new Properties();
-        properties.putAll(mailProperties.getProperties());
+        Properties properties = new Properties(); // Tạo Properties để chứa cấu hình JavaMail
+        properties.putAll(mailProperties.getProperties()); // Copy tất cả thuộc tính từ MailProperties
         return properties;
     }
 
     private String normalizePassword(MailProperties mailProperties) {
-        String password = mailProperties.getPassword();
+        String password = mailProperties.getPassword(); // Lấy mật khẩu gốc
         if (password == null || !GMAIL_SMTP_HOST.equalsIgnoreCase(mailProperties.getHost())) {
-            return password;
+            return password; // Không xử lý nếu password null hoặc không phải Gmail
         }
 
-        String normalizedPassword = password.replaceAll("\\s+", "");
-        if (!password.equals(normalizedPassword)) {
+        String normalizedPassword = password.replaceAll("\\s+", ""); // Loại bỏ khoảng trắng trong mật khẩu
+        if (!password.equals(normalizedPassword)) { // Nếu mật khẩu có chứa khoảng trắng
             log.warn("Gmail SMTP app password contained whitespace and was normalized before use.");
         }
         return normalizedPassword;

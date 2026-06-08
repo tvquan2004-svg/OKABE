@@ -6,13 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
-    private Long id;
-    private String username;
-    private String email;
-    private String avatarUrl;
-    private Boolean is2faEnabled;
+    private Long id; // ID người dùng
+    private String username; // Tên người dùng
+    private String email; // Email
+    private String avatarUrl; // Ảnh đại diện
+    private Boolean is2faEnabled; // Đã bật 2FA?
 }

@@ -21,14 +21,14 @@ public class FocusController {
             @PathVariable Long cardId,
             @RequestParam(required = false, defaultValue = "25") Integer durationMinutes,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(focusService.startFocus(cardId, durationMinutes, currentUser));
+        return ResponseEntity.ok(focusService.startFocus(cardId, durationMinutes, currentUser)); // Bắt đầu phiên tập trung
     }
 
     @PostMapping("/cards/{cardId}/focus/stop")
     public ResponseEntity<FocusSessionResponse> stopFocus(
             @PathVariable Long cardId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(focusService.stopFocus(cardId, currentUser));
+        return ResponseEntity.ok(focusService.stopFocus(cardId, currentUser)); // Kết thúc phiên tập trung
     }
 
     @GetMapping("/users/me/focus-stats")
@@ -36,6 +36,6 @@ public class FocusController {
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(focusService.getStats(from, to, currentUser));
+        return ResponseEntity.ok(focusService.getStats(from, to, currentUser)); // Lấy thống kê tập trung của user
     }
 }

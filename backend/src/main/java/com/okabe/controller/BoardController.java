@@ -35,8 +35,8 @@ public class BoardController {
             @RequestParam(required = false, defaultValue = "false") boolean archived,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         List<BoardResponse> boards = archived 
-                ? boardService.getArchivedBoards(workspaceId, currentUser)
-                : boardService.getBoardsByWorkspace(workspaceId, currentUser);
+                ? boardService.getArchivedBoards(workspaceId, currentUser) // Lấy danh sách bảng đã ẩn
+                : boardService.getBoardsByWorkspace(workspaceId, currentUser); // Lấy danh sách bảng đang hoạt động
         return ResponseEntity.ok(ApiResponse.success(boards));
     }
 
@@ -45,7 +45,7 @@ public class BoardController {
     public ResponseEntity<ApiResponse<BoardResponse>> getBoard(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(boardService.getBoard(id, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(boardService.getBoard(id, currentUser))); // Lấy chi tiết bảng kèm danh sách và thẻ
     }
 
     @PostMapping("/api/v1/workspaces/{workspaceId}/boards")
@@ -54,8 +54,8 @@ public class BoardController {
             @PathVariable Long workspaceId,
             @Valid @RequestBody CreateBoardRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(boardService.createBoard(workspaceId, request, currentUser),
+        return ResponseEntity.status(HttpStatus.CREATED) // Trả về HTTP 201
+                .body(ApiResponse.success(boardService.createBoard(workspaceId, request, currentUser), // Tạo bảng mới
                         "Board created successfully"));
     }
 
@@ -66,7 +66,7 @@ public class BoardController {
             @Valid @RequestBody UpdateBoardRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                boardService.updateBoard(id, request, currentUser), "Board updated"));
+                boardService.updateBoard(id, request, currentUser), "Board updated")); // Cập nhật thông tin bảng
     }
 
     @PutMapping("/api/v1/workspaces/{workspaceId}/boards/reorder")
@@ -75,7 +75,7 @@ public class BoardController {
             @PathVariable Long workspaceId,
             @Valid @RequestBody ReorderBoardRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        boardService.reorderBoards(workspaceId, request, currentUser);
+        boardService.reorderBoards(workspaceId, request, currentUser); // Sắp xếp lại thứ tự bảng
         return ResponseEntity.ok(ApiResponse.success(null, "Boards reordered"));
     }
 
@@ -84,7 +84,7 @@ public class BoardController {
     public ResponseEntity<ApiResponse<Void>> deleteBoard(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        boardService.deleteBoard(id, currentUser);
+        boardService.deleteBoard(id, currentUser); // Xoá bảng vĩnh viễn
         return ResponseEntity.ok(ApiResponse.success(null, "Board deleted"));
     }
 
@@ -103,7 +103,7 @@ public class BoardController {
         }
         
         return ResponseEntity.ok(ApiResponse.success(
-                boardService.updateBackground(id, type, value, file, currentUser),
+                boardService.updateBackground(id, type, value, file, currentUser), // Cập nhật ảnh nền bảng
                 "Background updated successfully"
         ));
     }
@@ -114,7 +114,7 @@ public class BoardController {
             @PathVariable Long id,
             @RequestParam String email,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        boardService.inviteMember(id, email, currentUser);
+        boardService.inviteMember(id, email, currentUser); // Mời thành viên vào bảng
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation sent"));
     }
 
@@ -124,7 +124,7 @@ public class BoardController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                boardService.archiveBoard(id, currentUser), "Board archived"));
+                boardService.archiveBoard(id, currentUser), "Board archived")); // Ẩn bảng
     }
 
     @PutMapping("/api/v1/boards/{id}/restore")
@@ -133,7 +133,7 @@ public class BoardController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                boardService.restoreBoard(id, currentUser), "Board restored"));
+                boardService.restoreBoard(id, currentUser), "Board restored")); // Khôi phục bảng từ trạng thái ẩn
     }
 
     @GetMapping("/api/v1/boards/{id}/activities")
@@ -141,6 +141,6 @@ public class BoardController {
     public ResponseEntity<ApiResponse<List<ActivityResponse>>> getBoardActivities(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(activityService.getBoardActivities(id)));
+        return ResponseEntity.ok(ApiResponse.success(activityService.getBoardActivities(id))); // Lấy lịch sử hoạt động của bảng
     }
 }

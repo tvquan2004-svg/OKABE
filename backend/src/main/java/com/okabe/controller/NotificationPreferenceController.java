@@ -28,7 +28,7 @@ public class NotificationPreferenceController {
     @Operation(summary = "Get current user's notification preferences")
     public ResponseEntity<ApiResponse<NotificationPreferenceResponse>> getPreferences(
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        NotificationPreference pref = preferenceService.getPreferences(currentUser.getId());
+        NotificationPreference pref = preferenceService.getPreferences(currentUser.getId()); // Lấy cài đặt thông báo
         return ResponseEntity.ok(ApiResponse.success(toResponse(pref)));
     }
 
@@ -39,7 +39,7 @@ public class NotificationPreferenceController {
             @RequestBody UpdateNotificationPreferenceRequest request) {
         
         try {
-            NotificationPreference saved = preferenceService.saveOrUpdatePreferences(
+            NotificationPreference saved = preferenceService.saveOrUpdatePreferences( // Lưu cài đặt thông báo
                     currentUser.getId(),
                     request.emailAssigned(),
                     request.emailMentioned(),

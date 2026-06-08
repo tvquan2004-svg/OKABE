@@ -31,7 +31,7 @@ public class ObjectiveController {
             @Valid @RequestBody ObjectiveRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                objectiveService.createObjective(workspaceId, request, currentUser)));
+                objectiveService.createObjective(workspaceId, request, currentUser))); // Tạo mục tiêu (OKR) mới
     }
 
     @GetMapping("/api/v1/workspaces/{workspaceId}/objectives")
@@ -41,7 +41,7 @@ public class ObjectiveController {
             @RequestParam(required = false) String quarter,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                objectiveService.getObjectivesByQuarter(workspaceId, quarter, currentUser)));
+                objectiveService.getObjectivesByQuarter(workspaceId, quarter, currentUser))); // Lấy danh sách mục tiêu theo quý
     }
 
     @GetMapping("/api/v1/workspaces/{workspaceId}/objectives/{id}")
@@ -51,7 +51,7 @@ public class ObjectiveController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                objectiveService.getObjective(id, currentUser)));
+                objectiveService.getObjective(id, currentUser))); // Lấy chi tiết mục tiêu
     }
 
     @PostMapping("/api/v1/objectives/{objectiveId}/key-results")
@@ -61,7 +61,7 @@ public class ObjectiveController {
             @Valid @RequestBody KeyResultRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                objectiveService.addKeyResult(objectiveId, request, currentUser)));
+                objectiveService.addKeyResult(objectiveId, request, currentUser))); // Thêm key result vào mục tiêu
     }
 
     @PostMapping("/api/v1/key-results/{keyResultId}/cards")
@@ -70,7 +70,7 @@ public class ObjectiveController {
             @PathVariable Long keyResultId,
             @RequestBody List<Long> cardIds,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        objectiveService.linkCardsToKeyResult(keyResultId, cardIds, currentUser);
+        objectiveService.linkCardsToKeyResult(keyResultId, cardIds, currentUser); // Liên kết thẻ với key result
         return ResponseEntity.ok(ApiResponse.success(null, "Cards linked"));
     }
 
@@ -80,7 +80,7 @@ public class ObjectiveController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                objectiveService.recalculateProgress(id, currentUser)));
+                objectiveService.recalculateProgress(id, currentUser))); // Tính lại tiến độ mục tiêu từ thẻ liên kết
     }
 
     @DeleteMapping("/api/v1/objectives/{id}")
@@ -88,7 +88,7 @@ public class ObjectiveController {
     public ResponseEntity<ApiResponse<Void>> deleteObjective(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        objectiveService.deleteObjective(id, currentUser);
+        objectiveService.deleteObjective(id, currentUser); // Xoá mục tiêu
         return ResponseEntity.ok(ApiResponse.success(null, "Objective deleted"));
     }
 
@@ -99,6 +99,6 @@ public class ObjectiveController {
             @RequestParam(required = false) String quarter,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                objectiveService.getOkrTree(workspaceId, quarter, currentUser)));
+                objectiveService.getOkrTree(workspaceId, quarter, currentUser))); // Lấy cây OKR đầy đủ kèm tiến độ
     }
 }

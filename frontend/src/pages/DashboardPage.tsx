@@ -52,40 +52,41 @@ function DashboardPage() {
     <div className={styles.pageContent}>
       <header className={styles.hero}>
         <div className={styles.welcome}>
-          <h1>Chào mừng trở lại, <span className={styles.gradient}>{user?.username}</span> 👋</h1>
-          <p>Dưới đây là tổng quan về các dự án của bạn hôm nay.</p>
+          <p className={styles.greeting}>Chào mừng trở lại</p>
+          <h1 className={styles.userName}>{user?.username}</h1>
+          <p className={styles.subtitle}>Tổng quan về dự án của bạn hôm nay.</p>
         </div>
         
         <div className={styles.statsBar}>
           <div className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles.blue}`}>
+            <div className={styles.statIcon}>
               <FiBriefcase />
             </div>
             <div className={styles.statInfo}>
-              <span className={styles.statLabel}>Không gian làm việc</span>
               <span className={styles.statValue}>{workspaces.length}</span>
+              <span className={styles.statLabel}>Không gian làm việc</span>
             </div>
           </div>
           <div className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles.green}`}>
+            <div className={styles.statIcon}>
               <FiUsers />
             </div>
             <div className={styles.statInfo}>
-              <span className={styles.statLabel}>Tổng thành viên</span>
               <span className={styles.statValue}>
                 {workspaces.reduce((acc, ws) => acc + ws.memberCount, 0)}
               </span>
+              <span className={styles.statLabel}>Tổng thành viên</span>
             </div>
           </div>
           <div className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles.purple}`}>
+            <div className={styles.statIcon}>
               <FiPieChart />
             </div>
             <div className={styles.statInfo}>
-              <span className={styles.statLabel}>Bảng đang hoạt động</span>
               <span className={styles.statValue}>
                 {workspaces.reduce((acc, ws) => acc + (ws.boardCount || 0), 0)}
               </span>
+              <span className={styles.statLabel}>Bảng đang hoạt động</span>
             </div>
           </div>
         </div>
@@ -96,13 +97,14 @@ function DashboardPage() {
           <FiSearch className={styles.searchIcon} />
           <input 
             type="text" 
-            placeholder="Tìm kiếm không gian làm việc..." 
+            placeholder="Tìm kiếm..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <FiPlus /> Không gian mới
+        <button className={styles.createBtn} onClick={() => setShowModal(true)}>
+          <FiPlus />
+          <span>Không gian mới</span>
         </button>
       </div>
 
@@ -117,30 +119,36 @@ function DashboardPage() {
           </div>
         ) : filteredWorkspaces.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>📂</div>
-            <h2>{searchQuery ? 'Không tìm thấy kết quả' : 'Chưa có không gian làm việc'}</h2>
-            <p>
-              {searchQuery 
-                ? `Chúng tôi không tìm thấy không gian làm việc nào khớp với "${searchQuery}"` 
-                : 'Tạo không gian làm việc đầu tiên của bạn để bắt đầu sắp xếp công việc.'}
-            </p>
-            {!searchQuery && (
-              <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                + Tạo không gian làm việc
-              </button>
+            {searchQuery ? (
+              <>
+                <p className={styles.emptyDesc}>
+                  Không có kết quả cho "<strong>{searchQuery}</strong>"
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className={styles.emptyTitle}>Chưa có không gian làm việc</h3>
+                <p className={styles.emptyDesc}>
+                  Tạo không gian làm việc đầu tiên để bắt đầu sắp xếp công việc.
+                </p>
+                <button className={styles.createBtn} onClick={() => setShowModal(true)}>
+                  <FiPlus />
+                  <span>Tạo không gian làm việc</span>
+                </button>
+              </>
             )}
           </div>
         ) : (
           <div className={styles.workspaceGrid}>
             {filteredWorkspaces.map((ws) => (
               <div key={ws.id} className={styles.workspaceCard} onClick={() => navigate(`/workspace/${ws.id}`)}>
-                <div className={styles.wsCardBody}>
+                <div className={styles.wsBody}>
                   <div className={styles.wsIcon}>
                     {ws.name.charAt(0).toUpperCase()}
                   </div>
-                  <div className={styles.wsContent}>
-                    <div className={styles.wsHeader}>
-                      <h3>{ws.name}</h3>
+                  <div className={styles.wsInfo}>
+                    <div className={styles.wsTop}>
+                      <span className={styles.wsName}>{ws.name}</span>
                       <span className={styles.wsRole}>
                         {ws.currentUserRole === 'OWNER' ? 'Chủ sở hữu' : 
                          ws.currentUserRole === 'ADMIN' ? 'Quản trị viên' : 'Thành viên'}
@@ -152,11 +160,12 @@ function DashboardPage() {
                     )}
                   </div>
                 </div>
-                <div className={styles.wsFooter}>
+                <div className={styles.wsBottom}>
                   <div className={styles.wsMeta}>
-                    <FiUsers /> <span>{ws.memberCount} thành viên</span>
-                    <span className={styles.separator}>•</span>
-                    <FiArchive /> <span>{ws.boardCount || 0} bảng</span>
+                    <FiUsers size={13} />
+                    <span>{ws.memberCount}</span>
+                    <FiArchive size={13} />
+                    <span>{ws.boardCount || 0}</span>
                   </div>
                   {ws.currentUserRole === 'OWNER' && (
                     <button
@@ -164,7 +173,7 @@ function DashboardPage() {
                       onClick={(e) => { e.stopPropagation(); handleDelete(ws); }}
                       title="Xóa không gian làm việc"
                     >
-                      <FiTrash2 />
+                      <FiTrash2 size={14} />
                     </button>
                   )}
                 </div>
@@ -203,11 +212,11 @@ function DashboardPage() {
               />
             </div>
             <div className={styles.modalActions}>
-              <button className="btn btn-outline" onClick={() => setShowModal(false)}>
+              <button className={styles.modalBtn} onClick={() => setShowModal(false)}>
                 Hủy
               </button>
               <button
-                className="btn btn-primary"
+                className={styles.modalBtnPrimary}
                 onClick={handleCreate}
                 disabled={isCreating || !newName.trim()}
               >

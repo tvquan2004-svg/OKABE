@@ -25,8 +25,8 @@ public class ReportController {
             @RequestParam(defaultValue = "pdf") String format,
             @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        byte[] data = reportService.exportBoardReport(boardId, format, currentUser);
-        return buildFileResponse(data, format, "board-report-" + boardId);
+        byte[] data = reportService.exportBoardReport(boardId, format, currentUser); // Xuất báo cáo bảng (PDF/Excel)
+        return buildFileResponse(data, format, "board-report-" + boardId); // Trả về file dưới dạng attachment
     }
 
     @GetMapping("/api/v1/workspaces/{workspaceId}/export")
@@ -38,25 +38,25 @@ public class ReportController {
             @RequestParam(defaultValue = "pdf") String format,
             @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        byte[] data = reportService.exportWorkspaceReport(workspaceId, from, to, format, currentUser);
-        return buildFileResponse(data, format, "workspace-report-" + workspaceId);
+        byte[] data = reportService.exportWorkspaceReport(workspaceId, from, to, format, currentUser); // Xuất báo cáo workspace (PDF/Excel)
+        return buildFileResponse(data, format, "workspace-report-" + workspaceId); // Trả về file dưới dạng attachment
     }
 
     private ResponseEntity<byte[]> buildFileResponse(byte[] data, String format, String filename) {
         String ext;
         MediaType contentType;
-        if ("excel".equalsIgnoreCase(format)) {
+        if ("excel".equalsIgnoreCase(format)) { // Định dạng Excel
             ext = ".xlsx";
             contentType = MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        } else {
+        } else { // Mặc định là PDF
             ext = ".pdf";
             contentType = MediaType.APPLICATION_PDF;
         }
 
         return ResponseEntity.ok()
-                .contentType(contentType)
+                .contentType(contentType) // Set Content-Type theo định dạng
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + filename + ext + "\"")
+                        "attachment; filename=\"" + filename + ext + "\"") // Force download với tên file
                 .body(data);
     }
 }

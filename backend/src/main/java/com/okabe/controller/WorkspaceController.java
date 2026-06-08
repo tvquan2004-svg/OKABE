@@ -29,7 +29,7 @@ public class WorkspaceController {
     @Operation(summary = "Get all workspaces for the current user")
     public ResponseEntity<ApiResponse<List<WorkspaceResponse>>> getUserWorkspaces(
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        List<WorkspaceResponse> workspaces = workspaceService.getUserWorkspaces(currentUser);
+        List<WorkspaceResponse> workspaces = workspaceService.getUserWorkspaces(currentUser); // Lấy danh sách workspace của user
         return ResponseEntity.ok(ApiResponse.success(workspaces));
     }
 
@@ -38,7 +38,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<WorkspaceResponse>> getWorkspace(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        WorkspaceResponse workspace = workspaceService.getWorkspace(id, currentUser);
+        WorkspaceResponse workspace = workspaceService.getWorkspace(id, currentUser); // Lấy chi tiết workspace
         return ResponseEntity.ok(ApiResponse.success(workspace));
     }
 
@@ -47,7 +47,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<WorkspaceResponse>> createWorkspace(
             @Valid @RequestBody CreateWorkspaceRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        WorkspaceResponse workspace = workspaceService.createWorkspace(request, currentUser);
+        WorkspaceResponse workspace = workspaceService.createWorkspace(request, currentUser); // Tạo workspace mới
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(workspace, "Workspace created successfully"));
@@ -59,7 +59,7 @@ public class WorkspaceController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateWorkspaceRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        WorkspaceResponse workspace = workspaceService.updateWorkspace(id, request, currentUser);
+        WorkspaceResponse workspace = workspaceService.updateWorkspace(id, request, currentUser); // Cập nhật workspace
         return ResponseEntity.ok(ApiResponse.success(workspace, "Workspace updated successfully"));
     }
 
@@ -68,7 +68,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<Void>> deleteWorkspace(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        workspaceService.deleteWorkspace(id, currentUser);
+        workspaceService.deleteWorkspace(id, currentUser); // Xoá workspace (chỉ OWNER)
         return ResponseEntity.ok(ApiResponse.success(null, "Workspace deleted successfully"));
     }
 
@@ -79,7 +79,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<List<com.okabe.dto.response.WorkspaceMemberResponse>>> getWorkspaceMembers(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(workspaceService.getWorkspaceMembers(id, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(workspaceService.getWorkspaceMembers(id, currentUser))); // Lấy danh sách thành viên
     }
 
     @PostMapping("/{id}/members")
@@ -88,7 +88,7 @@ public class WorkspaceController {
             @PathVariable Long id,
             @Valid @RequestBody com.okabe.dto.request.AddWorkspaceMemberRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        workspaceService.inviteMember(id, request, currentUser);
+        workspaceService.inviteMember(id, request, currentUser); // Mời thành viên vào workspace
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(null, "Invitation sent successfully"));
     }
@@ -100,7 +100,7 @@ public class WorkspaceController {
             @PathVariable Long memberId,
             @Valid @RequestBody com.okabe.dto.request.UpdateMemberRoleRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(workspaceService.updateMemberRole(id, memberId, request, currentUser), "Role updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(workspaceService.updateMemberRole(id, memberId, request, currentUser), "Role updated successfully")); // Cập nhật vai trò thành viên
     }
 
     @DeleteMapping("/{id}/members/{memberId}")
@@ -109,7 +109,7 @@ public class WorkspaceController {
             @PathVariable Long id,
             @PathVariable Long memberId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        workspaceService.removeMemberFromWorkspace(id, memberId, currentUser);
+        workspaceService.removeMemberFromWorkspace(id, memberId, currentUser); // Xoá thành viên khỏi workspace
         return ResponseEntity.ok(ApiResponse.success(null, "Member removed successfully"));
     }
 
@@ -118,7 +118,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<Void>> acceptInvitation(
             @RequestParam String token,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        workspaceService.acceptInvitation(token, currentUser);
+        workspaceService.acceptInvitation(token, currentUser); // Chấp nhận lời mời vào workspace
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation accepted"));
     }
 
@@ -127,7 +127,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<Void>> rejectInvitation(
             @RequestParam String token,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        workspaceService.rejectInvitation(token, currentUser);
+        workspaceService.rejectInvitation(token, currentUser); // Từ chối lời mời
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation rejected"));
     }
 
@@ -136,7 +136,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<Void>> acceptInvitationById(
             @PathVariable Long invitationId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        workspaceService.acceptInvitationById(invitationId, currentUser);
+        workspaceService.acceptInvitationById(invitationId, currentUser); // Chấp nhận lời mời theo ID (từ thông báo)
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation accepted"));
     }
 
@@ -145,7 +145,7 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<Void>> rejectInvitationById(
             @PathVariable Long invitationId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        workspaceService.rejectInvitationById(invitationId, currentUser);
+        workspaceService.rejectInvitationById(invitationId, currentUser); // Từ chối lời mời theo ID
         return ResponseEntity.ok(ApiResponse.success(null, "Invitation rejected"));
     }
 }

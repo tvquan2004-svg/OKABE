@@ -27,33 +27,33 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getUsername(),
                 user.getPassword(),
-                user.getIsActive() != null && user.getIsActive(),
-                user.getIs2faEnabled() != null && user.getIs2faEnabled()
+                user.getIsActive() != null && user.getIsActive(), // Mặc định false nếu null
+                user.getIs2faEnabled() != null && user.getIs2faEnabled() // Mặc định false nếu null
         );
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_USER")); // Tất cả user đều có quyền ROLE_USER
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return true; // Tài khoản không hết hạn
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return isActive;
+        return isActive; // Tài khoản bị khoá nếu isActive = false
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return true; // Mật khẩu không hết hạn
     }
 
     @Override
     public boolean isEnabled() {
-        return isActive;
+        return isActive; // Tài khoản được kích hoạt nếu isActive = true
     }
 }

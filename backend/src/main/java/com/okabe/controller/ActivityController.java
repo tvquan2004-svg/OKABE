@@ -23,6 +23,6 @@ public class ActivityController {
     @Operation(summary = "Get activity logs for a card")
     public ResponseEntity<ApiResponse<List<ActivityResponse>>> getCardActivities(
             @PathVariable Long cardId) {
-        return ResponseEntity.ok(ApiResponse.success(activityService.getCardActivities(cardId)));
+        return ResponseEntity.ok(ApiResponse.success(activityService.getCardActivities(cardId))); // Lấy lịch sử hoạt động của thẻ
     }
 }

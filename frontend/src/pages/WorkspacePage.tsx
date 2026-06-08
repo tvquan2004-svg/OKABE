@@ -11,7 +11,7 @@ import {
   DragOverlay,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff, FiGrid, FiDownload } from 'react-icons/fi';
+import { FiRotateCcw, FiTrash2, FiArchive, FiEye, FiEyeOff, FiGrid, FiDownload, FiArrowLeft, FiPlus } from 'react-icons/fi';
 import BoardArchiveZone from '../components/workspace/BoardArchiveZone';
 import {
   SortableContext,
@@ -214,7 +214,6 @@ function WorkspacePage() {
       return;
     }
 
-    // Handle Drop to Archive Zone
     if (over.id === 'archive-zone') {
       const boardId = Number(active.id);
       try {
@@ -222,7 +221,6 @@ function WorkspacePage() {
           id: boardId,
           body: { isArchived: true }
         }).unwrap();
-        // Optional: Show a toast notification here
       } catch (err) {
         console.error('Failed to archive board:', err);
       }
@@ -252,78 +250,76 @@ function WorkspacePage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.wsHeaderMain}>
-          <button className={styles.backBtn} onClick={() => navigate('/dashboard')}>
-            Quay lại bảng điều khiển
-          </button>
+        <div className={styles.headerInner}>
+          <div className={styles.backRow}>
+            <button className={styles.backBtn} onClick={() => navigate('/dashboard')} title="Quay lại">
+              <FiArrowLeft size={16} />
+            </button>
+          </div>
           <div className={styles.headerFlex}>
             <div className={styles.wsInfo}>
-              <h1>{workspace?.name ?? 'Không gian làm việc'}</h1>
-              {workspace?.description ? <p>{workspace.description}</p> : <p>Không có mô tả cho không gian này</p>}
-              <div className={styles.wsStats}>
-                <span><FiGrid size={14} /> {boards?.length ?? 0} bảng</span>
+              <h1 className={styles.wsName}>{workspace?.name ?? 'Không gian làm việc'}</h1>
+              <div className={styles.wsMeta}>
+                {workspace?.description && (
+                  <span className={styles.wsDesc}>{workspace.description}</span>
+                )}
+                <span className={styles.wsStat}>
+                  <FiGrid size={12} /> {boards?.length ?? 0} bảng
+                </span>
               </div>
             </div>
             <div className={styles.headerActions}>
-              <button className="btn btn-outline" onClick={() => setIsMemberModalOpen(true)}>
+              <button className={styles.headerBtn} onClick={() => setIsMemberModalOpen(true)}>
                 Thành viên ({workspace?.memberCount ?? 0})
               </button>
               {canManageWorkspace ? (
-                <div style={{ position: 'relative' }}>
-                  <button className="btn btn-outline" onClick={() => setShowExportMenu(!showExportMenu)}>
-                    <FiDownload /> <span>Xuất báo cáo</span>
+                <div className={styles.exportWrap}>
+                  <button className={styles.headerBtn} onClick={() => setShowExportMenu(!showExportMenu)}>
+                    <FiDownload size={14} /> <span>Xuất báo cáo</span>
                   </button>
                   {showExportMenu && (
-                    <div 
-                      style={{
-                        position: 'absolute', top: '100%', right: 0, zIndex: 100,
-                        background: '#2a2a3d', borderRadius: 8, overflow: 'hidden',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: 240, padding: 12,
-                      }}
-                    >
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                    <input 
-                      type="date" value={exportFrom} 
-                      onChange={e => setExportFrom(e.target.value)}
-                      style={{ flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid #444', background: '#1e1e2e', color: '#fff', fontSize: 12 }}
-                    />
-                    <span style={{ color: '#999', lineHeight: '30px' }}>→</span>
-                    <input 
-                      type="date" value={exportTo} 
-                      onChange={e => setExportTo(e.target.value)}
-                      style={{ flex: 1, padding: '6px 8px', borderRadius: 4, border: '1px solid #444', background: '#1e1e2e', color: '#fff', fontSize: 12 }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button 
-                      className="btn btn-outline" 
-                      style={{ flex: 1, justifyContent: 'center', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}
-                      onClick={() => {
-                        setShowExportMenu(false);
-                        downloadExport(`/api/v1/workspaces/${id}/export?format=pdf&from=${exportFrom}&to=${exportTo}`, `workspace_${id}_report.pdf`);
-                      }}
-                    >
-                      PDF
-                    </button>
-                    <button 
-                      className="btn btn-outline" 
-                      style={{ flex: 1, justifyContent: 'center', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}
-                      onClick={() => {
-                        setShowExportMenu(false);
-                        downloadExport(`/api/v1/workspaces/${id}/export?format=excel&from=${exportFrom}&to=${exportTo}`, `workspace_${id}_report.xlsx`);
-                      }}
-                    >
-                      Excel
-                    </button>
-                  </div>
+                    <div className={styles.exportDropdown}>
+                      <div className={styles.exportDateRow}>
+                        <input
+                          type="date" value={exportFrom}
+                          onChange={e => setExportFrom(e.target.value)}
+                          className={styles.exportInput}
+                        />
+                        <span className={styles.exportSep}>→</span>
+                        <input
+                          type="date" value={exportTo}
+                          onChange={e => setExportTo(e.target.value)}
+                          className={styles.exportInput}
+                        />
+                      </div>
+                      <div className={styles.exportBtnRow}>
+                        <button
+                          className={styles.exportFormatBtn}
+                          onClick={() => {
+                            setShowExportMenu(false);
+                            downloadExport(`/api/v1/workspaces/${id}/export?format=pdf&from=${exportFrom}&to=${exportTo}`, `workspace_${id}_report.pdf`);
+                          }}
+                        >
+                          PDF
+                        </button>
+                        <button
+                          className={styles.exportFormatBtn}
+                          onClick={() => {
+                            setShowExportMenu(false);
+                            downloadExport(`/api/v1/workspaces/${id}/export?format=excel&from=${exportFrom}&to=${exportTo}`, `workspace_${id}_report.xlsx`);
+                          }}
+                        >
+                          Excel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-              </div>
               ) : null}
               {canManageWorkspace ? (
-                <button className="btn btn-outline" onClick={() => setIsEditWorkspaceModalOpen(true)}>
+                <button className={styles.headerBtn} onClick={() => setIsEditWorkspaceModalOpen(true)}>
                   Thiết lập
                 </button>
               ) : null}
@@ -362,26 +358,22 @@ function WorkspacePage() {
         <>
 
         <div className={styles.sectionHeader}>
-          <div>
-            <h2>Các bảng công việc</h2>
-            {canEditBoards ? (
-              <p className={styles.muted}>Kéo thả các bảng để thay đổi thứ tự.</p>
-            ) : null}
-          </div>
-          <button className="btn btn-primary" onClick={openCreateBoardModal}>
-            + Bảng mới
-          </button>
+          <h2 className={styles.sectionTitle}>Bảng</h2>
+          {canEditBoards ? (
+            <button className={styles.primaryBtn} onClick={openCreateBoardModal}>
+              <FiPlus size={14} /> Bảng mới
+            </button>
+          ) : null}
         </div>
 
         {isLoading ? (
           <p className={styles.muted}>Đang tải danh sách bảng...</p>
         ) : orderedBoards.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>Bảng</div>
             <h3>Chưa có bảng nào</h3>
-            <p>Tạo bảng công việc đầu tiên của bạn để bắt đầu sắp xếp công việc.</p>
-            <button className="btn btn-primary" onClick={openCreateBoardModal}>
-              + Tạo bảng mới
+            <p>Tạo bảng công việc đầu tiên để bắt đầu sắp xếp công việc.</p>
+            <button className={styles.primaryBtn} onClick={openCreateBoardModal}>
+              <FiPlus size={14} /> Tạo bảng mới
             </button>
           </div>
         ) : (
@@ -442,27 +434,24 @@ function WorkspacePage() {
             className={styles.toggleArchivedBtn}
             onClick={() => setShowArchivedBoards(!showArchivedBoards)}
           >
-            {showArchivedBoards ? <FiEyeOff /> : <FiEye />}
+            {showArchivedBoards ? <FiEyeOff size={14} /> : <FiEye size={14} />}
             {showArchivedBoards ? 'Ẩn' : 'Hiện'} bảng đã lưu trữ ({archivedBoardsData?.data.length ?? 0})
           </button>
 
           {showArchivedBoards && (
-            <div className={styles.boardGrid} style={{ marginTop: '1rem', opacity: 0.7 }}>
+            <div className={styles.archivedGrid}>
               {archivedBoardsData?.data.length === 0 ? (
                 <p className={styles.muted}>Không có bảng nào được lưu trữ.</p>
               ) : (
                 archivedBoardsData?.data.map((board) => (
                   <div 
                     key={board.id} 
-                    className={styles.archivedBoardCard}
-                    style={{ 
-                      '--board-accent': board.background?.startsWith('#') ? board.background : '#6366f1'
-                    } as React.CSSProperties}
+                    className={styles.archivedCard}
                   >
                     <div className={styles.archivedContent}>
                       <div className={styles.archivedHeader}>
-                        <FiArchive className={styles.archiveIcon} />
-                        <h3>{board.name}</h3>
+                        <FiArchive size={14} className={styles.archiveIcon} />
+                        <h3 className={styles.archivedName}>{board.name}</h3>
                       </div>
                       <div className={styles.archivedActions}>
                         <button 
@@ -470,7 +459,7 @@ function WorkspacePage() {
                           onClick={(e) => handleRestoreBoard(board.id, e)}
                           title="Khôi phục bảng"
                         >
-                          <FiRotateCcw size={16} />
+                          <FiRotateCcw size={13} />
                           <span>Khôi phục</span>
                         </button>
                         <button 
@@ -478,7 +467,7 @@ function WorkspacePage() {
                           onClick={(e) => handleDeleteBoard(board.id, e)}
                           title="Xóa vĩnh viễn"
                         >
-                          <FiTrash2 size={16} />
+                          <FiTrash2 size={13} />
                           <span>Xóa</span>
                         </button>
                       </div>

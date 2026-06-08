@@ -29,7 +29,7 @@ public class CardController {
     public ResponseEntity<ApiResponse<CardResponse>> getCard(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(cardService.getCard(id, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(cardService.getCard(id, currentUser))); // Lấy chi tiết thẻ
     }
 
     @GetMapping("/api/v1/boards/{boardId}/cards/search")
@@ -38,7 +38,7 @@ public class CardController {
             @PathVariable Long boardId,
             CardSearchRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(cardService.searchCards(boardId, request, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(cardService.searchCards(boardId, request, currentUser))); // Tìm kiếm và lọc thẻ trong bảng
     }
 
     @PostMapping("/api/v1/lists/{listId}/cards")
@@ -48,7 +48,7 @@ public class CardController {
             @Valid @RequestBody CreateCardRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(cardService.createCard(listId, request, currentUser),
+                .body(ApiResponse.success(cardService.createCard(listId, request, currentUser), // Tạo thẻ mới trong danh sách
                         "Card created"));
     }
 
@@ -59,7 +59,7 @@ public class CardController {
             @Valid @RequestBody UpdateCardRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                cardService.updateCard(id, request, currentUser)));
+                cardService.updateCard(id, request, currentUser))); // Cập nhật thông tin thẻ
     }
 
     @PutMapping("/api/v1/cards/{id}/move")
@@ -69,7 +69,7 @@ public class CardController {
             @Valid @RequestBody MoveCardRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                cardService.moveCard(id, request, currentUser), "Card moved"));
+                cardService.moveCard(id, request, currentUser), "Card moved")); // Di chuyển thẻ sang danh sách khác
     }
 
     @DeleteMapping("/api/v1/cards/{id}")
@@ -77,7 +77,7 @@ public class CardController {
     public ResponseEntity<ApiResponse<Void>> deleteCard(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.deleteCard(id, currentUser);
+        cardService.deleteCard(id, currentUser); // Xoá thẻ vĩnh viễn
         return ResponseEntity.ok(ApiResponse.success(null, "Card deleted"));
     }
 
@@ -90,7 +90,7 @@ public class CardController {
             @Valid @RequestBody CreateChecklistRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(cardService.createChecklist(cardId, request, currentUser)));
+                .body(ApiResponse.success(cardService.createChecklist(cardId, request, currentUser))); // Tạo checklist cho thẻ
     }
 
     @PutMapping("/api/v1/checklists/{checklistId}")
@@ -99,7 +99,7 @@ public class CardController {
             @PathVariable Long checklistId,
             @Valid @RequestBody CreateChecklistRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(cardService.updateChecklist(checklistId, request, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(cardService.updateChecklist(checklistId, request, currentUser))); // Cập nhật checklist
     }
 
     @DeleteMapping("/api/v1/checklists/{checklistId}")
@@ -107,7 +107,7 @@ public class CardController {
     public ResponseEntity<ApiResponse<Void>> deleteChecklist(
             @PathVariable Long checklistId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.deleteChecklist(checklistId, currentUser);
+        cardService.deleteChecklist(checklistId, currentUser); // Xoá checklist
         return ResponseEntity.ok(ApiResponse.success(null, "Checklist deleted"));
     }
 
@@ -118,7 +118,7 @@ public class CardController {
             @Valid @RequestBody CreateChecklistItemRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(cardService.createChecklistItem(checklistId, request, currentUser)));
+                .body(ApiResponse.success(cardService.createChecklistItem(checklistId, request, currentUser))); // Thêm item vào checklist
     }
 
     @PutMapping("/api/v1/checklists/items/{itemId}")
@@ -127,7 +127,7 @@ public class CardController {
             @PathVariable Long itemId,
             @Valid @RequestBody UpdateChecklistItemRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(cardService.updateChecklistItem(itemId, request, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(cardService.updateChecklistItem(itemId, request, currentUser))); // Cập nhật item trong checklist
     }
 
     @DeleteMapping("/api/v1/checklists/items/{itemId}")
@@ -135,7 +135,7 @@ public class CardController {
     public ResponseEntity<ApiResponse<Void>> deleteChecklistItem(
             @PathVariable Long itemId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.deleteChecklistItem(itemId, currentUser);
+        cardService.deleteChecklistItem(itemId, currentUser); // Xoá item khỏi checklist
         return ResponseEntity.ok(ApiResponse.success(null, "Checklist item deleted"));
     }
 
@@ -148,7 +148,7 @@ public class CardController {
             @Valid @RequestBody CreateLabelRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(cardService.createLabel(boardId, request, currentUser)));
+                .body(ApiResponse.success(cardService.createLabel(boardId, request, currentUser))); // Tạo nhãn mới cho bảng
     }
 
     @GetMapping("/api/v1/boards/{boardId}/labels")
@@ -156,7 +156,7 @@ public class CardController {
     public ResponseEntity<ApiResponse<List<LabelResponse>>> getBoardLabels(
             @PathVariable Long boardId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(cardService.getBoardLabels(boardId, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(cardService.getBoardLabels(boardId, currentUser))); // Lấy tất cả nhãn trong bảng
     }
 
     @PutMapping("/api/v1/labels/{id}")
@@ -165,7 +165,7 @@ public class CardController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateLabelRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(cardService.updateLabel(id, request, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(cardService.updateLabel(id, request, currentUser))); // Cập nhật nhãn
     }
 
     @DeleteMapping("/api/v1/labels/{id}")
@@ -173,7 +173,7 @@ public class CardController {
     public ResponseEntity<ApiResponse<Void>> deleteLabel(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.deleteLabel(id, currentUser);
+        cardService.deleteLabel(id, currentUser); // Xoá nhãn
         return ResponseEntity.ok(ApiResponse.success(null, "Label deleted"));
     }
 
@@ -183,7 +183,7 @@ public class CardController {
             @PathVariable Long cardId,
             @PathVariable Long labelId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.addLabelToCard(cardId, labelId, currentUser);
+        cardService.addLabelToCard(cardId, labelId, currentUser); // Gán nhãn vào thẻ
         return ResponseEntity.ok(ApiResponse.success(null, "Label added to card"));
     }
 
@@ -193,7 +193,7 @@ public class CardController {
             @PathVariable Long cardId,
             @PathVariable Long labelId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.removeLabelFromCard(cardId, labelId, currentUser);
+        cardService.removeLabelFromCard(cardId, labelId, currentUser); // Gỡ nhãn khỏi thẻ
         return ResponseEntity.ok(ApiResponse.success(null, "Label removed from card"));
     }
 
@@ -205,7 +205,7 @@ public class CardController {
             @PathVariable Long cardId,
             @Valid @RequestBody AssignMemberRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.assignMember(cardId, request.userId(), currentUser);
+        cardService.assignMember(cardId, request.userId(), currentUser); // Gán thành viên vào thẻ
         return ResponseEntity.ok(ApiResponse.success(null, "Member assigned"));
     }
 
@@ -215,7 +215,7 @@ public class CardController {
             @PathVariable Long cardId,
             @PathVariable Long userId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.unassignMember(cardId, userId, currentUser);
+        cardService.unassignMember(cardId, userId, currentUser); // Huỷ gán thành viên khỏi thẻ
         return ResponseEntity.ok(ApiResponse.success(null, "Member unassigned"));
     }
 
@@ -225,7 +225,7 @@ public class CardController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                cardService.archiveCard(id, currentUser), "Card archived"));
+                cardService.archiveCard(id, currentUser), "Card archived")); // Ẩn thẻ
     }
 
     @PutMapping("/api/v1/cards/{id}/restore")
@@ -234,7 +234,7 @@ public class CardController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                cardService.restoreCard(id, currentUser), "Card restored"));
+                cardService.restoreCard(id, currentUser), "Card restored")); // Khôi phục thẻ từ trạng thái ẩn
     }
 
     @GetMapping("/api/v1/boards/{boardId}/cards/archived")
@@ -245,7 +245,7 @@ public class CardController {
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                cardService.getArchivedCards(boardId, page, size, currentUser)));
+                cardService.getArchivedCards(boardId, page, size, currentUser))); // Lấy danh sách thẻ đã ẩn
     }
 
     @GetMapping("/api/v1/workspaces/{workspaceId}/cards")
@@ -254,7 +254,7 @@ public class CardController {
             @PathVariable Long workspaceId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                cardService.getWorkspaceCards(workspaceId, currentUser)));
+                cardService.getWorkspaceCards(workspaceId, currentUser))); // Lấy danh sách thẻ trong workspace để chọn
     }
 
     // ─── Dependency Graph ─────────────────────────────
@@ -265,7 +265,7 @@ public class CardController {
             @PathVariable Long cardId,
             @Valid @RequestBody CardDependencyRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.addDependencies(cardId, request, currentUser);
+        cardService.addDependencies(cardId, request, currentUser); // Thêm thẻ phụ thuộc
         return ResponseEntity.ok(ApiResponse.success(null, "Dependencies added"));
     }
 
@@ -275,7 +275,7 @@ public class CardController {
             @PathVariable Long cardId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
-                cardService.getDependencyGraph(cardId, currentUser)));
+                cardService.getDependencyGraph(cardId, currentUser))); // Lấy sơ đồ phụ thuộc của thẻ
     }
 
     @DeleteMapping("/api/v1/cards/{cardId}/dependencies/{parentCardId}")
@@ -284,7 +284,7 @@ public class CardController {
             @PathVariable Long cardId,
             @PathVariable Long parentCardId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        cardService.removeDependency(cardId, parentCardId, currentUser);
+        cardService.removeDependency(cardId, parentCardId, currentUser); // Xoá quan hệ phụ thuộc
         return ResponseEntity.ok(ApiResponse.success(null, "Dependency removed"));
     }
 }

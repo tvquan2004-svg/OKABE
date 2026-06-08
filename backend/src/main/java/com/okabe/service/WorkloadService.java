@@ -7,16 +7,8 @@ import java.time.LocalDate;
 
 public interface WorkloadService {
 
-    /**
-     * Get workload heatmap data for all members in a workspace within a date range.
-     * Groups cards by member and due date, calculates total cards and estimated hours per day.
-     * Marks days as OVERLOADED when total hours exceed 8.
-     *
-     * @param workspaceId the workspace ID
-     * @param from        start date (inclusive)
-     * @param to          end date (inclusive)
-     * @param currentUser the authenticated user
-     * @return workload data grouped by member
-     */
+    // Lấy dữ liệu workload heatmap cho tất cả thành viên trong workspace theo khoảng thời gian
+    // Nhóm thẻ theo thành viên và ngày đến hạn, tính tổng số thẻ và giờ ước lượng mỗi ngày
+    // Đánh dấu ngày QUÁ TẢI khi tổng giờ vượt quá 8
     WorkloadResponse getWorkload(Long workspaceId, LocalDate from, LocalDate to, UserPrincipal currentUser);
 }

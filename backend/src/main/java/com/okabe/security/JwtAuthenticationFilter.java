@@ -31,28 +31,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String jwt = extractTokenFromRequest(request);
+            String jwt = extractTokenFromRequest(request); // Lấy JWT từ request
             log.debug("Extracted JWT: {}", jwt != null ? "present" : "null");
             
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
-                String tokenType = jwtTokenProvider.getTokenType(jwt);
+            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) { // Nếu token tồn tại và hợp lệ
+                String tokenType = jwtTokenProvider.getTokenType(jwt); // Lấy loại token (access/refresh/temp)
                 log.debug("Token type: {}", tokenType);
 
-                if ("access".equals(tokenType)) {
-                    Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
+                if ("access".equals(tokenType)) { // Chỉ xác thực nếu là access token
+                    Long userId = jwtTokenProvider.getUserIdFromToken(jwt); // Lấy userId từ token
                     log.debug("Authenticated userId: {}", userId);
 
-                    User user = userRepository.findById(userId).orElse(null);
-                    if (user != null && user.getIsActive()) {
-                        UserDetails userDetails = UserPrincipal.from(user);
+                    User user = userRepository.findById(userId).orElse(null); // Tìm user trong DB
+                    if (user != null && user.getIsActive()) { // Nếu user tồn tại và còn hoạt động
+                        UserDetails userDetails = UserPrincipal.from(user); // Tạo UserPrincipal
 
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(
-                                        userDetails, null, userDetails.getAuthorities());
+                                        userDetails, null, userDetails.getAuthorities()); // Tạo đối tượng xác thực
                         authentication.setDetails(
-                                new WebAuthenticationDetailsSource().buildDetails(request));
+                                new WebAuthenticationDetailsSource().buildDetails(request)); // Gán thông tin chi tiết từ request
 
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        SecurityContextHolder.getContext().setAuthentication(authentication); // Đặt vào SecurityContext
                         log.debug("Security context set for user: {}", user.getEmail());
                     } else {
                         log.warn("User not found or inactive for id: {}", userId);
@@ -60,22 +60,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } else {
                     log.warn("Invalid token type for authentication: {}", tokenType);
                 }
-            } else if (StringUtils.hasText(jwt)) {
+            } else if (StringUtils.hasText(jwt)) { // Token có tồn tại nhưng không hợp lệ
                 log.warn("JWT token validation failed");
             }
         } catch (Exception ex) {
             log.error("Could not set user authentication in security context", ex);
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response); // Tiếp tục chuỗi filter
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        String bearerToken = request.getHeader("Authorization"); // Lấy header Authorization
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) { // Nếu header có dạng "Bearer <token>"
+            return bearerToken.substring(7); // Trả về token (loại bỏ "Bearer ")
         }
-        return null;
+        return null; // Không tìm thấy token
     }
 
 }

@@ -40,100 +40,100 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     @Transactional
     public AttachmentResponse uploadAttachment(Long cardId, MultipartFile file, UserPrincipal currentUser) throws IOException {
-        Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new ResourceNotFoundException("Card", cardId));
+        Card card = cardRepository.findById(cardId) // Tìm thẻ theo ID
+                .orElseThrow(() -> new ResourceNotFoundException("Card", cardId)); // Ném lỗi nếu không tìm thấy thẻ
         
-        validateWriteAccess(card, currentUser.getId());
+        validateWriteAccess(card, currentUser.getId()); // Kiểm tra quyền ghi của người dùng
 
-        User uploader = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId()));
+        User uploader = userRepository.findById(currentUser.getId()) // Tìm người tải lên theo ID
+                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId())); // Ném lỗi nếu không tìm thấy người dùng
 
-        String url = storageService.upload(file);
+        String url = storageService.upload(file); // Tải file lên storage và lấy URL
 
         Attachment attachment = Attachment.builder()
-                .card(card)
-                .uploadedBy(uploader)
-                .filename(file.getOriginalFilename())
-                .storageKey(url)
-                .fileSize(file.getSize())
-                .mimeType(file.getContentType())
-                .build();
+                .card(card) // Gán thẻ cho attachment
+                .uploadedBy(uploader) // Gán người tải lên
+                .filename(file.getOriginalFilename()) // Gán tên file gốc
+                .storageKey(url) // Gán URL storage
+                .fileSize(file.getSize()) // Gán kích thước file
+                .mimeType(file.getContentType()) // Gán loại MIME
+                .build(); // Xây dựng đối tượng Attachment
 
-        attachment = attachmentRepository.save(attachment);
+        attachment = attachmentRepository.save(attachment); // Lưu attachment vào CSDL
         
-        activityService.logActivity(card, uploader, "ADD_ATTACHMENT", "attached " + attachment.getFilename() + " to this card");
-        log.info("Attachment uploaded: {} for card {}", attachment.getFilename(), cardId);
+        activityService.logActivity(card, uploader, "ADD_ATTACHMENT", "attached " + attachment.getFilename() + " to this card"); // Ghi log hoạt động
+        log.info("Attachment uploaded: {} for card {}", attachment.getFilename(), cardId); // Ghi log thông tin
 
-        return toResponse(attachment);
+        return toResponse(attachment); // Trả về phản hồi AttachmentResponse
     }
 
     @Override
     public List<AttachmentResponse> getCardAttachments(Long cardId, UserPrincipal currentUser) {
-        Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new ResourceNotFoundException("Card", cardId));
+        Card card = cardRepository.findById(cardId) // Tìm thẻ theo ID
+                .orElseThrow(() -> new ResourceNotFoundException("Card", cardId)); // Ném lỗi nếu không tìm thấy thẻ
         
-        validateMembership(card, currentUser.getId());
+        validateMembership(card, currentUser.getId()); // Kiểm tra quyền thành viên
 
-        return attachmentRepository.findByCardIdOrderByCreatedAtDesc(cardId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return attachmentRepository.findByCardIdOrderByCreatedAtDesc(cardId).stream() // Lấy danh sách attachment theo thẻ, sắp xếp theo thời gian
+                .map(this::toResponse) // Chuyển đổi sang AttachmentResponse
+                .collect(Collectors.toList()); // Thu thập thành danh sách
     }
 
     @Override
     @Transactional
     public void deleteAttachment(Long attachmentId, UserPrincipal currentUser) {
-        Attachment attachment = attachmentRepository.findById(attachmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Attachment", attachmentId));
+        Attachment attachment = attachmentRepository.findById(attachmentId) // Tìm attachment theo ID
+                .orElseThrow(() -> new ResourceNotFoundException("Attachment", attachmentId)); // Ném lỗi nếu không tìm thấy
 
         // Only uploader or board ADMIN/OWNER can delete
-        boolean isUploader = attachment.getUploadedBy().getId().equals(currentUser.getId());
-        boolean hasAdminAccess = hasAdminAccess(attachment.getCard().getTaskList().getBoard().getWorkspace().getId(), currentUser.getId());
+        boolean isUploader = attachment.getUploadedBy().getId().equals(currentUser.getId()); // Kiểm tra có phải người tải lên
+        boolean hasAdminAccess = hasAdminAccess(attachment.getCard().getTaskList().getBoard().getWorkspace().getId(), currentUser.getId()); // Kiểm tra quyền admin
 
-        if (!isUploader && !hasAdminAccess) {
-            throw new UnauthorizedException("You don't have permission to delete this attachment");
+        if (!isUploader && !hasAdminAccess) { // Nếu không có quyền xóa
+            throw new UnauthorizedException("You don't have permission to delete this attachment"); // Ném lỗi không có quyền
         }
 
-        storageService.delete(attachment.getStorageKey());
+        storageService.delete(attachment.getStorageKey()); // Xóa file khỏi storage
         
-        User actor = userRepository.findById(currentUser.getId()).orElse(null);
-        activityService.logActivity(attachment.getCard(), actor, "DELETE_ATTACHMENT", "deleted attachment " + attachment.getFilename());
+        User actor = userRepository.findById(currentUser.getId()).orElse(null); // Tìm người thực hiện
+        activityService.logActivity(attachment.getCard(), actor, "DELETE_ATTACHMENT", "deleted attachment " + attachment.getFilename()); // Ghi log hoạt động
         
-        attachmentRepository.delete(attachment);
-        log.info("Attachment deleted: {}", attachmentId);
+        attachmentRepository.delete(attachment); // Xóa attachment khỏi CSDL
+        log.info("Attachment deleted: {}", attachmentId); // Ghi log thông tin
     }
 
     private void validateMembership(Card card, Long userId) {
-        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
-        if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
-            throw new UnauthorizedException("You are not a member of this workspace");
+        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId(); // Lấy workspace ID từ card
+        if (!memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) { // Nếu không phải thành viên
+            throw new UnauthorizedException("You are not a member of this workspace"); // Ném lỗi không có quyền
         }
     }
 
     private void validateWriteAccess(Card card, Long userId) {
-        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId();
+        Long workspaceId = card.getTaskList().getBoard().getWorkspace().getId(); // Lấy workspace ID từ card
         boolean hasAccess = memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
-                workspaceId, userId, List.of(Role.OWNER, Role.ADMIN, Role.MEMBER));
-        if (!hasAccess) {
-            throw new UnauthorizedException("You do not have permission to perform this action");
+                workspaceId, userId, List.of(Role.OWNER, Role.ADMIN, Role.MEMBER)); // Kiểm tra quyền ghi
+        if (!hasAccess) { // Nếu không có quyền
+            throw new UnauthorizedException("You do not have permission to perform this action"); // Ném lỗi không có quyền
         }
     }
 
     private boolean hasAdminAccess(Long workspaceId, Long userId) {
         return memberRepository.existsByWorkspaceIdAndUserIdAndRoleIn(
-                workspaceId, userId, List.of(Role.OWNER, Role.ADMIN));
+                workspaceId, userId, List.of(Role.OWNER, Role.ADMIN)); // Kiểm tra quyền admin
     }
 
     private AttachmentResponse toResponse(Attachment attachment) {
         return AttachmentResponse.builder()
-                .id(attachment.getId())
-                .cardId(attachment.getCard().getId())
-                .uploadedById(attachment.getUploadedBy().getId())
-                .uploadedByUsername(attachment.getUploadedBy().getUsername())
-                .filename(attachment.getFilename())
-                .url(attachment.getStorageKey())
-                .fileSize(attachment.getFileSize())
-                .mimeType(attachment.getMimeType())
-                .createdAt(attachment.getCreatedAt())
-                .build();
+                .id(attachment.getId()) // Gán ID attachment
+                .cardId(attachment.getCard().getId()) // Gán ID thẻ
+                .uploadedById(attachment.getUploadedBy().getId()) // Gán ID người tải lên
+                .uploadedByUsername(attachment.getUploadedBy().getUsername()) // Gán tên người tải lên
+                .filename(attachment.getFilename()) // Gán tên file
+                .url(attachment.getStorageKey()) // Gán URL file
+                .fileSize(attachment.getFileSize()) // Gán kích thước file
+                .mimeType(attachment.getMimeType()) // Gán loại MIME
+                .createdAt(attachment.getCreatedAt()) // Gán thời gian tạo
+                .build(); // Xây dựng AttachmentResponse
     }
 }

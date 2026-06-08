@@ -32,11 +32,12 @@ public class AiActionExecutor {
     private final ObjectMapper objectMapper;
     private final CardService cardService;
 
-    // Pattern to extract action JSON from AI response
-    // Format expected: [ACTION]{ "type": "MOVE_CARD", ... }[/ACTION]
+    // Pattern để trích xuất JSON action từ phản hồi AI
+    // Format: [ACTION]{ "type": "MOVE_CARD", ... }[/ACTION]
     private static final Pattern ACTION_PATTERN = Pattern.compile("\\[ACTION\\](.*?)\\[/ACTION\\]", Pattern.DOTALL);
 
     @Transactional
+    // Xử lý và thực thi các hành động từ phản hồi AI (tạo thẻ, di chuyển thẻ, gán thành viên)
     public void processActions(String aiResponse, Long boardId, UserPrincipal currentUser) {
         if (boardId == null) {
             log.warn("Cannot execute AI actions without a board context");
@@ -63,6 +64,7 @@ public class AiActionExecutor {
         }
     }
 
+    // Xử lý hành động tạo thẻ mới từ AI
     private void handleCreateCard(JsonNode actionNode, Long boardId, UserPrincipal currentUser) {
         String title = actionNode.path("title").asText();
         String listName = actionNode.path("listName").asText();
@@ -84,6 +86,7 @@ public class AiActionExecutor {
         log.info("AI created card '{}' in list '{}'", title, listName);
     }
 
+    // Xử lý hành động di chuyển thẻ từ AI
     private void handleMoveCard(JsonNode actionNode, Long boardId, UserPrincipal currentUser) {
         String cardTitle = actionNode.path("cardTitle").asText();
         String targetListName = actionNode.path("targetList").asText();
@@ -97,7 +100,7 @@ public class AiActionExecutor {
 
         if (targetList == null) return;
 
-        // Find the card by title within the board
+        // Tìm thẻ theo tiêu đề trong board
         Card card = findCardByTitleInBoard(cardTitle, boardId);
         if (card == null) return;
 
@@ -106,6 +109,7 @@ public class AiActionExecutor {
         log.info("AI moved card '{}' to list '{}'", cardTitle, targetListName);
     }
 
+    // Xử lý hành động gán thành viên vào thẻ từ AI
     private void handleAssignMember(JsonNode actionNode, Long boardId, UserPrincipal currentUser) {
         String cardTitle = actionNode.path("cardTitle").asText();
         String memberName = actionNode.path("memberName").asText();
@@ -123,7 +127,7 @@ public class AiActionExecutor {
             return;
         }
 
-        // Check if already assigned
+        // Kiểm tra nếu đã được gán trước đó
         boolean alreadyAssigned = card.getMembers().stream()
                 .anyMatch(u -> u.getId().equals(targetUser.getId()));
 
@@ -133,8 +137,9 @@ public class AiActionExecutor {
         }
     }
 
+    // Tìm thẻ theo tiêu đề trong board
     private Card findCardByTitleInBoard(String cardTitle, Long boardId) {
-        // Fetch all lists for the board
+        // Lấy tất cả danh sách trong board
         java.util.List<TaskList> lists = listRepository.findByBoardIdAndIsArchivedFalseOrderByPositionAsc(boardId);
         for (TaskList list : lists) {
             java.util.List<Card> cards = cardRepository.findByTaskListIdAndIsArchivedFalseOrderByPositionAsc(list.getId());

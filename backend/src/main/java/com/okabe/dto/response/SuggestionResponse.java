@@ -6,13 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder // Hỗ trợ builder pattern
 @NoArgsConstructor
 @AllArgsConstructor
 public class SuggestionResponse {
-    private Long id;
-    private String type;
-    private String message;
-    private Long cardId;
-    private String actionUrl;
+    private Long id; // ID gợi ý
+    private String type; // Loại gợi ý
+    private String message; // Nội dung gợi ý
+    private Long cardId; // ID thẻ liên quan
+    private String actionUrl; // Đường dẫn hành động
 }

@@ -25,7 +25,7 @@ public class UserController {
     @Operation(summary = "Get current user profile")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(userService.getCurrentUser(currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(userService.getCurrentUser(currentUser))); // Lấy thông tin hồ sơ user hiện tại
     }
 
     @PutMapping("/me")
@@ -33,7 +33,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
             @Valid @RequestBody UpdateProfileRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(userService.updateProfile(request, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(userService.updateProfile(request, currentUser))); // Cập nhật hồ sơ user
     }
 
     @PostMapping("/avatar")
@@ -41,6 +41,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> uploadAvatar(
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
             @AuthenticationPrincipal UserPrincipal currentUser) throws java.io.IOException {
-        return ResponseEntity.ok(ApiResponse.success(userService.uploadAvatar(file, currentUser)));
+        return ResponseEntity.ok(ApiResponse.success(userService.uploadAvatar(file, currentUser))); // Upload ảnh đại diện
     }
 }

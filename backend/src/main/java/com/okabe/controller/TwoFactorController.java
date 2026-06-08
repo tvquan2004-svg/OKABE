@@ -32,26 +32,26 @@ public class TwoFactorController {
 
     @PostMapping("/setup")
     public ResponseEntity<ApiResponse<TwoFactorSetupResponse>> setup(@AuthenticationPrincipal UserPrincipal currentUser) {
-        if (currentUser == null) throw new UnauthorizedException("Chưa đăng nhập");
-        User user = userRepository.findById(currentUser.getId()).orElseThrow();
-        String secret = twoFactorService.generateNewSecret();
-        String qrCodeUri = twoFactorService.getQrCodeUri(secret, user.getEmail());
+        if (currentUser == null) throw new UnauthorizedException("Chưa đăng nhập"); // Kiểm tra xác thực
+        User user = userRepository.findById(currentUser.getId()).orElseThrow(); // Lấy thông tin user
+        String secret = twoFactorService.generateNewSecret(); // Tạo secret key TOTP mới
+        String qrCodeUri = twoFactorService.getQrCodeUri(secret, user.getEmail()); // Tạo URI QR cho Google Authenticator
         return ResponseEntity.ok(ApiResponse.success(new TwoFactorSetupResponse(secret, qrCodeUri)));
     }
 
     @PostMapping("/verify-setup")
     public ResponseEntity<ApiResponse<List<String>>> verifySetup(@AuthenticationPrincipal UserPrincipal currentUser, @RequestBody TwoFactorVerifyRequest request) {
         if (currentUser == null) throw new UnauthorizedException("Chưa đăng nhập");
-        User user = userRepository.findById(currentUser.getId()).orElseThrow();
-        boolean isValid = twoFactorService.verifyCode(request.getSecret(), request.getCode());
-        
+        User user = userRepository.findById(currentUser.getId()).orElseThrow(); // Lấy thông tin user
+        boolean isValid = twoFactorService.verifyCode(request.getSecret(), request.getCode()); // Xác thực mã TOTP
+
         if (!isValid) throw new UnauthorizedException("Mã xác thực không hợp lệ");
 
-        user.setTotpSecret(request.getSecret());
-        user.setIs2faEnabled(true);
-        userRepository.save(user);
+        user.setTotpSecret(request.getSecret()); // Lưu secret key
+        user.setIs2faEnabled(true); // Bật 2FA
+        userRepository.save(user); // Cập nhật DB
 
-        List<String> backupCodes = twoFactorService.generateBackupCodes(user);
+        List<String> backupCodes = twoFactorService.generateBackupCodes(user); // Tạo mã dự phòng
         return ResponseEntity.ok(ApiResponse.success(backupCodes));
     }
 
@@ -59,18 +59,18 @@ public class TwoFactorController {
     public ResponseEntity<ApiResponse<AuthResponse>> validate(@RequestBody TwoFactorValidateRequest request) {
         System.out.println("Validating 2FA - TempToken: " + (request.getTempToken() != null));
         
-        if (!jwtTokenProvider.validateToken(request.getTempToken())) {
+        if (!jwtTokenProvider.validateToken(request.getTempToken())) { // Kiểm tra temp token còn hạn
             throw new UnauthorizedException("Token hết hạn");
         }
 
-        Long userId = jwtTokenProvider.getUserIdFromToken(request.getTempToken());
-        User user = userRepository.findById(userId).orElseThrow();
+        Long userId = jwtTokenProvider.getUserIdFromToken(request.getTempToken()); // Lấy userId từ token
+        User user = userRepository.findById(userId).orElseThrow(); // Lấy thông tin user
 
         boolean isValid;
-        if (request.isBackupCode()) {
+        if (request.isBackupCode()) { // Dùng mã dự phòng
             System.out.println("Checking backup code: " + request.getCode());
             isValid = twoFactorService.verifyBackupCode(user, request.getCode());
-        } else {
+        } else { // Dùng mã TOTP
             System.out.println("Checking TOTP code: " + request.getCode());
             isValid = twoFactorService.verifyCode(user.getTotpSecret(), Integer.parseInt(request.getCode()));
         }
@@ -81,11 +81,11 @@ public class TwoFactorController {
         }
 
         System.out.println("Validation SUCCESS");
-        UserPrincipal userPrincipal = UserPrincipal.from(user);
-        String accessToken = jwtTokenProvider.generateAccessToken(userPrincipal);
-        String refreshToken = jwtTokenProvider.generateRefreshToken(userPrincipal);
+        UserPrincipal userPrincipal = UserPrincipal.from(user); // Tạo UserPrincipal
+        String accessToken = jwtTokenProvider.generateAccessToken(userPrincipal); // Tạo access token
+        String refreshToken = jwtTokenProvider.generateRefreshToken(userPrincipal); // Tạo refresh token
 
-        AuthResponse authResponse = AuthResponse.builder()
+        AuthResponse authResponse = AuthResponse.builder() // Xây dựng response xác thực
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
@@ -102,11 +102,11 @@ public class TwoFactorController {
 
     @PostMapping("/disable")
     public ResponseEntity<ApiResponse<Void>> disable(@AuthenticationPrincipal UserPrincipal currentUser, @RequestBody TwoFactorVerifyRequest request) {
-        User user = userRepository.findById(currentUser.getId()).orElseThrow();
-        if (twoFactorService.verifyCode(user.getTotpSecret(), request.getCode())) {
-            user.setTotpSecret(null);
-            user.setIs2faEnabled(false);
-            userRepository.save(user);
+        User user = userRepository.findById(currentUser.getId()).orElseThrow(); // Lấy thông tin user
+        if (twoFactorService.verifyCode(user.getTotpSecret(), request.getCode())) { // Xác thực mã TOTP
+            user.setTotpSecret(null); // Xoá secret key
+            user.setIs2faEnabled(false); // Tắt 2FA
+            userRepository.save(user); // Cập nhật DB
             return ResponseEntity.ok(ApiResponse.success(null));
         }
         throw new UnauthorizedException("Mã không đúng");

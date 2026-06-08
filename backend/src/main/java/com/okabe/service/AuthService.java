@@ -7,51 +7,21 @@ import com.okabe.security.UserPrincipal;
 
 public interface AuthService {
 
-    /**
-     * Register a new user account.
-     *
-     * @param request registration data (username, email, password)
-     * @return auth response with tokens and user info
-     * @throws com.okabe.exception.DuplicateResourceException if email already exists
-     */
+    // Đăng ký tài khoản người dùng mới
     AuthResponse register(RegisterRequest request);
 
-    /**
-     * Authenticate user with email and password.
-     *
-     * @param request login credentials
-     * @return auth response with tokens and user info
-     */
+    // Đăng nhập bằng email và mật khẩu
     AuthResponse login(LoginRequest request);
 
-    /**
-     * Authenticate user with Google ID token.
-     *
-     * @param request containing Google ID token
-     * @return auth response with app tokens
-     */
+    // Đăng nhập bằng Google ID token
     AuthResponse googleLogin(com.okabe.dto.request.GoogleLoginRequest request);
 
-    /**
-     * Generate new access token using a valid refresh token.
-     *
-     * @param refreshToken the refresh token string
-     * @return auth response with new tokens
-     */
+    // Tạo access token mới từ refresh token
     AuthResponse refreshToken(String refreshToken);
 
-    /**
-     * Get current authenticated user info.
-     *
-     * @param currentUser the authenticated user principal
-     * @return auth response with user info (no tokens)
-     */
+    // Lấy thông tin user hiện tại
     AuthResponse.UserInfo getCurrentUser(UserPrincipal currentUser);
 
-    /**
-     * Verify user email using token.
-     *
-     * @param token verification token
-     */
+    // Xác thực email của user bằng token
     void verifyEmail(String token);
 }

@@ -19,11 +19,11 @@ public class HealthController {
     @GetMapping("/health")
     @Operation(summary = "Health check", description = "Returns the health status of the application")
     public ResponseEntity<ApiResponse<Map<String, Object>>> health() {
-        Map<String, Object> healthData = Map.of(
+        Map<String, Object> healthData = Map.of( // Xây dựng thông tin health check
                 "status", "UP",
                 "application", "okabe-backend",
                 "timestamp", LocalDateTime.now().toString()
         );
-        return ResponseEntity.ok(ApiResponse.success(healthData, "Service is running"));
+        return ResponseEntity.ok(ApiResponse.success(healthData, "Service is running")); // Trả về trạng thái ứng dụng
     }
 }

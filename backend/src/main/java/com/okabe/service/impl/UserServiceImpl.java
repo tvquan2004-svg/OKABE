@@ -24,51 +24,51 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getCurrentUser(UserPrincipal currentUser) {
-        User user = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId()));
-        return toResponse(user);
+        User user = userRepository.findById(currentUser.getId()) // Tìm người dùng theo ID
+                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId())); // Ném lỗi nếu không tìm thấy
+        return toResponse(user); // Chuyển đổi và trả về UserResponse
     }
 
     @Override
     @Transactional
     public UserResponse updateProfile(UpdateProfileRequest request, UserPrincipal currentUser) {
-        User user = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId()));
+        User user = userRepository.findById(currentUser.getId()) // Tìm người dùng
+                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId())); // Ném lỗi nếu không tìm thấy
         
-        user.setUsername(request.getUsername());
-        if (request.getAvatarUrl() != null) {
-            user.setAvatarUrl(request.getAvatarUrl());
+        user.setUsername(request.getUsername()); // Cập nhật tên người dùng
+        if (request.getAvatarUrl() != null) { // Nếu có URL avatar mới
+            user.setAvatarUrl(request.getAvatarUrl()); // Cập nhật avatar
         }
         
-        user = userRepository.save(user);
-        return toResponse(user);
+        user = userRepository.save(user); // Lưu thay đổi
+        return toResponse(user); // Trả về phản hồi
     }
 
     @Override
     @Transactional
     public UserResponse uploadAvatar(MultipartFile file, UserPrincipal currentUser) throws IOException {
-        User user = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId()));
+        User user = userRepository.findById(currentUser.getId()) // Tìm người dùng
+                .orElseThrow(() -> new ResourceNotFoundException("User", currentUser.getId())); // Ném lỗi nếu không tìm thấy
         
-        String avatarUrl = storageService.upload(file);
+        String avatarUrl = storageService.upload(file); // Tải ảnh lên storage
         
         // Delete old avatar if it was a cloudinary URL
-        if (user.getAvatarUrl() != null && user.getAvatarUrl().contains("cloudinary")) {
-            storageService.delete(user.getAvatarUrl());
+        if (user.getAvatarUrl() != null && user.getAvatarUrl().contains("cloudinary")) { // Nếu có avatar cũ trên cloudinary
+            storageService.delete(user.getAvatarUrl()); // Xóa avatar cũ
         }
         
-        user.setAvatarUrl(avatarUrl);
-        user = userRepository.save(user);
-        return toResponse(user);
+        user.setAvatarUrl(avatarUrl); // Cập nhật avatar mới
+        user = userRepository.save(user); // Lưu thay đổi
+        return toResponse(user); // Trả về phản hồi
     }
 
     private UserResponse toResponse(User user) {
         return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .avatarUrl(user.getAvatarUrl())
-                .is2faEnabled(user.getIs2faEnabled())
-                .build();
+                .id(user.getId()) // Gán ID người dùng
+                .username(user.getUsername()) // Gán tên người dùng
+                .email(user.getEmail()) // Gán email
+                .avatarUrl(user.getAvatarUrl()) // Gán URL ảnh đại diện
+                .is2faEnabled(user.getIs2faEnabled()) // Gán trạng thái 2FA
+                .build(); // Xây dựng UserResponse
     }
 }
