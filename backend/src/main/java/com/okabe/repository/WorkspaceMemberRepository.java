@@ -1,5 +1,6 @@
 package com.okabe.repository;
 
+import com.okabe.entity.User;
 import com.okabe.entity.WorkspaceMember;
 import com.okabe.entity.WorkspaceMemberId;
 import com.okabe.entity.enums.Role;
@@ -35,4 +36,8 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     // Tìm tất cả workspace member theo danh sách workspaceIds, kèm user
     @org.springframework.data.jpa.repository.Query("SELECT wm FROM WorkspaceMember wm JOIN FETCH wm.user WHERE wm.workspaceId IN :workspaceIds")
     List<WorkspaceMember> findByWorkspaceIdIn(@org.springframework.data.repository.query.Param("workspaceIds") List<Long> workspaceIds);
+
+    // Tìm thành viên theo từ khóa, DISTINCT ngay trong database, trả về User trực tiếp
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT u FROM WorkspaceMember wm JOIN wm.user u WHERE wm.workspaceId IN :workspaceIds AND (LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<User> searchMembersByKeyword(@org.springframework.data.repository.query.Param("workspaceIds") List<Long> workspaceIds, @org.springframework.data.repository.query.Param("keyword") String keyword);
 }

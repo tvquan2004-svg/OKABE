@@ -72,39 +72,6 @@
   gap: 2px;
 }
 
-.collapsed .headerActions {
-  justify-content: center;
-  width: 100%;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--transition-fast);
-}
-
-.sidebar.collapsed:hover .headerActions {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.toggleBtn {
-  background: var(--color-bg);
-  color: var(--color-text-muted);
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3px;
-  border-radius: 5px;
-  border: 1px solid var(--color-border);
-  cursor: pointer;
-  transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
-}
-
-.toggleBtn:hover {
-  background-color: var(--color-bg-elevated);
-  color: var(--color-text);
-  border-color: var(--color-border-hover);
-}
-
 .closeMobileBtn {
   display: none;
   background: none;
@@ -170,12 +137,27 @@
 .collapsed .navItem {
   justify-content: center;
   padding: 0.4rem;
-  margin: 0;
+  margin: 0 0.375rem;
+  border-radius: 8px;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.collapsed .navItem:hover {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.collapsed .navItem:active {
+  transform: scale(0.94);
+}
+
+.collapsed .navItem:hover svg,
+.collapsed .navItem:hover .wsIcon {
+  color: #ffffff;
 }
 
 .collapsed .navItem.active {
   background-color: rgba(17, 17, 17, 0.1);
-  border-radius: 5px;
 }
 
 /* ── Workspace Items ── */
