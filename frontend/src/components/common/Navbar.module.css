@@ -1,8 +1,6 @@
 .navbar {
-  height: 64px;
-  background-color: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  height: 56px;
+  background-color: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
@@ -42,33 +40,7 @@
 .rightSection {
   display: flex;
   align-items: center;
-  gap: var(--spacing-lg);
-}
-
-.searchBox {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  width: 240px;
-  color: var(--color-text-muted);
-  transition: all var(--transition-fast);
-}
-
-.searchBox:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.05);
-}
-
-.searchBox input {
-  background: none;
-  border: none;
-  color: var(--color-text);
-  width: 100%;
-  outline: none;
+  gap: 0.75rem;
 }
 
 .navItem {
@@ -79,14 +51,14 @@
 
 .iconBtn {
   background: none;
-  color: var(--color-text-secondary);
-  font-size: 1.25rem;
-  padding: 8px;
-  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  font-size: 1.15rem;
+  padding: 7px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast), background var(--transition-fast);
 }
 
 .iconBtn:hover {
@@ -96,20 +68,20 @@
 
 .badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 2px;
+  right: 2px;
   background-color: var(--color-primary);
   color: #FFFFFF;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 8px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
-  border: 2px solid var(--color-bg);
+  padding: 0 3px;
+  border: 1.5px solid var(--color-bg);
 }
 
 .avatar {
@@ -230,10 +202,6 @@
   
   .menuBtn {
     display: flex;
-  }
-  
-  .searchBox {
-    display: none;
   }
   
   .rightSection {

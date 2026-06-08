@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGetStandupQuery } from '../../services/aiApi';
 import styles from './StandupModal.module.css';
 
@@ -55,13 +55,12 @@ const StandupModal: React.FC<StandupModalProps> = ({ workspaceId, onClose, onSen
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
         <div className={styles.header}>
-          <h2>📋 Tổng kết ngày</h2>
+          <h2 className={styles.title}>Tổng kết ngày</h2>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>
         </div>
 
         <div className={styles.body}>
           <div className={styles.dateRow}>
-            <label>Ngày:</label>
             <input
               type="date"
               value={selectedDate}
@@ -71,21 +70,19 @@ const StandupModal: React.FC<StandupModalProps> = ({ workspaceId, onClose, onSen
           </div>
 
           {isLoading ? (
-            <div className={styles.loading}>Đang tổng hợp hoạt động...</div>
+            <div className={styles.statusText}>Đang tổng hợp hoạt động...</div>
           ) : error ? (
-            <div className={styles.error}>Không thể tạo tổng kết. Vui lòng thử lại.</div>
+            <div className={`${styles.statusText} ${styles.error}`}>Không thể tạo tổng kết. Vui lòng thử lại.</div>
           ) : !standup ? (
-            <div className={styles.empty}>Không có dữ liệu cho ngày này.</div>
+            <div className={styles.statusText}>Không có dữ liệu cho ngày này.</div>
           ) : (
             <>
               {standup.userName && (
-                <p className={styles.userInfo}>
-                  <strong>{standup.userName}</strong> — {selectedDate}
-                </p>
+                <p className={styles.userInfo}>{standup.userName}</p>
               )}
 
               <div className={styles.section}>
-                <h4 className={styles.sectionTitle + ' ' + styles.done}>✅ Đã làm</h4>
+                <h4 className={`${styles.sectionTitle} ${styles.done}`}>Đã làm</h4>
                 {isEditing ? (
                   <textarea
                     className={styles.editArea}
@@ -98,7 +95,7 @@ const StandupModal: React.FC<StandupModalProps> = ({ workspaceId, onClose, onSen
               </div>
 
               <div className={styles.section}>
-                <h4 className={styles.sectionTitle + ' ' + styles.inProgress}>🔄 Đang làm</h4>
+                <h4 className={`${styles.sectionTitle} ${styles.inProgress}`}>Đang làm</h4>
                 {isEditing ? (
                   <textarea
                     className={styles.editArea}
@@ -111,7 +108,7 @@ const StandupModal: React.FC<StandupModalProps> = ({ workspaceId, onClose, onSen
               </div>
 
               <div className={styles.section}>
-                <h4 className={styles.sectionTitle + ' ' + styles.blocked}>🚧 Cần hỗ trợ</h4>
+                <h4 className={`${styles.sectionTitle} ${styles.blocked}`}>Cần hỗ trợ</h4>
                 {isEditing ? (
                   <textarea
                     className={styles.editArea}
@@ -128,7 +125,7 @@ const StandupModal: React.FC<StandupModalProps> = ({ workspaceId, onClose, onSen
 
         <div className={styles.footer}>
           <button className={styles.editBtn} onClick={() => setIsEditing(!isEditing)}>
-            {isEditing ? '✅ Xong chỉnh sửa' : '✏️ Chỉnh sửa'}
+            {isEditing ? 'Xong chỉnh sửa' : 'Chỉnh sửa'}
           </button>
           {onSendToWorkspace && (
             <button
@@ -136,7 +133,7 @@ const StandupModal: React.FC<StandupModalProps> = ({ workspaceId, onClose, onSen
               onClick={handleSend}
               disabled={isLoading || sending}
             >
-              {sending ? 'Đang gửi...' : '📤 Gửi lên workspace'}
+              {sending ? 'Đang gửi...' : 'Gửi lên workspace'}
             </button>
           )}
         </div>

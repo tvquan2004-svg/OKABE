@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiBell, FiLogOut, FiMenu, FiSettings } from 'react-icons/fi';
+import { FiBell, FiLogOut, FiMenu, FiSettings, FiEdit3 } from 'react-icons/fi';
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux';
 import { logout } from '../../features/auth/authSlice';
 import { apiSlice } from '../../services/apiSlice';
@@ -108,7 +108,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
       <div className={styles.rightSection}>
         <div className={styles.navItem}>
           <button className={styles.iconBtn} onClick={handleOpenStandup} title="Tổng kết ngày">
-            📋
+            <FiEdit3 />
             {showStandupReminder && <span className={styles.badge}>!</span>}
           </button>
         </div>

@@ -47,7 +47,7 @@ function CreateBoardModal({
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <h2>Create board</h2>
+          <h2 className={styles.modalTitle}>Tạo bảng mới</h2>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>
         </div>
 
@@ -56,37 +56,37 @@ function CreateBoardModal({
             className={`${styles.tab} ${activeTab === 'blank' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('blank')}
           >
-            Blank board
+            Bảng trống
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'template' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('template')}
           >
-            Use a template
+            Dùng mẫu có sẵn
           </button>
         </div>
 
         <div className={styles.body}>
           <div className={styles.field}>
-            <label htmlFor="board-name">Board name</label>
+            <label htmlFor="board-name">Tên bảng</label>
             <input
               id="board-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Project Alpha"
+              placeholder="VD: Dự án Alpha"
               className={styles.input}
               autoFocus
             />
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="board-desc">Description (optional)</label>
+            <label htmlFor="board-desc">Mô tả (không bắt buộc)</label>
             <textarea
               id="board-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What is this board about?"
+              placeholder="Bảng này dùng để làm gì?"
               className={styles.textarea}
               rows={2}
             />
@@ -94,9 +94,9 @@ function CreateBoardModal({
 
           {activeTab === 'template' && (
             <div className={styles.templatesSection}>
-              <h3>Select a template</h3>
+              <h3 className={styles.templatesTitle}>Chọn mẫu</h3>
               {isLoadingTemplates ? (
-                <p className={styles.loading}>Loading templates...</p>
+                <p className={styles.loading}>Đang tải mẫu...</p>
               ) : (
                 <div className={styles.templateGrid}>
                   {templates.map((template) => (
@@ -107,8 +107,8 @@ function CreateBoardModal({
                       }`}
                       onClick={() => selectTemplate(template)}
                     >
-                      <h4>{template.name}</h4>
-                      <p>{template.description}</p>
+                      <h4 className={styles.templateName}>{template.name}</h4>
+                      <p className={styles.templateDesc}>{template.description}</p>
                       <div className={styles.listPreview}>
                         {template.lists?.slice(0, 3).map((list) => (
                           <span key={list.id} className={styles.listChip}>
@@ -117,7 +117,7 @@ function CreateBoardModal({
                         ))}
                         {(template.lists?.length || 0) > 3 && (
                           <span className={styles.moreLabel}>
-                            +{template.lists!.length - 3} more
+                            +{template.lists!.length - 3}
                           </span>
                         )}
                       </div>
@@ -130,15 +130,15 @@ function CreateBoardModal({
         </div>
 
         <div className={styles.footer}>
-          <button className={`btn ${styles.cancelBtn}`} onClick={onClose}>
-            Cancel
+          <button className={styles.cancelBtn} onClick={onClose}>
+            Hủy
           </button>
           <button
-            className="btn btn-primary"
+            className={styles.submitBtn}
             onClick={handleSubmit}
             disabled={isSubmitting || !name.trim() || (activeTab === 'template' && !selectedTemplate)}
           >
-            {isSubmitting ? 'Creating...' : 'Create board'}
+            {isSubmitting ? 'Đang tạo...' : 'Tạo bảng'}
           </button>
         </div>
       </div>
