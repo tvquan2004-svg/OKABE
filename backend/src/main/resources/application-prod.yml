@@ -53,6 +53,11 @@ spring:
         query:
           fail_on_pagination_over_collection_fetch: true
 
+server:
+  error:
+    whitelabel:
+      enabled: false
+
 app:
   url: ${APP_URL}
   email:
