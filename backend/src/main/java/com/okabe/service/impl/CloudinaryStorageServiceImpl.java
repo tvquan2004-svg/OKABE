@@ -64,7 +64,7 @@ public class CloudinaryStorageServiceImpl implements StorageService {
             throw new IOException("Cloudinary is not configured. Please add CLOUDINARY_CLOUD_NAME, API_KEY and API_SECRET to your .env file."); // Ném lỗi
         }
         try {
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap( // Tải file lên Cloudinary
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getInputStream(), ObjectUtils.asMap( // Tải file lên Cloudinary dạng stream
                 "resource_type", "auto", // Tự động phát hiện loại tài nguyên
                 "folder", "okabe/attachments" // Thư mục lưu trữ
             ));

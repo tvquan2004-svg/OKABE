@@ -722,11 +722,7 @@ public class CardServiceImpl implements CardService {
                 .map(this::toCardInfoResponse) // Chuyển đổi
                 .collect(Collectors.toList()); // Thu thập
 
-        List<CardInfoResponse> blocking = cardRepository.findAll().stream() // Lấy tất cả card
-                .filter(c -> { // Lọc card phụ thuộc vào card hiện tại
-                    List<Long> ids = parseParentIds(c.getParentIds());
-                    return ids.contains(cardId);
-                })
+        List<CardInfoResponse> blocking = cardRepository.findDependentCards(cardId).stream() // Lấy card phụ thuộc
                 .map(this::toCardInfoResponse) // Chuyển đổi
                 .collect(Collectors.toList()); // Thu thập
 

@@ -3,6 +3,7 @@ package com.okabe.service;
 import com.okabe.entity.Card;
 import com.okabe.entity.User;
 import com.okabe.repository.CardRepository;
+import com.okabe.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,6 +19,7 @@ import java.util.List;
 public class ScheduledNotificationService {
 
     private final CardRepository cardRepository;
+    private final NotificationRepository notificationRepository;
     private final EmailNotificationService emailNotificationService;
     private final NotificationService notificationService;
 
@@ -87,6 +89,19 @@ public class ScheduledNotificationService {
         User creator = card.getCreatedBy();
         if (creator != null && card.getMembers().stream().noneMatch(m -> m.getId().equals(creator.getId()))) {
             sendNotifications(creator, card, type, message, boardId, cardId);
+        }
+    }
+
+    /**
+     * Runs daily at 3:00 AM to clean up old read notifications (older than 30 days).
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    @Transactional
+    public void cleanupOldNotifications() {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
+        int deleted = notificationRepository.deleteReadOlderThan(cutoff);
+        if (deleted > 0) {
+            log.info("[Scheduler] Cleaned up {} read notifications older than 30 days", deleted);
         }
     }
 
