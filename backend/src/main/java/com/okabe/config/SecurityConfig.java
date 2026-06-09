@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/ws/**",
             "/api/v1/public/**",
             "/api/v1/lunar/**",
-            "/api/v1/admin/test/**"   // Dev-only: trigger scheduled jobs manually
+            "/api/v1/admin/test/**",   // Dev-only: trigger scheduled jobs manually
+            "/error"
     };
 
     @Bean
@@ -58,9 +59,14 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Thêm filter JWT trước filter mặc định
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED); // Trả về 401
-                            response.setContentType("application/json"); // Định dạng JSON
-                            response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized: Token expired or invalid\"}"); // Nội dung lỗi
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized: Token expired or invalid\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"success\":false,\"message\":\"Forbidden: Insufficient permissions\"}");
                         })
                 );
 
