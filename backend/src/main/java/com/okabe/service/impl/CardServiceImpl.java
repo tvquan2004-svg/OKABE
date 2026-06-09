@@ -722,11 +722,7 @@ public class CardServiceImpl implements CardService {
                 .map(this::toCardInfoResponse) // Chuyển đổi
                 .collect(Collectors.toList()); // Thu thập
 
-        List<CardInfoResponse> blocking = cardRepository.findAll().stream() // Lấy tất cả card
-                .filter(c -> { // Lọc card phụ thuộc vào card hiện tại
-                    List<Long> ids = parseParentIds(c.getParentIds());
-                    return ids.contains(cardId);
-                })
+        List<CardInfoResponse> blocking = cardRepository.findDependentCards(cardId).stream() // Lấy card phụ thuộc
                 .map(this::toCardInfoResponse) // Chuyển đổi
                 .collect(Collectors.toList()); // Thu thập
 
@@ -750,12 +746,21 @@ public class CardServiceImpl implements CardService {
     }
 
     private boolean hasCycle(Long cardId, List<Long> parentIds) {
+        return hasCycleWithVisited(cardId, parentIds, new HashSet<>(), 0);
+    }
+
+    private boolean hasCycleWithVisited(Long cardId, List<Long> parentIds, Set<Long> visited, int depth) {
+        if (depth > 50) { // Giới hạn độ sâu để tránh stack overflow
+            log.warn("Cycle detection depth limit exceeded for card {}", cardId);
+            return true; // Coi như có cycle nếu vượt quá độ sâu cho phép
+        }
         for (Long parentId : parentIds) { // Duyệt từng ID cha
             if (parentId.equals(cardId)) return true; // Phát hiện vòng lặp
+            if (!visited.add(parentId)) continue; // Đã kiểm tra, bỏ qua để tránh lặp vô hạn
             Card parent = cardRepository.findById(parentId).orElse(null); // Tìm card cha
             if (parent == null) continue; // Bỏ qua nếu không tìm thấy
             List<Long> grandParentIds = parseParentIds(parent.getParentIds()); // Lấy ID cha của cha
-            if (hasCycle(cardId, grandParentIds)) return true; // Kiểm tra đệ quy
+            if (hasCycleWithVisited(cardId, grandParentIds, visited, depth + 1)) return true; // Kiểm tra đệ quy
         }
         return false; // Không có vòng lặp
     }

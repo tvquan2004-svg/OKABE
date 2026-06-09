@@ -33,13 +33,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 
 @RestController
 @RequestMapping("/api/v1/ai")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "AI Chat", description = "AI Assistant chatbox APIs")
 public class AiChatController {
 
@@ -48,6 +48,7 @@ public class AiChatController {
     private final AiPriorityService aiPriorityService;
     private final AiStandupService aiStandupService;
     private final AiSentimentService aiSentimentService;
+    private final Executor taskExecutor;
 
     @PostMapping("/breakdown")
     @Operation(summary = "Phân rã task thành các subtask bằng AI")
@@ -146,37 +147,44 @@ public class AiChatController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
 
         SseEmitter emitter = new SseEmitter(120_000L); // Tạo SSE emitter với timeout 2 phút
-        ExecutorService executor = Executors.newSingleThreadExecutor(); // Thread riêng để stream response
 
-        executor.execute(() -> {
-            try {
-                Long conversationId = aiChatService.streamMessage(request, currentUser, token -> { // Stream AI trả lời token-by-token
+        try {
+            taskExecutor.execute(() -> {
+                try {
+                    Long conversationId = aiChatService.streamMessage(request, currentUser, token -> { // Stream AI trả lời token-by-token
+                        try {
+                            emitter.send(SseEmitter.event()
+                                    .name("token") // Gửi từng token qua SSE
+                                    .data(token));
+                        } catch (IOException e) {
+                            emitter.completeWithError(e);
+                        }
+                    });
+
+                    // Gửi conversation ID khi kết thúc
+                    emitter.send(SseEmitter.event()
+                            .name("done")
+                            .data(conversationId));
+                    emitter.complete();
+
+                } catch (Exception e) {
                     try {
                         emitter.send(SseEmitter.event()
-                                .name("token") // Gửi từng token qua SSE
-                                .data(token));
-                    } catch (IOException e) {
-                        emitter.completeWithError(e);
-                    }
-                });
-
-                // Gửi conversation ID khi kết thúc
+                                .name("error")
+                                .data("Lỗi kết nối AI")); // Thông báo lỗi cho client
+                    } catch (IOException ignored) {}
+                    emitter.completeWithError(e);
+                }
+            });
+        } catch (Exception e) {
+            log.warn("SSE task rejected, executor queue full: {}", e.getMessage());
+            try {
                 emitter.send(SseEmitter.event()
-                        .name("done")
-                        .data(conversationId));
-                emitter.complete();
-
-            } catch (Exception e) {
-                try {
-                    emitter.send(SseEmitter.event()
-                            .name("error")
-                            .data("Lỗi kết nối AI")); // Thông báo lỗi cho client
-                } catch (IOException ignored) {}
-                emitter.completeWithError(e);
-            } finally {
-                executor.shutdown(); // Dọn dẹp thread
-            }
-        });
+                        .name("error")
+                        .data("Hệ thống đang quá tải, vui lòng thử lại sau"));
+            } catch (IOException ignored) {}
+            emitter.completeWithError(new RuntimeException("Hệ thống đang quá tải"));
+        }
 
         return emitter;
     }

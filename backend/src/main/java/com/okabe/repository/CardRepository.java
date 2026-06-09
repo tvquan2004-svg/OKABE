@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
+
 @Repository
 public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificationExecutor<Card> {
 
@@ -36,8 +38,18 @@ public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificat
     // Tìm thẻ chưa lưu trữ, quá hạn và chưa gửi thông báo
     List<Card> findByIsArchivedFalseAndDueDateBeforeAndNotificationSentFalse(LocalDateTime now);
 
+    // Tìm thẻ chưa lưu trữ, quá hạn và chưa gửi thông báo (kèm members - dùng cho scheduler batch)
+    @EntityGraph(attributePaths = "members")
+    @Query("SELECT DISTINCT c FROM Card c WHERE c.isArchived = false AND c.dueDate < :now AND c.notificationSent = false")
+    List<Card> findOverdueWithMembers(@Param("now") LocalDateTime now);
+
     // Tìm thẻ chưa lưu trữ, sắp đến hạn trong khoảng thời gian và chưa gửi thông báo
     List<Card> findByIsArchivedFalseAndDueDateBetweenAndNotificationSentFalse(LocalDateTime start, LocalDateTime end);
+
+    // Tìm thẻ chưa lưu trữ, sắp đến hạn trong khoảng thời gian và chưa gửi thông báo (kèm members - dùng cho scheduler batch)
+    @EntityGraph(attributePaths = "members")
+    @Query("SELECT DISTINCT c FROM Card c WHERE c.isArchived = false AND c.dueDate BETWEEN :start AND :end AND c.notificationSent = false")
+    List<Card> findDueSoonWithMembers(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     // Tìm thẻ chưa lưu trữ trong board, kèm taskList và members để tránh LazyInitializationException
     @Query("SELECT c FROM Card c JOIN FETCH c.taskList LEFT JOIN FETCH c.members WHERE c.taskList.board.id = :boardId AND c.isArchived = false")
