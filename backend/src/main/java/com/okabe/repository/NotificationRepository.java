@@ -6,7 +6,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
@@ -21,4 +24,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     // Đánh dấu tất cả thông báo của người nhận là đã đọc
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.recipient.id = :recipientId AND n.isRead = false")
     void markAllAsRead(Long recipientId);
+
+    @Modifying(clearAutomatically = true)
+    // Xoá thông báo đã đọc và cũ hơn số ngày chỉ định
+    @Query("DELETE FROM Notification n WHERE n.isRead = true AND n.createdAt < :cutoff")
+    int deleteReadOlderThan(@Param("cutoff") LocalDateTime cutoff);
 }

@@ -192,13 +192,9 @@ public class AiChatServiceImpl implements AiChatService {
         List<Map<String, String>> history = buildMessageHistory(conversation.getId()); // Xây dựng lịch sử hội thoại
 
         // 5. Stream from Groq API
-        StringBuilder fullReply = new StringBuilder(); // Khởi tạo StringBuilder để ghép nội dung stream
         try {
             geminiProvider.streamContent(systemPrompt, history, // Gọi Gemini stream API
-                    token -> {
-                        onToken.accept(token); // Gửi từng token đến consumer
-                        fullReply.append(token); // Ghép token vào chuỗi đầy đủ
-                    },
+                    token -> onToken.accept(token), // Gửi từng token đến consumer
                     completeText -> {
                         // 6. Save complete reply after stream ends
                         AiMessage assistantMessage = AiMessage.builder()

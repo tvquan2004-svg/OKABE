@@ -33,8 +33,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 
 @RestController
@@ -48,6 +47,7 @@ public class AiChatController {
     private final AiPriorityService aiPriorityService;
     private final AiStandupService aiStandupService;
     private final AiSentimentService aiSentimentService;
+    private final Executor taskExecutor;
 
     @PostMapping("/breakdown")
     @Operation(summary = "Phân rã task thành các subtask bằng AI")
@@ -146,9 +146,8 @@ public class AiChatController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
 
         SseEmitter emitter = new SseEmitter(120_000L); // Tạo SSE emitter với timeout 2 phút
-        ExecutorService executor = Executors.newSingleThreadExecutor(); // Thread riêng để stream response
 
-        executor.execute(() -> {
+        taskExecutor.execute(() -> {
             try {
                 Long conversationId = aiChatService.streamMessage(request, currentUser, token -> { // Stream AI trả lời token-by-token
                     try {
@@ -173,8 +172,6 @@ public class AiChatController {
                             .data("Lỗi kết nối AI")); // Thông báo lỗi cho client
                 } catch (IOException ignored) {}
                 emitter.completeWithError(e);
-            } finally {
-                executor.shutdown(); // Dọn dẹp thread
             }
         });
 
