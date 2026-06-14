@@ -54,6 +54,7 @@ spring:
           fail_on_pagination_over_collection_fetch: true
 
 server:
+  port: ${PORT:8080}
   error:
     whitelabel:
       enabled: false
