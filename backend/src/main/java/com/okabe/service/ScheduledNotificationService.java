@@ -23,11 +23,14 @@ public class ScheduledNotificationService {
     private final EmailNotificationService emailNotificationService;
     private final NotificationService notificationService;
 
+    private static final int BATCH_SIZE = 50;
+
     /**
-     * Runs every minute to check for cards due within the next 24 hours and send email + in-app notifications.
+     * Runs every 15 minutes to check for cards due within the next 24 hours and send email + in-app notifications.
      * Uses notificationSent flag to prevent duplicate notifications (each card only notified once per due date).
+     * Processes cards in batches to avoid loading all matching cards into memory at once.
      */
-    @Scheduled(cron = "0 * * * * *")  // Every minute
+    @Scheduled(cron = "0 */15 * * * *")  // Every 15 minutes
     @Transactional
     public void checkCardsDueSoon() {
         log.info("[Scheduler] Starting due-date notification check...");
@@ -35,42 +38,42 @@ public class ScheduledNotificationService {
         LocalDateTime in24Hours = now.plusHours(24);
 
         // --- 1. Cards due within 24 hours (not yet notified) ---
-        List<Card> dueSoonCards = cardRepository
-                .findByIsArchivedFalseAndDueDateBetweenAndNotificationSentFalse(now, in24Hours);
-
-        log.info("[Scheduler] Found {} card(s) due soon (within 24h)", dueSoonCards.size());
-
-        for (Card card : dueSoonCards) {
-            String message = String.format("Nhắc nhở: Thẻ \"%s\" sắp đến hạn vào %s",
-                    card.getTitle(),
-                    card.getDueDate().toLocalDate().toString());
-            notifyUsersForCard(card, "CARD_DUE_SOON", message);
-            card.setNotificationSent(true);
-        }
-
-        if (!dueSoonCards.isEmpty()) {
-            cardRepository.saveAll(dueSoonCards);
-            log.info("[Scheduler] Marked {} card(s) as notification sent (due soon)", dueSoonCards.size());
-        }
+        processDueCards(
+                cardRepository.findDueSoonWithMembers(now, in24Hours),
+                "CARD_DUE_SOON",
+                card -> String.format("Nhắc nhở: Thẻ \"%s\" sắp đến hạn vào %s",
+                        card.getTitle(),
+                        card.getDueDate().toLocalDate().toString())
+        );
 
         // --- 2. Overdue cards (past due, not yet notified) ---
-        List<Card> overdueCards = cardRepository
-                .findByIsArchivedFalseAndDueDateBeforeAndNotificationSentFalse(now);
-
-        log.info("[Scheduler] Found {} overdue card(s)", overdueCards.size());
-
-        for (Card card : overdueCards) {
-            String message = String.format("Thẻ \"%s\" đã quá hạn!", card.getTitle());
-            notifyUsersForCard(card, "CARD_OVERDUE", message);
-            card.setNotificationSent(true);
-        }
-
-        if (!overdueCards.isEmpty()) {
-            cardRepository.saveAll(overdueCards);
-            log.info("[Scheduler] Marked {} overdue card(s) as notification sent", overdueCards.size());
-        }
+        processDueCards(
+                cardRepository.findOverdueWithMembers(now),
+                "CARD_OVERDUE",
+                card -> String.format("Thẻ \"%s\" đã quá hạn!", card.getTitle())
+        );
 
         log.info("[Scheduler] Due-date notification check completed.");
+    }
+
+    private void processDueCards(List<Card> cards, String type, java.util.function.Function<Card, String> messageFn) {
+        if (cards.isEmpty()) return;
+
+        log.info("[Scheduler] Found {} card(s) for type {}", cards.size(), type);
+
+        for (int i = 0; i < cards.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, cards.size());
+            List<Card> batch = cards.subList(i, end);
+
+            for (Card card : batch) {
+                String message = messageFn.apply(card);
+                notifyUsersForCard(card, type, message);
+                card.setNotificationSent(true);
+            }
+
+            cardRepository.saveAll(batch);
+            log.info("[Scheduler] Processed batch {}-{} of {} for type {}", i, end, cards.size(), type);
+        }
     }
 
     /**

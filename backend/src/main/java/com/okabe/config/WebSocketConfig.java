@@ -15,7 +15,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -66,7 +65,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                     userPrincipal, null, userPrincipal.getAuthorities()); // Tạo đối tượng xác thực
                             
                             accessor.setUser(auth); // Gán user cho session WebSocket
-                            SecurityContextHolder.getContext().setAuthentication(auth); // Đặt vào SecurityContext
                             log.debug("WebSocket authenticated user: {}", userPrincipal.getUsername());
                         }
                     }
