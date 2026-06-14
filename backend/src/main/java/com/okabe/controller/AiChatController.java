@@ -148,9 +148,26 @@ public class AiChatController {
 
         SseEmitter emitter = new SseEmitter(120_000L); // Tạo SSE emitter với timeout 2 phút
 
-        taskExecutor.execute(() -> {
-            try {
-                Long conversationId = aiChatService.streamMessage(request, currentUser, token -> { // Stream AI trả lời token-by-token
+        try {
+            taskExecutor.execute(() -> {
+                try {
+                    Long conversationId = aiChatService.streamMessage(request, currentUser, token -> { // Stream AI trả lời token-by-token
+                        try {
+                            emitter.send(SseEmitter.event()
+                                    .name("token") // Gửi từng token qua SSE
+                                    .data(token));
+                        } catch (IOException e) {
+                            emitter.completeWithError(e);
+                        }
+                    });
+
+                    // Gửi conversation ID khi kết thúc
+                    emitter.send(SseEmitter.event()
+                            .name("done")
+                            .data(conversationId));
+                    emitter.complete();
+
+                } catch (Exception e) {
                     try {
                         emitter.send(SseEmitter.event()
                                 .name("error")
@@ -163,19 +180,11 @@ public class AiChatController {
             log.warn("SSE task rejected, executor queue full: {}", e.getMessage());
             try {
                 emitter.send(SseEmitter.event()
-                        .name("done")
-                        .data(conversationId));
-                emitter.complete();
-
-            } catch (Exception e) {
-                try {
-                    emitter.send(SseEmitter.event()
-                            .name("error")
-                            .data("Lỗi kết nối AI")); // Thông báo lỗi cho client
-                } catch (IOException ignored) {}
-                emitter.completeWithError(e);
-            }
-        });
+                        .name("error")
+                        .data("Hệ thống đang quá tải, vui lòng thử lại sau"));
+            } catch (IOException ignored) {}
+            emitter.completeWithError(new RuntimeException("Hệ thống đang quá tải"));
+        }
 
         return emitter;
     }
