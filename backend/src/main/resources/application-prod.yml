@@ -58,6 +58,12 @@ server:
   error:
     whitelabel:
       enabled: false
+  tomcat:
+    threads:
+      max: 10
+      min-spare: 2
+    accept-count: 50
+    max-connections: 20
 
 app:
   url: ${APP_URL}
