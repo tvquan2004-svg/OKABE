@@ -24,9 +24,10 @@ USER okabe
 EXPOSE 8080
 
 # JVM flags tối ưu cho bộ nhớ giới hạn (Render Free: ~512MB)
-# - Xmx320m: Heap tối đa (giảm để nhường chỗ cho Metaspace + native memory)
-# - XX:MaxMetaspaceSize=128m: Giới hạn Metaspace, tránh OOM do class loading
-# - Xss512k: Giảm kích thước stack mỗi thread (mặc định 1-2MB)
-# - XX:+UseG1GC: GC hiệu quả, ưu tiên throughput
-# - XX:InitiatingHeapOccupancyPercent=30: GC sớm, giữ heap luôn thấp
-ENTRYPOINT ["java", "-Xmx320m", "-Xms320m", "-XX:MaxMetaspaceSize=128m", "-Xss512k", "-XX:+UseG1GC", "-XX:InitiatingHeapOccupancyPercent=30", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar", "--spring.profiles.active=prod"]
+# - Xmx180m: Heap tối đa (giảm mạnh để nhường chỗ cho Metaspace + native)
+# - Xms64m: Heap khởi tạo thấp, không commit toàn bộ heap ngay
+# - XX:MaxMetaspaceSize=110m: Giới hạn Metaspace
+# - Xss512k: Stack mỗi thread (mặc định 1-2MB)
+# - XX:+UseSerialGC: GC đơn luồng, footprint thấp hơn G1GC cho heap nhỏ
+# - XX:+ExitOnOutOfMemoryError: Tự động thoát (container restart) khi OOM
+ENTRYPOINT ["java", "-Xmx180m", "-Xms64m", "-XX:MaxMetaspaceSize=110m", "-Xss512k", "-XX:+UseSerialGC", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar", "--spring.profiles.active=prod"]
