@@ -24,5 +24,10 @@ USER okabe
 ENV SERVER_PORT=8080
 EXPOSE 8080
 
-# Cấu hình RAM (Xmx384m) để không bị crash trên gói Free của Render
-ENTRYPOINT ["java", "-Xmx384m", "-Xms384m", "-jar", "app.jar", "--spring.profiles.active=prod"]
+# JVM flags tối ưu cho bộ nhớ giới hạn (Render Free: ~512MB)
+# - Xmx320m: Heap tối đa (giảm để nhường chỗ cho Metaspace + native memory)
+# - XX:MaxMetaspaceSize=128m: Giới hạn Metaspace, tránh OOM do class loading
+# - Xss512k: Giảm kích thước stack mỗi thread (mặc định 1-2MB)
+# - XX:+UseG1GC: GC hiệu quả, ưu tiên throughput
+# - XX:InitiatingHeapOccupancyPercent=30: GC sớm, giữ heap luôn thấp
+ENTRYPOINT ["java", "-Xmx320m", "-Xms320m", "-XX:MaxMetaspaceSize=128m", "-Xss512k", "-XX:+UseG1GC", "-XX:InitiatingHeapOccupancyPercent=30", "-jar", "app.jar", "--spring.profiles.active=prod"]
