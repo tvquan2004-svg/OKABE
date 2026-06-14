@@ -148,6 +148,13 @@ public class AiChatController {
 
         SseEmitter emitter = new SseEmitter(120_000L); // Tạo SSE emitter với timeout 2 phút
 
+        // Cleanup resources khi client disconnect hoặc timeout — tránh memory leak
+        emitter.onCompletion(() -> log.debug("SSE stream completed for user {}", currentUser.getId()));
+        emitter.onTimeout(() -> {
+            log.warn("SSE stream timed out for user {}", currentUser.getId());
+            emitter.completeWithError(new RuntimeException("SSE timeout"));
+        });
+
         try {
             taskExecutor.execute(() -> {
                 try {
