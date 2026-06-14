@@ -90,6 +90,42 @@ okabe/
 
 ---
 
+## 🛡️ Git Safety Rules
+
+Before performing ANY git operation:
+
+1. **Inspect first:**
+   ```bash
+   git status
+   git branch
+   git log --graph --oneline --decorate -20
+   ```
+
+2. **Never execute:**
+   - `git push --force`
+   - `git push --force-with-lease`
+   - `git reset --hard`
+   - `git rebase`
+   - `git commit --amend`
+
+3. **Always create a new commit instead.**
+
+4. **If history appears inconsistent:**
+   - STOP
+   - Explain the issue
+   - Ask for confirmation
+
+5. **Preserve commit history.**
+
+6. **Use only safe operations:**
+   ```bash
+   git add .
+   git commit -m "<message>"
+   git push
+   ```
+
+---
+
 ## 📜 License
 
 MIT Copyright 2026 **OKABE Team** - *Đưa quản lý dự án lên tầm cao mới.*
