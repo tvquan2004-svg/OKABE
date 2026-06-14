@@ -20,8 +20,7 @@ COPY --from=builder /app/target/*.jar app.jar
 RUN chown okabe:okabe app.jar
 USER okabe
 
-# Render sử dụng biến môi trường PORT, chúng ta cấu hình để Spring Boot nhận port này
-ENV SERVER_PORT=8080
+# Render inject biến PORT, Spring Boot đọc từ application-prod.yml
 EXPOSE 8080
 
 # JVM flags tối ưu cho bộ nhớ giới hạn (Render Free: ~512MB)
@@ -30,4 +29,4 @@ EXPOSE 8080
 # - Xss512k: Giảm kích thước stack mỗi thread (mặc định 1-2MB)
 # - XX:+UseG1GC: GC hiệu quả, ưu tiên throughput
 # - XX:InitiatingHeapOccupancyPercent=30: GC sớm, giữ heap luôn thấp
-ENTRYPOINT ["java", "-Xmx320m", "-Xms320m", "-XX:MaxMetaspaceSize=128m", "-Xss512k", "-XX:+UseG1GC", "-XX:InitiatingHeapOccupancyPercent=30", "-jar", "app.jar", "--spring.profiles.active=prod"]
+ENTRYPOINT ["java", "-Xmx320m", "-Xms320m", "-XX:MaxMetaspaceSize=128m", "-Xss512k", "-XX:+UseG1GC", "-XX:InitiatingHeapOccupancyPercent=30", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar", "--spring.profiles.active=prod"]
